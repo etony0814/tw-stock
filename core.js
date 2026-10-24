@@ -500,6 +500,22 @@
   const ALLORIGINS = "https://api.allorigins.win/raw?url=";
   const CORSPROXY = "https://corsproxy.io/?url=";
   const THINGPROXY = "https://api.thingproxy.com/?url=";
+
+  // 代理抓 XML：成功回傳 XML 字串，失敗回傳 null（含重試）
+  async function fetchViaProxy(prefix, target, retries) {
+    for (let n = 0; n < (retries || 2); n++) {
+      try {
+        const r = await fetch(prefix + encodeURIComponent(target));
+        if (r.ok) {
+          const t = await r.text();
+          if (t.indexOf("<rss") > 0 || t.indexOf("<item") > 0) return t;
+        }
+      } catch (e) {}
+      if (n < (retries || 2) - 1) await new Promise(res => setTimeout(res, 800));
+    }
+    return null;
+  }
+
   async function fetchNewsHeadlines(ticker, name, days) {
     const q = encodeURIComponent((name || "") + " " + ticker);
     const url = "https://news.google.com/rss/search?q=" + q + "&hl=zh-TW&gl=TW&ce=zh";
@@ -509,38 +525,26 @@
       const r = await fetch(url, { mode: "cors" });
       if (r.ok) { text = await r.text(); if (!text || text.indexOf("<rss") < 0) text = null; }
     } catch (e) { text = null; }
-    // 2) allorigins 代理（瀏覽器跨域可用，免金鑰）
-    if (!text) {
-      try {
-        const r = await fetch(ALLORIGINS + encodeURIComponent(url));
-        if (r.ok) { const t = await r.text(); if (t.indexOf("<rss") > 0 || t.indexOf("<item") > 0) text = t; }
-      } catch (e) {}
-    }
-    // 3) thingproxy 代理（備援，免金鑰）
-    if (!text) {
-      try {
-        const r = await fetch(THINGPROXY + encodeURIComponent(url));
-        if (r.ok) { const t = await r.text(); if (t.indexOf("<rss") > 0 || t.indexOf("<item") > 0) text = t; }
-      } catch (e) {}
-    }
+    // 2) allorigins 代理（主力，重試 2 次）
+    if (!text) text = await fetchViaProxy(ALLORIGINS, url, 2);
+    // 3) thingproxy 代理（備援）
+    if (!text) text = await fetchViaProxy(THINGPROXY, url, 1);
     // 4) corsproxy.io 代理（備援）
+    if (!text) text = await fetchViaProxy(CORSPROXY, url, 1);
+    // 5) Jina Reader 代理（最後 fallback，標準 GET）
     if (!text) {
       try {
-        const r = await fetch(CORSPROXY + encodeURIComponent(url));
-        if (r.ok) { const t = await r.text(); if (t.indexOf("<rss") > 0 || t.indexOf("<item") > 0) text = t; }
-      } catch (e) {}
-    }
-    // 5) Jina Reader 代理（最後 fallback）
-    if (!text) {
-      try {
-        const jr = await fetch(JINA_RSS + url, { headers: { "Accept": "text/plain" } });
+        const jr = await fetch(JINA_RSS + url);
         if (jr.ok) {
           const jt = await jr.text();
-          if (jt.indexOf("<item") > 0) text = jt;
+          if (jt.indexOf("<item") > 0 || jt.indexOf("<title") > 0) text = jt;
         }
       } catch (e) {}
     }
-    if (!text) return [];
+    if (!text) {
+      // 抓不到：回傳 null，讓 UI 顯示「暫時取不到」而非空白
+      return null;
+    }
     try {
       const doc = new DOMParser().parseFromString(text, "text/xml");
       const now = Date.now();
@@ -574,8 +578,11 @@
     const newsScore = news ? news.score : 0;
     const iScore = intra.score || 0;
     const tScore = taiex.score || 0;
+    // 消息面失靈（news.failed）時：把它的 15% 權重移轉給技術面，避免稀釋其他面的分數
+    let wT = 0.4, wF = 0.15, wN = 0.15, wI = 0.15, wTa = 0.15;
+    if (news && news.failed) { wT += 0.15; wN = 0; }
     let combined = Math.max(-1, Math.min(1,
-      tech * 0.4 + fScore * 0.15 + newsScore * 0.15 + iScore * 0.15 + tScore * 0.15));
+      tech * wT + fScore * wF + newsScore * wN + iScore * wI + tScore * wTa));
     combined = Math.round(combined * 1000) / 1000;
     let final;
     if (combined >= 0.40) final = "五方綜合偏多：技術、籌碼、消息、盤面、大盤多偏向買方，今天可考慮逢低布局。";
@@ -610,7 +617,13 @@
     let news = null;
     if (opts.with_news) {
       const heads = await fetchNewsHeadlines(opts.ticker, opts.name, opts.news_days || 7);
-      if (heads.length) news = newsSentiment(heads, opts.news_days || 7);
+      if (Array.isArray(heads) && heads.length) {
+        news = newsSentiment(heads, opts.news_days || 7);
+      } else if (heads === null) {
+        // 代理失靈、抓不到：標記 news_failed 讓 UI 顯示「暫時取不到」
+        news = { score: 0, label: "取不到", advice: "消息面暫時取不到（網路代理失靈），稍後重試。",
+                 pos: 0, neg: 0, count: 0, days: (opts.news_days || 7), headlines: [], failed: true };
+      }
     }
 
     const final = fiveWayComposite(comp, ff, intra, taiex, news);
