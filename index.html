@@ -70,9 +70,7 @@
 
   <div class="controls">
     <label>代號</label>
-    <input id="ticker" value="2330" placeholder="2330">
-    <label>名稱</label>
-    <input id="name" value="台積電" placeholder="台積電" style="width:90px">
+    <input id="ticker" value="2330" placeholder="代號">
     <label>看多久</label>
     <select id="period">
       <option value="1mo">1月</option><option value="3mo">3月</option>
@@ -81,14 +79,31 @@
     <button id="btn" onclick="run()">開始分析</button>
     <label class="hint"><input type="checkbox" id="ckNews" checked style="width:auto;vertical-align:middle"> 消息面</label>
     <label class="hint"><input type="checkbox" id="ckFund" checked style="width:auto;vertical-align:middle"> 籌碼面</label>
-    <label class="hint"><input type="checkbox" id="ckWatch" style="width:auto;vertical-align:middle"> 加入自選股</label>
-    <span class="hint">例：2330 台積電、2303 華碩、0050 大S50</span>
+    <span class="hint">例：2330、2303、0050（名稱會自動帶出）</span>
+  </div>
+
+  <!-- 分析結果標題（代號＋名稱）＋ 自選按鈕 -->
+  <div id="resultTitle" class="card" style="display:none">
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <b id="rtName" style="font-size:18px">—</b>
+      <button id="rtWatch" onclick="rtWatchToggle()"
+        style="background:var(--card2);color:var(--accent);border:1px solid var(--accent);border-radius:8px;padding:6px 12px;font-size:13px;cursor:pointer">＋ 加入自選</button>
+    </div>
   </div>
 
   <!-- 自選股列 -->
   <div id="watchlist" style="display:none;margin:10px 0">
-    <div style="font-size:12px;color:var(--muted);margin-bottom:6px">⭐ 自選股（點一下即分析）</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:6px">⭐ 自選股（點一下即分析，✕ 移除）</div>
     <div id="watchBtns" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+  </div>
+
+  <!-- 分析結果標題：代號＋名稱＋自選按鈕 -->
+  <div id="resultTitle" class="card" style="display:none">
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <b id="rtName" style="font-size:18px">—</b>
+      <button id="rtWatch" onclick="rtWatchToggle()"
+        style="background:var(--card2);color:var(--accent);border:1px solid var(--accent);border-radius:8px;padding:6px 12px;font-size:13px;cursor:pointer">＋ 加入自選</button>
+    </div>
   </div>
 
   <div id="loading"><div class="spin"></div>正在抓取行情與分析，請稍候…</div>
@@ -266,6 +281,54 @@ function demoTaiexRows(){
   return rows;
 }
 
+// 自動帶出股票名稱：先查內建表，再查 Yahoo meta（Jina 代理）
+async function fetchStockName(t){
+  if (WNAMES[t]) return WNAMES[t];
+  try {
+    const target = "https://query2.finance.yahoo.com/v8/finance/chart/" + toYahoo(t) + "?range=1d&interval=1d";
+    const r = await fetch("https://r.jina.ai/" + target, { headers: { "Accept": "text/plain" } });
+    const text = await r.text();
+    const idx = text.indexOf("Markdown Content:");
+    let body = idx >= 0 ? text.slice(idx + "Markdown Content:".length).trim() : text;
+    const o = body.indexOf("{"); if (o >= 0) body = body.slice(o);
+    const j = JSON.parse(body);
+    const meta = j.chart && j.chart.result && j.chart.result[0] && j.chart.result[0].meta;
+    return (meta && meta.shortName) ? meta.shortName : "";
+  } catch (e) { return ""; }
+}
+
+// 顯示「代號＋名稱」與自選按鈕狀態
+function showResultTitle(t, nm){
+  const box = document.getElementById('resultTitle');
+  if(!box) return;
+  box.style.display = 'block';
+  document.getElementById('rtName').textContent = t + (nm ? " " + nm : "");
+  updateWatchBtn(t);
+}
+function updateWatchBtn(t){
+  const btn = document.getElementById('rtWatch');
+  if(!btn) return;
+  const list = loadWatch();
+  const inList = list.some(x => x.code === t);
+  btn.textContent = inList ? "✓ 已加入自選（點一下移除）" : "＋ 加入自選";
+  btn.style.background = inList ? "rgba(34,197,94,.15)" : "var(--card2)";
+  btn.style.color = inList ? "var(--green)" : "var(--accent)";
+  btn.style.borderColor = inList ? "var(--green)" : "var(--accent)";
+}
+function rtWatchToggle(){
+  const t = document.getElementById('ticker').value.trim().toUpperCase();
+  const list = loadWatch();
+  const idx = list.findIndex(x => x.code === t);
+  if (idx >= 0) {
+    list.splice(idx, 1);
+  } else {
+    const nm = document.getElementById('rtName').textContent.replace(t, '').trim();
+    list.push({ code: t, name: nm });
+  }
+  saveWatch(list);
+  updateWatchBtn(t);
+}
+
 function demoFundMulti(code){
   const days = 5;
   const history = [];
@@ -291,11 +354,9 @@ function cls(s){ return s>=0.05?"pos":s<=-0.05?"neg":"neu"; }
 
 async function run(){
   const t=document.getElementById('ticker').value.trim();
-  const nm=document.getElementById('name').value.trim();
+  const nm=document.getElementById('ticker').value.trim(); // 代號；名稱稍後自動帶出
   const period=document.getElementById('period').value;
-  // 若代號有中文名且未填名稱，自動補上
-  if(!document.getElementById('name').value && WNAMES[t])
-    document.getElementById('name').value=WNAMES[t];
+
   const btn=document.getElementById('btn');
   document.getElementById('loading').style.display='block';
   document.getElementById('results').style.display='none';
@@ -306,8 +367,9 @@ async function run(){
     const taiexRows = await fetchRows("^TWII", "1mo");
     const with_news = document.getElementById('ckNews').checked;
     const with_fund = document.getElementById('ckFund').checked;
+    const nmAuto = await fetchStockName(t);
     const all = await StockCore.computeAll(stockRows,
-      { ticker:t, name:nm, taiexRows, with_news, with_fund });
+      { ticker:t, name:nmAuto, taiexRows, with_news, with_fund });
 
     // 籌碼面多日統計
     if (with_fund) {
@@ -319,6 +381,7 @@ async function run(){
     all._taiexRows = taiexRows;
 
     render(all, stockRows, t);
+    showResultTitle(t, nmAuto);
     document.getElementById('results').style.display='block';
     document.getElementById('demoBanner').style.display='none';
   }catch(e){
@@ -327,11 +390,12 @@ async function run(){
     const stockRows = demoRows(t, period);
     const twRows = demoTaiexRows();
     const all = await StockCore.computeAll(stockRows,
-      { ticker:t, name:nm, taiexRows:twRows, with_news:false, with_fund:false });
+      { ticker:t, name:WNAMES[t]||'', taiexRows:twRows, with_news:false, with_fund:false });
     all.fund_multi = demoFundMulti(t);
     all.relative = StockCore.relativeStrength(stockRows, twRows, 20);
     all._stockRows = stockRows; all._taiexRows = twRows;
     render(all, stockRows, t);
+    showResultTitle(t, WNAMES[t]||'');
     document.getElementById('results').style.display='block';
     document.getElementById('err').style.display='block';
     document.getElementById('err').textContent =
@@ -513,7 +577,7 @@ function drawChart(rows, IND){
 
 // ── 自選股（localStorage）──────────────────────────────
 const WATCH_KEY = "tony_watchlist_web";
-const WNAMES = {"2330":"台積電","2303":"華碩","2317":"聯發科","2326":"鴻海","2454":"神基","6669":"國巨","0050":"大S50","0051":"自創50","3009":"欣興","2357":"大聯大","8071":"日月光投控","2325":"大智","2809":"新美","3231":"台達電"};
+const WNAMES = {"2330":"台積電","2303":"華碩","2317":"聯發科","2326":"鴻海","2454":"神基","6669":"國巨","0050":"大S50","0051":"自創50","3009":"欣興","2357":"大聯大","8071":"日月光投控","2325":"大智","2809":"新美","3231":"台達電","2407":"緯穎","2368":"立積","3324":"聯亞","4938":"台郡","2344":"群創","2885":"國巨","3232":"台達","2379":"矽品","3017":"欣興","8046":"晶相成","6171":"日月光投控"};
 function loadWatch(){ try{ return JSON.parse(localStorage.getItem(WATCH_KEY)||"[]"); }catch(e){ return []; } }
 function saveWatch(list){
   localStorage.setItem(WATCH_KEY, JSON.stringify(list));
@@ -524,19 +588,24 @@ function renderWatch(list){
   const box=document.getElementById('watchBtns');
   if(!list.length){ panel.style.display='none'; box.innerHTML=''; return; }
   panel.style.display='block';
-  box.innerHTML=list.map(t=>{
-    const nm=WNAMES[t]||'';
-    return `<button onclick="pickWatch('${t}')" style="background:var(--card2);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:6px 12px;font-size:13px;cursor:pointer">${t} ${nm}</button>`;
+  box.innerHTML=list.map(o=>{
+    const t=o.code, nm=o.name||WNAMES[t]||'';
+    return `<span style="display:inline-flex;align-items:center;gap:4px;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:6px 10px">
+      <button onclick="pickWatch('${t}')" style="background:none;border:none;color:var(--text);font-size:13px;cursor:pointer">${t} ${nm}</button>
+      <button onclick="delWatch('${t}')" style="background:none;border:none;color:var(--muted);font-size:14px;cursor:pointer" title="移除">✕</button>
+    </span>`;
   }).join('');
 }
 function pickWatch(t){
   document.getElementById('ticker').value=t;
-  const nmEl=document.getElementById('name');
-  if(nmEl && WNAMES[t]) nmEl.value=WNAMES[t];
   run();
 }
+function delWatch(t){
+  saveWatch(loadWatch().filter(x => x.code !== t));
+  if (document.getElementById('ticker').value.trim().toUpperCase() === t) updateWatchBtn(t);
+}
 function watchToggle(){
-  const ck=document.getElementById('ckWatch').checked;
+  const ck=document.getElementById('ckWatch') ? document.getElementById('ckWatch').checked : true;
   const t=document.getElementById('ticker').value.trim().toUpperCase();
   if(!/^\d{4}$/.test(t)) return;
   let list=loadWatch();
@@ -547,7 +616,7 @@ function watchToggle(){
 
 // 自動分析
 document.getElementById('ticker').addEventListener('keydown',e=>{if(e.key==='Enter')run();});
-document.getElementById('ckWatch').addEventListener('change',watchToggle);
+if (document.getElementById('ckWatch')) document.getElementById('ckWatch').addEventListener('change',watchToggle);
 window.addEventListener('load',()=>{
   renderWatch(loadWatch());
   run();
