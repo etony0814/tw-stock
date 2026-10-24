@@ -165,6 +165,13 @@
     </select>
     <button id="btn" onclick="run()">開始分析</button>
     <label class="hint"><input type="checkbox" id="ckNews" checked style="width:auto;vertical-align:middle"> 消息面</label>
+    <label class="hint">新聞</label>
+    <select id="newsDays" style="background:var(--card2);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:6px 8px;font-size:13px">
+      <option value="3">近 3 天</option>
+      <option value="7" selected>近 7 天</option>
+      <option value="14">近 14 天</option>
+      <option value="30">近 30 天</option>
+    </select>
     <label class="hint"><input type="checkbox" id="ckFund" checked style="width:auto;vertical-align:middle"> 籌碼面</label>
     <span class="hint">例：2330、2303、0050（名稱會自動帶出）</span>
   </div>
@@ -514,9 +521,10 @@ async function run(){
     const taiexRows = await fetchRows("^TWII", "1mo");
     const with_news = document.getElementById('ckNews').checked;
     const with_fund = document.getElementById('ckFund').checked;
+    const news_days = parseInt(document.getElementById('newsDays').value, 10) || 7;
     const nmAuto = await fetchStockName(t);
     const all = await StockCore.computeAll(stockRows,
-      { ticker:t, name:nmAuto, taiexRows, with_news, with_fund });
+      { ticker:t, name:nmAuto, taiexRows, with_news, with_fund, news_days });
 
     // 籌碼面多日統計
     if (with_fund) {
@@ -768,15 +776,16 @@ function render(A, rows, t){
   const nw=A.news;
   setVal('nScore', nw?nw.score:0, cls(nw?nw.score:0));
   document.getElementById('nInfo').innerHTML = nw
-    ? `${nw.label}（近 ${nw.count} 則新聞，利多 ${nw.pos}／利空 ${nw.neg}）。<br><span style="font-size:12px;color:var(--muted)">${nw.advice}</span>`
+    ? `${nw.label}（近 ${nw.days} 天、共 ${nw.count} 則新聞，利多 ${nw.pos}／利空 ${nw.neg}）。<br><span style="font-size:12px;color:var(--muted)">${nw.advice}</span>`
     : `<span style="color:var(--muted)">目前沒有抓到相關新聞。</span>`;
   // 新聞清單（newsSentiment 回傳的 headlines 欄位）
   const newsListEl = document.getElementById('newsList');
   const newsItems = nw ? (nw.headlines || nw.items || []) : [];
   if (newsItems.length) {
     newsListEl.style.display = 'block';
+    const dayLabel = nw ? nw.days : 7;
     newsListEl.innerHTML =
-      `<div style="font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:700">近期相關新聞（${newsItems.length} 則，新→舊）</div>` +
+      `<div style="font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:700">近期相關新聞（近 ${dayLabel} 天、${newsItems.length} 則，新→舊）</div>` +
       newsItems.slice(0, 10).map(title =>
         `<div class="news-item"><div class="nt">${title}</div></div>`
       ).join('');
