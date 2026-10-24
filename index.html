@@ -717,6 +717,7 @@ function render(A, rows, t){
       `</tbody></table></div>`
     : '<span style="color:var(--muted)">近期沒有特別明顯的買賣時機</span>';
 
+  window._lastEvents = evs;
   drawChart(rows, A.indicators);
   drawMACD(rows, A.indicators);
   drawRSI(rows, A.indicators);
@@ -947,6 +948,27 @@ function drawChart(rows, IND){
   ctx.fillStyle='#f59e0b';ctx.fillText('SMA5',pad.l,pad.t+10);
   ctx.fillStyle='#38bdf8';ctx.fillText('SMA20',pad.l+34,pad.t+10);
   ctx.fillStyle='#a855f7';ctx.fillText('SMA60',pad.l+80,pad.t+10);
+
+  // 買賣點三角標記（最近 60 日）
+  const events = window._lastEvents || [];
+  const dateToIdx = {};
+  rows.forEach((r,ri)=>{ dateToIdx[r.date]=ri; });
+  events.forEach(ev=>{
+    const idx = dateToIdx[ev.date];
+    if (idx==null) return;
+    const cx = x(idx);
+    const isBuy = ev.type==='buy';
+    const price = isBuy ? (rows[idx].low) : (rows[idx].high);
+    const ty = y(price) + (isBuy ? 10 : -10);
+    ctx.fillStyle = isBuy ? '#22c55e' : '#ef4444';
+    ctx.beginPath();
+    if (isBuy) { // 往上三角
+      ctx.moveTo(cx, ty); ctx.lineTo(cx-5, ty+8); ctx.lineTo(cx+5, ty+8);
+    } else { // 往下三角
+      ctx.moveTo(cx, ty); ctx.lineTo(cx-5, ty-8); ctx.lineTo(cx+5, ty-8);
+    }
+    ctx.closePath(); ctx.fill();
+  });
 }
 
 // ── 自選股（localStorage）──────────────────────────────
