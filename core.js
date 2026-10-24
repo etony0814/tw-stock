@@ -461,25 +461,42 @@
       : score <= -0.25 ? "近期新聞偏負面，注意消息面壓力。"
       : "近期新聞多空持平。";
     return { score: Math.round(score * 1000) / 1000, label, advice,
-      pos: P, neg: N, count: headlines.length };
+      pos: P, neg: N, count: headlines.length,
+      headlines: headlines.slice() };
   }
 
   // 前端直抓 Google News RSS（瀏覽器可跨站抓 XML；抓不到回傳空陣列）
+  // 直抓失敗時用 Jina Reader 代理抓 XML 原文（瀏覽器跨域可用）
+  const JINA_RSS = "https://r.jina.ai/";   // 免金鑰跨域讀取端點
   async function fetchNewsHeadlines(ticker, name, days) {
     const q = encodeURIComponent((name || "") + " " + ticker);
     const url = "https://news.google.com/rss/search?q=" + q + "&hl=zh-TW&gl=TW&ce=zh";
+    let text = null;
     try {
-      const text = await fetchTextSmart(url);
+      text = await fetchTextSmart(url);
+      if (!text || text.indexOf("<rss") < 0 || text.indexOf("<item") < 0) text = null;
+    } catch (e) { text = null; }
+    if (!text) {
+      try {
+        const jr = await fetch(JINA_RSS + url, { headers: { "Accept": "text/plain" } });
+        if (jr.ok) {
+          const jt = await jr.text();
+          if (jt.indexOf("<item") > 0) text = jt;
+        }
+      } catch (e) {}
+    }
+    if (!text) return [];
+    try {
       const doc = new DOMParser().parseFromString(text, "text/xml");
-      const items = Array.from(doc.querySelectorAll("item"))
-        .map(it => it.querySelector("title").textContent.trim());
       const now = Date.now();
       const cutoff = now - (days || 7) * 86400000;
       const items2 = Array.from(doc.querySelectorAll("item")).map(it => ({
         title: it.querySelector("title").textContent.trim(),
         ts: it.querySelector("pubDate") ? Date.parse(it.querySelector("pubDate").textContent) : 0
       })).filter(it => it.ts >= cutoff || it.ts === 0);
-      return (items2.length ? items2.map(it => it.title) : items).slice(0, 30);
+      return (items2.length ? items2.map(it => it.title)
+        : Array.from(doc.querySelectorAll("item")).map(it => it.querySelector("title").textContent.trim())
+      ).slice(0, 30);
     } catch (e) { return []; }
   }
 
