@@ -342,23 +342,24 @@ async function fetchRows(code, period){
       return buildRows(jinaParse(text), code);
     } catch (e) { lastErr = e; }
   }
-  // 3) 上櫃股（5/6/8 字頭）Yahoo 沒有 → 改走 FinMind（需 token，存 localStorage）
-  const pure = code.replace(/\.TW$|"', '', '').toUpperCase();
+  // 3) 上櫃股（5/6/8 字頭）Yahoo 沒有 → 改走 FinMind v4（需 token，存 localStorage）
+  const pure = code.replace(/\.TW$/, "").replace(/\.TWO$/, "").toUpperCase();
   const finToken = localStorage.getItem('FINMIND_TOKEN') || '';
   if (finToken && '568'.includes(pure[0] || '')) {
     try {
       const end = new Date().toISOString().slice(0, 10);
-      const fq = "token=" + encodeURIComponent(finToken) + "&scope=a&start=1990-01-01&end=" + end +
-                 "&symbol=" + encodeURIComponent(pure) +
-                 "&fields=date,open,high,low,close,volume&lang=zh_TW";
-      const fr = await fetch("https://api.finmind.com.tw/v1/a?" + fq, { headers: { "Accept": "application/json" } });
+      const fq = "dataset=StockDailyKline&data_id=" + encodeURIComponent(pure) +
+                 "&start_date=1990-01-01&end_date=" + end;
+      const fr = await fetch("https://api.finmindtrade.com/api/v4/data?" + fq, {
+        headers: { "Accept": "application/json", "Authorization": "Bearer " + finToken }
+      });
       if (!fr.ok) throw new Error("FinMind HTTP " + fr.status);
       const fd = await fr.json();
       const data = (fd.data || []).slice().reverse(); // FinMind 回傳新→舊，改成舊→新
       if (data.length) {
         return data.map(d => ({
-          date: d.date, open: +d.open, high: +d.high, low: +d.low,
-          close: +d.close, volume: +d.volume || 0
+          date: d.responseDate || d.date, open: +d.open, high: +d.high,
+          low: +d.low, close: +d.close, volume: +d.volume || 0
         }));
       }
     } catch (e) { lastErr = e; }
