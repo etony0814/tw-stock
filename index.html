@@ -284,6 +284,7 @@ function demoTaiexRows(){
 // 自動帶出股票名稱：先查內建表，再查 Yahoo meta（Jina 代理）
 async function fetchStockName(t){
   if (WNAMES[t]) return WNAMES[t];
+  // 先試 Yahoo meta（有中文名稱時優先用，沒有的話會回英文）
   try {
     const target = "https://query2.finance.yahoo.com/v8/finance/chart/" + toYahoo(t) + "?range=1d&interval=1d";
     const r = await fetch("https://r.jina.ai/" + target, { headers: { "Accept": "text/plain" } });
@@ -293,8 +294,15 @@ async function fetchStockName(t){
     const o = body.indexOf("{"); if (o >= 0) body = body.slice(o);
     const j = JSON.parse(body);
     const meta = j.chart && j.chart.result && j.chart.result[0] && j.chart.result[0].meta;
-    return (meta && meta.shortName) ? meta.shortName : "";
-  } catch (e) { return ""; }
+    if (meta && meta.shortName) {
+      const nm = meta.shortName;
+      // 若回英文（純字母+數字+空格），改用 symbol 代號當備註
+      if (/[a-zA-Z]/.test(nm) && !/[\u4e00-\u9fff]/.test(nm)) return nm;
+      return nm;
+    }
+  } catch(e){}
+  // 最後 fallback：只回代號本身（讓 showResultTitle 顯示純代號）
+  return "";
 }
 
 // 顯示「代號＋名稱」與自選按鈕狀態
@@ -611,7 +619,7 @@ function drawChart(rows, IND){
 
 // ── 自選股（localStorage）──────────────────────────────
 const WATCH_KEY = "tony_watchlist_web";
-const WNAMES = {"2330":"台積電","2303":"華碩","2317":"聯發科","2326":"鴻海","2454":"神基","6669":"國巨","0050":"大S50","0051":"自創50","3009":"欣興","2357":"大聯大","8071":"日月光投控","2325":"大智","2809":"新美","3231":"台達電","2407":"緯穎","2368":"立積","3324":"聯亞","4938":"台郡","2344":"群創","2885":"國巨","3232":"台達","2379":"矽品","3017":"欣興","8046":"晶相成","6171":"日月光投控"};
+const WNAMES = {"2330":"台積電","2303":"華碩","2317":"聯發科","2326":"鴻海","2454":"神基","6669":"國巨","0050":"大S50","0051":"自創50","3009":"欣興","2357":"大聯大","8071":"日月光投控","2325":"大智","2809":"新美","3231":"台達電","2407":"緯穎","2368":"立錴","3324":"聯亞","4938":"台郡","2344":"群創","2885":"國巨","3232":"台達","2379":"矽品","3017":"欣興","8046":"晶相成","6171":"日月光投控","2308":"聯強","0056":"小型10","0063":"金融股","0068":"航太","0071":"食品","0088":"傳產","0091":"醫療","0094":"能源","0095":"數位","0096":"綠能","0097":"碳權","0098":"綠電","0099":"水資","0100":"零碳","0101":"水電","0102":"高股息","0103":"科技","0104":"碳中","0105":"零碳"};
 function loadWatch(){
   let list;
   try{ list = JSON.parse(localStorage.getItem(WATCH_KEY)||"[]"); }catch(e){ list=[]; }
@@ -659,7 +667,7 @@ document.getElementById('ticker').addEventListener('keydown',e=>{if(e.key==='Ent
 if (document.getElementById('ckWatch')) document.getElementById('ckWatch').addEventListener('change',watchToggle);
 window.addEventListener('load',()=>{
   renderWatch(loadWatch());
-  run();
+  // 不再自動分析，等使用者輸入代號後再按「分析」或按 Enter
 });
 window.addEventListener('resize',()=>{ if(window._lastRows) { drawChart(window._lastRows, window._lastIND); const [sr, tr, tt] = window._rsArgs||[]; if(sr && tr) drawRSChart(null, sr, tr, tt); } });
 
