@@ -682,7 +682,7 @@ function render(A, rows, t){
   document.getElementById('nInfo').innerHTML = nw
     ? `${nw.label}（近 ${nw.count} 則新聞，利多 ${nw.pos}／利空 ${nw.neg}）。<br><span style="font-size:12px;color:var(--muted)">${nw.advice}</span>`
     : `<span style="color:var(--muted)">目前沒有抓到相關新聞。</span>`;
-  // 新聞清單
+  // 新聞清單（newsSentiment 回傳的 headlines 欄位）
   const newsListEl = document.getElementById('newsList');
   const newsItems = nw ? (nw.headlines || nw.items || []) : [];
   if (newsItems.length) {
