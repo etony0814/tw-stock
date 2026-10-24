@@ -34,6 +34,7 @@
   .bd .it{background:rgba(0,0,0,.25);border-radius:8px;padding:7px 12px;font-size:12px;color:var(--muted);}
   .bd .it b{color:var(--text);font-size:14px;margin-left:4px;}
   .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .score-row{display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap;}
   .badge{display:inline-block;min-width:44px;height:24px;border-radius:6px;display:flex;
     align-items:center;justify-content:center;font-size:11px;font-weight:700;}
   .badge.buy{background:rgba(34,197,94,.15);color:var(--green);}
@@ -49,6 +50,20 @@
   canvas{width:100%;display:block;}
   .two{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
   .msg{font-size:13px;color:var(--muted);line-height:1.6;}
+  .stat-mini{background:var(--card2);border-radius:8px;padding:8px 10px;min-width:0;}
+  .sm-lbl{font-size:10px;color:var(--muted);margin-bottom:3px;line-height:1.3;}
+  .sm-val{font-size:18px;font-weight:800;color:var(--text);}
+  .sm-val.sm-sm{font-size:13px;font-weight:600;}
+  .sm-val.pos{color:var(--green);} .sm-val.neg{color:var(--red);} .sm-val.neu{color:var(--yellow);}
+  .news-item{padding:6px 0;border-bottom:1px solid var(--border);font-size:12px;line-height:1.5;}
+  .news-item:last-child{border-bottom:none;}
+  .news-item .nt{color:var(--text);font-weight:600;}
+  .news-item .nd{color:var(--muted);font-size:11px;margin-top:2px;}
+  .flow-item{display:flex;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px;align-items:flex-start;}
+  .flow-item:last-child{border-bottom:none;}
+  .flow-item .fn{flex:1;color:var(--text);}
+  .flow-item .fv{font-weight:700;min-width:60px;text-align:right;}
+  .flow-item .fv.pos{color:var(--green);} .flow-item .fv.neg{color:var(--red);}
   #loading,#err{display:none;text-align:center;padding:40px;color:var(--muted);}
   .spin{width:30px;height:30px;border:3px solid var(--border);border-top-color:var(--accent);
     border-radius:50%;animation:sp .8s linear infinite;margin:0 auto 10px;}
@@ -93,6 +108,18 @@
     .badge{min-width:36px;height:20px;font-size:10px;flex-shrink:0;}
     /* 圖表 */
     canvas{width:100%;height:240px !important;max-height:260px;}
+    /* 關鍵指標快覽：2x2 網格 */
+    #statGrid{grid-template-columns:repeat(2,1fr) !important;}
+    .sm-val{font-size:16px;}
+    .sm-val.sm-sm{font-size:12px;}
+    /* 分數說明：分數與文字全寬堆疊 */
+    .score-row{flex-direction:column;gap:8px;}
+    .score-row .msg{min-width:0 !important;}
+    /* 籌碼榜單清單 */
+    .flow-item{font-size:11px;padding:4px 0;}
+    .flow-item .fv{font-size:12px;min-width:50px;}
+    /* 新聞清單 */
+    .news-item{font-size:11px;}
     /* 看多/看空理由 */
     #bullBox,#bearBox{margin-top:8px;}
     #bullReasons,#bearReasons{font-size:12px;line-height:1.65;}
@@ -165,7 +192,7 @@
   <div id="err" class="card"></div>
   <div id="results" style="display:none">
 
-    <!-- 綜合評論卡（五方結論 + 分數明細 + 看多/看空理由整合）-->
+    <!-- 綜合評論卡（五方結論 + 分數明細 + 看多/看空理由 + 收盤價/RSI/MACD）-->
     <div class="card final" id="finalCard">
       <h2>🎯 綜合評論（今天要不要買賣）</h2>
       <div class="final-text" id="finalText">—</div>
@@ -178,48 +205,58 @@
         <div style="font-size:13px;font-weight:700;color:var(--red);margin-bottom:6px">⚠️ 看空理由</div>
         <ul id="bearReasons" style="margin:0;padding-left:18px;font-size:13px;line-height:1.7;color:var(--text)"></ul>
       </div>
+      <!-- 關鍵指標快覽 -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px" id="statGrid">
+        <div class="stat-mini"><div class="sm-lbl">最新收盤</div><div class="sm-val" id="statClose">—</div></div>
+        <div class="stat-mini"><div class="sm-lbl">分析日期</div><div class="sm-val sm-sm" id="statDate">—</div></div>
+        <div class="stat-mini"><div class="sm-lbl">RSI（30 冷 / 70 熱）</div><div class="sm-val" id="statRsi">—</div></div>
+        <div class="stat-mini"><div class="sm-lbl">MACD（正多 / 負空）</div><div class="sm-val" id="statMacd">—</div></div>
+      </div>
     </div>
 
     <div class="grid">
       <div class="card">
         <h3>⏰ 即時盤面（當天）</h3>
-        <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">
+        <div class="score-row">
           <div class="score-box"><div class="lbl">盤面分數</div><div class="val" id="iScore">—</div></div>
-          <div class="msg" id="iInfo" style="flex:1;min-width:180px"></div>
+          <div class="msg" id="iInfo" style="flex:1"></div>
         </div>
       </div>
       <div class="card">
         <h3>🏛 大盤環境（加權）</h3>
-        <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">
+        <div class="score-row">
           <div class="score-box"><div class="lbl">大盤分數</div><div class="val" id="tScore">—</div></div>
-          <div class="msg" id="tInfo" style="flex:1;min-width:180px"></div>
+          <div class="msg" id="tInfo" style="flex:1"></div>
         </div>
       </div>
       <div class="card">
         <h3>💰 籌碼面（外資／三大法人）</h3>
-        <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">
+        <div class="score-row">
           <div class="score-box"><div class="lbl">法人分數</div><div class="val" id="fScore">—</div></div>
-          <div class="msg" id="fInfo" style="flex:1;min-width:180px"></div>
+          <div class="msg" id="fInfo" style="flex:1"></div>
         </div>
         <div class="msg" id="fMulti" style="margin-top:10px"></div>
+        <div id="fFlowList" style="margin-top:10px;display:none"></div>
       </div>
       <div class="card">
         <h3>📰 消息面（新聞情緒）</h3>
-        <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">
+        <div class="score-row">
           <div class="score-box"><div class="lbl">情緒分數</div><div class="val" id="nScore">—</div></div>
-          <div class="msg" id="nInfo" style="flex:1;min-width:180px"></div>
+          <div class="msg" id="nInfo" style="flex:1"></div>
         </div>
+        <div id="newsList" style="margin-top:10px;display:none"></div>
       </div>
     </div>
 
-    <div class="card">
-      <h3>🎯 技術面訊號</h3>
-      <div id="sigList"></div>
-    </div>
-
-    <div class="card">
-      <h3>📍 近期買賣時機（新→舊）</h3>
-      <div id="evList" class="msg"></div>
+    <div class="two">
+      <div class="card">
+        <h3>🎯 技術面訊號</h3>
+        <div id="sigList"></div>
+      </div>
+      <div class="card">
+        <h3>📍 近期買賣時機（新→舊）</h3>
+        <div id="evList" class="msg"></div>
+      </div>
     </div>
 
     <div class="card">
@@ -487,6 +524,22 @@ function render(A, rows, t){
   document.getElementById('finalBd').innerHTML = Object.keys(f.score_breakdown).map(k=>
     `<div class="it">${k}<b>${f.score_breakdown[k].toFixed(2)}</b></div>`).join('');
 
+  // 關鍵指標快覽
+  const lastRow = rows[rows.length-1];
+  const ind = A.indicators;
+  const setStat = (id, val, colorClass) => {
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.textContent = val;
+    el.className = 'sm-val' + (colorClass ? ' '+colorClass : '');
+  };
+  setStat('statClose', lastRow ? lastRow.close.toLocaleString() : '—');
+  setStat('statDate', lastRow ? lastRow.date : '—');
+  const rsiVal = ind && ind.RSI ? ind.RSI[ind.RSI.length-1] : null;
+  setStat('statRsi', rsiVal!=null ? rsiVal.toFixed(1) : '—', rsiVal>=70?'neg':rsiVal<=30?'pos':'');
+  const macdVal = ind && ind.MACD ? ind.MACD.line[ind.MACD.line.length-1] : null;
+  setStat('statMacd', macdVal!=null ? macdVal.toFixed(3) : '—', macdVal>0?'pos':macdVal<0?'neg':'');
+
   // 看多 / 看空理由
   const bullEl = document.getElementById('bullReasons');
   const bearEl = document.getElementById('bearReasons');
@@ -535,6 +588,23 @@ function render(A, rows, t){
       (fm.ticker_on_list_days>0 ? ` 本股當榜 <b>${fm.ticker_on_list_days}</b> 天、合計 ${fm.ticker_net_sum>=0?'+':''}${fm.ticker_net_sum.toLocaleString()} 股。`
       : ` 本股近期未進全場法人榜單。`)
     : `<span style="color:var(--muted)">籌碼多日統計未取得。</span>`;
+  // 籌碼榜單清單（三大法人淨買／淨賣 Top 5）
+  const ffList = ff.ok && ff.rows ? ff.rows : null;
+  const fFlowEl = document.getElementById('fFlowList');
+  if (ffList && ffList.length) {
+    fFlowEl.style.display = 'block';
+    fFlowEl.innerHTML =
+      `<div style="font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:700">當日三大法人淨額 Top 5</div>` +
+      ffList.slice(0,5).map(item => {
+        const n = (item.net != null ? item.net : item.total_net) || 0;
+        const cls2 = n >= 0 ? 'pos' : 'neg';
+        const nm = item.name || item.ticker || '';
+        return `<div class="flow-item">` +
+          `<span class="fn">${nm}</span>` +
+          `<span class="fv ${cls2}">${n >= 0 ? '+' : ''}${n.toLocaleString()} 股</span>` +
+          `</div>`;
+      }).join('');
+  } else { fFlowEl.style.display = 'none'; }
 
   // 相對大盤強度
   const rs = A.relative;
@@ -550,6 +620,17 @@ function render(A, rows, t){
   document.getElementById('nInfo').innerHTML = nw
     ? `${nw.label}（近 ${nw.count} 則新聞，利多 ${nw.pos}／利空 ${nw.neg}）。<br><span style="font-size:12px;color:var(--muted)">${nw.advice}</span>`
     : `<span style="color:var(--muted)">目前沒有抓到相關新聞。</span>`;
+  // 新聞清單
+  const newsListEl = document.getElementById('newsList');
+  const newsItems = nw ? (nw.headlines || nw.items || []) : [];
+  if (newsItems.length) {
+    newsListEl.style.display = 'block';
+    newsListEl.innerHTML =
+      `<div style="font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:700">近期相關新聞（${newsItems.length} 則，新→舊）</div>` +
+      newsItems.slice(0, 10).map(title =>
+        `<div class="news-item"><div class="nt">${title}</div></div>`
+      ).join('');
+  } else { newsListEl.style.display = 'none'; }
 
   // 訊號：依「權重/重要性 + 新到舊」排列（偏多偏空在前、中性靠後）
   const order = { buy: 0, sell: 0, neutral: 1 };
