@@ -511,10 +511,12 @@ function drawRSChart(rs, stockRows, taiexRows, t){
   const tRows = taiexRows.slice(-N), tBase = tRows[0].close;
   const sPct = s.map(r => (r.close - base) / base * 100);
   const tPct = tRows.length === N ? tRows.map(r => (r.close - tBase) / tBase * 100) : sPct.map(x => 0);
-  let lo = -Infinity, hi = Infinity;
-  sPct.forEach(v => { lo = Math.min(lo, v); hi = Math.max(hi, v); });
-  tPct.forEach(v => { lo = Math.min(lo, v); hi = Math.max(hi, v); });
-  lo = Math.min(lo, -0.5); hi = Math.max(hi, 0.5);
+  let lo=-Infinity, hi=Infinity;
+  sPct.forEach(v=>{ if(Number.isFinite(v)){lo=Math.min(lo,v);hi=Math.max(hi,v);} });
+  tPct.forEach(v=>{ if(Number.isFinite(v)){lo=Math.min(lo,v);hi=Math.max(hi,v);} });
+  if(!Number.isFinite(lo)||!Number.isFinite(hi)){ lo=-1; hi=1; }
+  lo=Math.min(lo,-0.5); hi=Math.max(hi,0.5);
+  if(hi-lo<1){ const m=(hi+lo)/2; lo=m-0.5; hi=m+0.5; }
   const pad = { l: 40, r: 12, t: 14, b: 22 };
   const pw = W - pad.l - pad.r, ph = H - pad.t - pad.b;
   const X = i => pad.l + (i / Math.max(1, N - 1)) * pw;
@@ -536,18 +538,25 @@ function drawRSChart(rs, stockRows, taiexRows, t){
     ctx.fillText(d.slice(5), X(i), H - 4);
   });
   // 加權折線（灰）
-  ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 1.5; ctx.lineJoin='round'; ctx.beginPath();
-  tPct.forEach((v, i) => { i === 0 ? ctx.moveTo(X(i), Y(v)) : ctx.lineTo(X(i), Y(v)); });
-  ctx.stroke();
+  ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 2; ctx.lineJoin='round'; ctx.lineCap='round';
+  ctx.beginPath();
+  tPct.forEach((v, i) => { if (i===0) ctx.moveTo(X(i), Y(v)); else ctx.lineTo(X(i), Y(v)); });
+  if (N>1) ctx.stroke();
   // 個股折線（藍，粗）
-  ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 2.5; ctx.lineJoin='round'; ctx.beginPath();
-  sPct.forEach((v, i) => { i === 0 ? ctx.moveTo(X(i), Y(v)) : ctx.lineTo(X(i), Y(v)); });
-  ctx.stroke();
+  ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 3; ctx.lineJoin='round'; ctx.lineCap='round';
+  ctx.beginPath();
+  sPct.forEach((v, i) => { if (i===0) ctx.moveTo(X(i), Y(v)); else ctx.lineTo(X(i), Y(v)); });
+  if (N>1) ctx.stroke();
   // 圓點標記
-  ctx.fillStyle = '#38bdf8';
-  sPct.forEach((v, i) => { if (i % 4 === 0 || i === N-1) { ctx.beginPath(); ctx.arc(X(i), Y(v), 2.5, 0, Math.PI*2); ctx.fill(); }});
-  ctx.fillStyle = '#94a3b8';
-  tPct.forEach((v, i) => { if (i % 4 === 0 || i === N-1) { ctx.beginPath(); ctx.arc(X(i), Y(v), 2, 0, Math.PI*2); ctx.fill(); }});
+  ctx.fillStyle='#38bdf8';
+  sPct.forEach((v,i)=>{ if(i%3===0||i===N-1){ ctx.beginPath(); ctx.arc(X(i),Y(v),4,0,Math.PI*2); ctx.fill(); }});
+  ctx.fillStyle='#94a3b8';
+  tPct.forEach((v,i)=>{ if(i%3===0||i===N-1){ ctx.beginPath(); ctx.arc(X(i),Y(v),3,0,Math.PI*2); ctx.fill(); }});
+  // 背景填充（個股折線下方微光）
+  ctx.fillStyle='rgba(56,189,248,0.06)';
+  ctx.beginPath();
+  sPct.forEach((v,i)=>{ if(i===0) ctx.moveTo(X(i),Y(v)); else ctx.lineTo(X(i),Y(v)); });
+  ctx.lineTo(X(N-1), pad.t+ph); ctx.lineTo(X(0), pad.t+ph); ctx.closePath(); ctx.fill();
   // 圖例
   ctx.textAlign='left'; ctx.font='11px sans-serif';
   ctx.strokeStyle='#38bdf8'; ctx.lineWidth=2.5; ctx.beginPath(); ctx.moveTo(pad.l+4, pad.t+2); ctx.lineTo(pad.l+24, pad.t+2); ctx.stroke();
