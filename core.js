@@ -147,6 +147,8 @@
     res.ATR14 = atr(h, l, c, 14);
     res.OBV = obv(c, v);
     res.VROC5 = v.map((x, i) => (i >= 5 ? (x - v[i - 5]) / v[i - 5] * 100 : null));
+    // VROC20：20日量比（與電腦版 stock_analysis.py 一致）
+    res.VROC20 = v.map((x, i) => (i >= 20 ? (x - v[i - 20]) / v[i - 20] * 100 : null));
     // BIAS20
     res.BIAS20 = c.map((x, i) => {
       const m = res.SMA20[i];
@@ -213,22 +215,31 @@
       else add("價格乖離正常（" + (bias >= 0 ? "+" : "") + bias.toFixed(1) + "%）", "neutral", "價格與20日均價乖離幅度正常。", 0, bias);
     }
 
-    // 成交量（VROC：20日量比）
-    const vroc = IND.VROC ? IND.VROC[i] : null;
+    // 成交量（VROC20：20日量比）
+    const vroc = IND.VROC20 ? IND.VROC20[i] : null;
     if (vroc != null) {
-      if (vroc > 30) add("成交量明顯放大（+" + vroc.toFixed(0) + "%）", c >= (i > 0 ? IND.rows[i-1].close : c) ? "buy" : "sell", "量比20日前放大 " + vroc.toFixed(0) + "%。", 1, vroc);
-      else if (vroc < -30) add("成交量明顯萎縮（" + vroc.toFixed(0) + "%）", c >= (i > 0 ? IND.rows[i-1].close : c) ? "buy" : "sell", "量比20日前萎縮 " + Math.abs(vroc).toFixed(0) + "%。", 1, vroc);
-      else add("成交量正常（量比 " + (vroc >= 0 ? "+" : "") + vroc.toFixed(0) + "%）", "neutral", "成交量與20日前相比沒有明顯變化。", 0, vroc);
+      if (vroc > 30) add("成交量明顯放大（+" + vroc.toFixed(0) + "%）", c >= (i > 0 ? IND.rows[i-1].close : c) ? "buy" : "sell", "成交量比 20 天前放大 " + vroc.toFixed(0) + "%。", 1, vroc);
+      else if (vroc < -30) add("成交量明顯萎縮（" + vroc.toFixed(0) + "%）", c >= (i > 0 ? IND.rows[i-1].close : c) ? "buy" : "sell", "成交量比 20 天前萎縮 " + Math.abs(vroc).toFixed(0) + "%。", 1, vroc);
+      else add("成交量正常（量比 " + (vroc >= 0 ? "+" : "") + vroc.toFixed(0) + "%）", "neutral", "成交量與 20 日前相比沒有明顯變化。", 0, vroc);
     }
 
-    // 波動幅度（ATR）
-    const atr = IND.ATR ? IND.ATR[i] : null;
-    if (atr != null && c != null && c > 0) {
-      const atrPct = (atr / c * 100).toFixed(1);
-      add("近期波動幅度（ATR " + atr.toFixed(2) + "）", "neutral", "平均每日價差約 " + atr.toFixed(2) + "（約 " + atrPct + "%）。", 0, atr);
-    }
+    // 波動幅度（ATR）：#38 不進 sigList（永遠 neutral、權重 0 容易誤解偏多/偏空數），
+    // 改放 statGrid「日平均擺動」與綜合卡「止損/止盈參考價」（index.html 端計算）。
 
     return s;
+  }
+
+  // #26 相關性降權：MACD 金叉/死叉 與 SMA 多頭/空頭排列同時出現時，
+  // 兩者高度相關，把 SMA 權重從 2 降為 1，避免 double-count 放大方向。
+  function applyCorrelationDiscount(signals) {
+    const hasMacd = signals.some(x => x.name.indexOf("MACD") === 0 && (x.state === "buy" || x.state === "sell"));
+    const hasSma = signals.some(x => x.name.indexOf("均線") >= 0 && (x.state === "buy" || x.state === "sell"));
+    if (hasMacd && hasSma) {
+      for (const x of signals) {
+        if (x.name.indexOf("均線") >= 0 && (x.state === "buy" || x.state === "sell")) x.weight = 1;
+      }
+    }
+    return signals;
   }
 
   function compositeSignal(signals) {
@@ -551,7 +562,7 @@
     opts = opts || {};
     const IND = computeIndicators(stockRows);
     const i = stockRows.length - 1;
-    const signals = detectSignals(IND, i);
+    const signals = applyCorrelationDiscount(detectSignals(IND, i));
     const comp = compositeSignal(signals);
 
     const ff = opts.with_fund !== false ? await fetchFundFlow() : { ok: false, score: 0, label: "未啟用" };
@@ -637,7 +648,7 @@
 
   // 暴露
   global.StockCore = {
-    computeIndicators, detectSignals, compositeSignal,
+    computeIndicators, detectSignals, compositeSignal, applyCorrelationDiscount,
     fetchFundFlow, fetchFundFlowMulti, fetchTradingDates, fetchFundFlowDate,
     tickerInFundFlow, fetchTaiexFromRows,
     intradayFromRows, newsSentiment, fetchNewsHeadlines,
