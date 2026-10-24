@@ -584,7 +584,13 @@ function drawChart(rows, IND){
 // ── 自選股（localStorage）──────────────────────────────
 const WATCH_KEY = "tony_watchlist_web";
 const WNAMES = {"2330":"台積電","2303":"華碩","2317":"聯發科","2326":"鴻海","2454":"神基","6669":"國巨","0050":"大S50","0051":"自創50","3009":"欣興","2357":"大聯大","8071":"日月光投控","2325":"大智","2809":"新美","3231":"台達電","2407":"緯穎","2368":"立積","3324":"聯亞","4938":"台郡","2344":"群創","2885":"國巨","3232":"台達","2379":"矽品","3017":"欣興","8046":"晶相成","6171":"日月光投控"};
-function loadWatch(){ try{ return JSON.parse(localStorage.getItem(WATCH_KEY)||"[]"); }catch(e){ return []; } }
+function loadWatch(){
+  let list;
+  try{ list = JSON.parse(localStorage.getItem(WATCH_KEY)||"[]"); }catch(e){ list=[]; }
+  // 修正舊資料：name===code 的用 WNAMES 補正
+  list.forEach(o=>{ if(o.name===o.code) o.name=WNAMES[o.code]||''; });
+  return list;
+}
 function saveWatch(list){
   localStorage.setItem(WATCH_KEY, JSON.stringify(list));
   renderWatch(list);
