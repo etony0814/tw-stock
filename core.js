@@ -494,17 +494,26 @@
       headlines: headlines.slice() };
   }
 
-  // 前端直抓 Google News RSS（瀏覽器可跨站抓 XML；抓不到回傳空陣列）
-  // 直抓失敗時用 Jina Reader 代理抓 XML 原文（瀏覽器跨域可用）
-  const JINA_RSS = "https://r.jina.ai/";   // 免金鑰跨域讀取端點
+  // 前端直抓 Google News RSS（瀏覽器直抓被 CORS 擋，走 allorigins 代理）
+  const JINA_RSS = "https://r.jina.ai/";
+  const ALLORIGINS = "https://api.allorigins.win/raw?url=";
   async function fetchNewsHeadlines(ticker, name, days) {
     const q = encodeURIComponent((name || "") + " " + ticker);
     const url = "https://news.google.com/rss/search?q=" + q + "&hl=zh-TW&gl=TW&ce=zh";
     let text = null;
+    // 1) 直抓（本地 / 允許 CORS 的環境）
     try {
-      text = await fetchTextSmart(url);
-      if (!text || text.indexOf("<rss") < 0 || text.indexOf("<item") < 0) text = null;
+      const r = await fetch(url);
+      if (r.ok) { text = await r.text(); if (!text || text.indexOf("<rss") < 0) text = null; }
     } catch (e) { text = null; }
+    // 2) allorigins 代理（瀏覽器跨域可用，免金鑰）
+    if (!text) {
+      try {
+        const r = await fetch(ALLORIGINS + encodeURIComponent(url));
+        if (r.ok) { const t = await r.text(); if (t.indexOf("<rss") > 0 || t.indexOf("<item") > 0) text = t; }
+      } catch (e) {}
+    }
+    // 3) Jina Reader 代理（fallback）
     if (!text) {
       try {
         const jr = await fetch(JINA_RSS + url, { headers: { "Accept": "text/plain" } });
