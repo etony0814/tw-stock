@@ -306,7 +306,11 @@ const STOCK_URLS = [
   "https://query1.finance.yahoo.com/v8/finance/chart/",
 ];
 const JINA = "https://r.jina.ai/";   // 免金鑰跨域讀取端點
-function toYahoo(t){ return t.endsWith(".TWO") ? t : (t.toUpperCase().replace(/\.TW$/,"")+".TW"); }
+function toYahoo(t){
+  const c = t.toUpperCase().replace(/\.TW$/,'').replace(/\.TWO$/,'');
+  // 上櫃股（5/6/8 字頭）Yahoo 用 .TWO；上市/ETF（1-4、0 字頭）用 .TW
+  return /^([568]\d{3})$/.test(c) ? c + '.TWO' : c + '.TW';
+}
 
 async function fetchJsonOne(url){
   const r = await fetch(url, { headers: { "Accept": "application/json" } });
