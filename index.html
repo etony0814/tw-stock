@@ -322,7 +322,8 @@ function rtWatchToggle(){
   if (idx >= 0) {
     list.splice(idx, 1);
   } else {
-    const nm = document.getElementById('rtName').textContent.replace(t, '').trim();
+    let nm = document.getElementById('rtName').textContent.replace(t, '').trim();
+    if (!nm || nm === t) nm = WNAMES[t] || '';   // 名稱沒帶到時用內建表
     list.push({ code: t, name: nm });
   }
   saveWatch(list);
@@ -594,7 +595,7 @@ function renderWatch(list){
   if(!list.length){ panel.style.display='none'; box.innerHTML=''; return; }
   panel.style.display='block';
   box.innerHTML=list.map(o=>{
-    const t=o.code, nm=o.name||WNAMES[t]||'';
+    const t=o.code, nm=(o.name&&o.name!==t)?o.name:WNAMES[t]||'';
     return `<span style="display:inline-flex;align-items:center;gap:4px;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:6px 10px">
       <button onclick="pickWatch('${t}')" style="background:none;border:none;color:var(--text);font-size:13px;cursor:pointer">${t} ${nm}</button>
       <button onclick="delWatch('${t}')" style="background:none;border:none;color:var(--muted);font-size:14px;cursor:pointer" title="移除">✕</button>
