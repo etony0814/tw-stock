@@ -196,21 +196,25 @@
     <div class="card final" id="finalCard">
       <h2>🎯 綜合評論（今天要不要買賣）</h2>
       <div class="final-text" id="finalText">—</div>
+      <!-- 技術面摘要（看多/看空理由數 + 籌碼/消息 note）-->
+      <div id="adviceSummary" style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:10px"></div>
+      <!-- 五方分數明細 -->
       <div class="bd" id="finalBd"></div>
+      <!-- 看多 / 看空理由 -->
       <div id="bullBox" style="display:none;margin-top:10px">
-        <div style="font-size:13px;font-weight:700;color:var(--green);margin-bottom:6px">✅ 看多理由</div>
+        <div style="font-size:13px;font-weight:700;color:var(--green);margin-bottom:4px">✅ 看多理由</div>
         <ul id="bullReasons" style="margin:0;padding-left:18px;font-size:13px;line-height:1.7;color:var(--text)"></ul>
       </div>
-      <div id="bearBox" style="display:none;margin-top:10px">
-        <div style="font-size:13px;font-weight:700;color:var(--red);margin-bottom:6px">⚠️ 看空理由</div>
+      <div id="bearBox" style="display:none;margin-top:8px">
+        <div style="font-size:13px;font-weight:700;color:var(--red);margin-bottom:4px">⚠️ 看空理由</div>
         <ul id="bearReasons" style="margin:0;padding-left:18px;font-size:13px;line-height:1.7;color:var(--text)"></ul>
       </div>
       <!-- 關鍵指標快覽 -->
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px" id="statGrid">
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px" id="statGrid">
         <div class="stat-mini"><div class="sm-lbl">最新收盤</div><div class="sm-val" id="statClose">—</div></div>
         <div class="stat-mini"><div class="sm-lbl">分析日期</div><div class="sm-val sm-sm" id="statDate">—</div></div>
-        <div class="stat-mini"><div class="sm-lbl">RSI（30 冷 / 70 熱）</div><div class="sm-val" id="statRsi">—</div></div>
-        <div class="stat-mini"><div class="sm-lbl">MACD（正多 / 負空）</div><div class="sm-val" id="statMacd">—</div></div>
+        <div class="stat-mini"><div class="sm-lbl">RSI（30冷/70熱）</div><div class="sm-val" id="statRsi">—</div></div>
+        <div class="stat-mini"><div class="sm-lbl">MACD（正多/負空）</div><div class="sm-val" id="statMacd">—</div></div>
       </div>
     </div>
 
@@ -523,8 +527,38 @@ function render(A, rows, t){
   const ft=document.getElementById('finalText');
   ft.className='final-text '+(c>=0.15?'pos':c<=-0.15?'neg':'neu');
   ft.textContent=f.final_advice;
-  document.getElementById('finalBd').innerHTML = Object.keys(f.score_breakdown).map(k=>
-    `<div class="it">${k}<b>${f.score_breakdown[k].toFixed(2)}</b></div>`).join('');
+
+  // 技術面摘要（看多/看空理由數 + 各面 note）
+  const comp = A.composite;
+  const sigs = A.signals || [];
+  const buyCount = sigs.filter(s=>s.state==='buy').length;
+  const sellCount = sigs.filter(s=>s.state==='sell').length;
+  const adviceSummaryEl = document.getElementById('adviceSummary');
+  if (adviceSummaryEl) {
+    let sumHtml = `技術面：看多理由 <b style="color:var(--green)">${buyCount}</b> 個、看空理由 <b style="color:var(--red)">${sellCount}</b> 個（${(comp.advice||'').trim()}）。`;
+    if (A.fund_flow && A.fund_flow.ok) {
+      sumHtml += `<br><span style="color:var(--accent)">💰 籌碼面：${A.fund_flow.label}（當日全場法人方向分數 ${(A.fund_flow.score||0).toFixed(2)}）。${A.fund_flow.on_list ? '本股當榜。' : '本股未進當日榜單。'}</span>`;
+    }
+    if (A.news && A.news.count > 0) {
+      sumHtml += `<br><span style="color:var(--accent)">📰 消息面：近 ${A.news.count} 則新聞，${A.news.label}（分數 ${(A.news.score||0).toFixed(2)}）。${A.news.advice||''}</span>`;
+    }
+    if (A.intraday && A.intraday.advice) {
+      sumHtml += `<br><span style="color:var(--accent)">⏰ 盤面：${A.intraday.advice}</span>`;
+    }
+    if (A.taiex && A.taiex.advice) {
+      sumHtml += `<br><span style="color:var(--accent)">🏛 大盤：${A.taiex.advice}</span>`;
+    }
+    adviceSummaryEl.innerHTML = sumHtml;
+  }
+
+  // 五方分數明細
+  document.getElementById('finalBd').innerHTML =
+    '<div style="font-size:11px;color:var(--muted);margin-bottom:6px">五方分數明細（技術＋籌碼＋消息＋盤面＋大盤）：</div>' +
+    '<div style="display:flex;gap:8px;flex-wrap:wrap">'+
+    Object.keys(f.score_breakdown).map(k=>
+      `<div class="it">${k}<b>${f.score_breakdown[k].toFixed(2)}</b></div>`
+    ).join('')+
+    '</div>';
 
   // 關鍵指標快覽
   const lastRow = rows[rows.length-1];
@@ -644,8 +678,16 @@ function render(A, rows, t){
   document.getElementById('sigList').innerHTML = sortedSigs.map(s=>{
     const b = s.state==='buy'?'buy':s.state==='sell'?'sell':'neutral';
     const txt = s.state==='buy'?'偏多':s.state==='sell'?'偏空':'中性';
-    const valStr = s.value != null ? `<span style="margin-left:auto;font-weight:700;font-size:13px;color:var(--text);white-space:nowrap">${s.value.toLocaleString()}</span>` : '';
-    return `<div class="sig" style="justify-content:space-between"><div style="flex:1;min-width:0"><span class="badge ${b}">${txt}</span> <b>${s.name}</b><div class="d">${s.detail||''}</div></div>${valStr}</div>`;
+    const val = s.value != null ? Number.isFinite(s.value) ? s.value.toFixed(2) : '' : '';
+    const valHtml = val ? `<div style="min-width:50px;text-align:right;font-size:13px;font-weight:700;color:var(--text);flex-shrink:0">${val}</div>` : '';
+    return `<div class="sig" style="flex-wrap:nowrap">
+      <span class="badge ${b}" style="flex-shrink:0">${txt}</span>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:600;color:var(--text)">${s.name}</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.4;margin-top:2px">${s.detail||''}</div>
+      </div>
+      ${valHtml}
+    </div>`;
   }).join('');
 
   // 近期買賣時機（新→舊，表格格式）
