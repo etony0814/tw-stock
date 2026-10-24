@@ -102,12 +102,18 @@
     /* 分數旁邊的說明文字：改堆疊在下方 */
     .grid > .card > div[style*="display:flex"]{flex-direction:column;align-items:stretch;gap:8px;}
     .grid > .card > div[style*="display:flex"] .msg{min-width:0 !important;flex:auto !important;font-size:13px;}
-    /* 訊號列表 */
-    .sig{padding:7px 0;font-size:12px;gap:8px;flex-wrap:wrap;}
-    .sig .d{font-size:11px;flex:1 1 100%;}
-    .badge{min-width:36px;height:20px;font-size:10px;flex-shrink:0;}
-    /* 圖表 */
-    canvas{width:100%;height:240px !important;max-height:260px;}
+    /* 訊號列表：數值右對齊，名稱+詳情全寬 */
+    .sig{padding:8px 0;font-size:13px;flex-wrap:nowrap;gap:8px;}
+    .sig:last-child{border-bottom:none;}
+    .sig .d{color:var(--muted);font-size:12px;flex:1 1 100%;margin-top:2px;}
+    .badge{min-width:36px;height:22px;font-size:10px;flex-shrink:0;}
+    /* 訊號數值右側 */
+    #sigList .sig div:last-child{min-width:60px;text-align:right;font-size:13px;font-weight:700;color:var(--text);flex-shrink:0;}
+    /* 圖表：K線正常高度，MACD/RSI 較矮，相對強度中等 */
+    #chart{height:240px !important;}
+    #macdChart{height:110px !important;}
+    #rsiChart{height:110px !important;}
+    #rsChart{height:140px !important;}
     /* 關鍵指標快覽：2x2 網格 */
     #statGrid{grid-template-columns:repeat(2,1fr) !important;}
     .sm-val{font-size:16px;}
@@ -724,7 +730,9 @@ function drawMACD(rows, IND){
   if (!cv || !IND || !IND.MACD) return;
   const dpr = window.devicePixelRatio || 1;
   const W = cv.clientWidth || cv.parentElement.clientWidth || 800;
-  const H = 120;
+  // 讀取實際 CSS 高度（包含手機 !important 規則）
+  const cssH = parseInt(window.getComputedStyle(cv).height) || 120;
+  const H = cssH;
   if (W <= 0) return;
   cv.width = W * dpr; cv.height = H * dpr; cv.style.height = H + 'px';
   const ctx = cv.getContext('2d'); ctx.scale(dpr, dpr);
@@ -786,7 +794,7 @@ function drawRSI(rows, IND){
   if (!cv || !IND || !IND.RSI) return;
   const dpr = window.devicePixelRatio || 1;
   const W = cv.clientWidth || cv.parentElement.clientWidth || 800;
-  const H = 120;
+  const H = parseInt(cv.style.height) || 120;  // 讀取 CSS 實際高度
   if (W <= 0) return;
   cv.width = W * dpr; cv.height = H * dpr; cv.style.height = H + 'px';
   const ctx = cv.getContext('2d'); ctx.scale(dpr, dpr);
