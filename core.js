@@ -163,51 +163,69 @@
     const r = IND.rows[i];
     const c = r.close;
     const s = [];
-    const add = (name, state, detail, weight) => s.push({ name, state, detail, weight: weight || 1 });
+    const add = (name, state, detail, weight, value) => s.push({ name, state, detail, weight: weight || 1, value: value != null ? value : undefined });
 
     // SMA 排列
     const s5 = IND.SMA5[i], s20 = IND.SMA20[i], s60 = IND.SMA60[i];
     if (s5 && s20 && s60) {
-      if (s5 > s20 && s20 > s60) add("5日均線翻上20日再翻上60日（強多排列）", "buy", "短期、中期、長期均線全翻紅，多头排列。", 2);
-      else if (s5 < s20 && s20 < s60) add("5日、20日、60日均線全朝下（強空排列）", "sell", "均線全朝下，空头排列。", 2);
-      else add("均線交纏", "neutral", "5日、20日、60日均線沒有明確排列。", 0);
+      if (s5 > s20 && s20 > s60) add("5日均線翻上20日再翻上60日（強多排列）", "buy", "短期、中期、長期均線全翻紅，多頭排列。", 2, s5);
+      else if (s5 < s20 && s20 < s60) add("5日、20日、60日均線全朝下（強空排列）", "sell", "均線全朝下，空頭排列。", 2, s5);
+      else add("均線交纏", "neutral", "5日、20日、60日均線沒有明確排列。", 0, s5);
     }
 
     // MACD 交叉
     const ml = IND.MACD.line, ms = IND.MACD.signal;
     if (i > 0 && ml[i] != null && ms[i] != null && ml[i - 1] != null && ms[i - 1] != null) {
-      if (ms[i - 1] <= ml[i - 1] && ms[i] > ml[i]) add("MACD金叉（動能翻多）", "buy", "MACD線從下方翻上訊號線。", 2);
-      else if (ms[i - 1] >= ml[i - 1] && ms[i] < ml[i]) add("MACD死叉（動能翻空）", "sell", "MACD線從上方跌破訊號線。", 2);
-      else add("MACD " + (ml[i] > 0 ? "偏多" : "偏空"), ml[i] > 0 ? "buy" : "sell", "MACD在" + (ml[i] > 0 ? "零軸上方（偏多）" : "零軸下方（偏空）") + "。", 1);
+      if (ms[i - 1] <= ml[i - 1] && ms[i] > ml[i]) add("MACD金叉（動能翻多）", "buy", "MACD線從下方翻上訊號線。", 2, ml[i]);
+      else if (ms[i - 1] >= ml[i - 1] && ms[i] < ml[i]) add("MACD死叉（動能翻空）", "sell", "MACD線從上方跌破訊號線。", 2, ml[i]);
+      else add("MACD " + (ml[i] > 0 ? "偏多" : "偏空"), ml[i] > 0 ? "buy" : "sell", "MACD在" + (ml[i] > 0 ? "零軸上方（偏多）" : "零軸下方（偏空）") + "。", 1, ml[i]);
     }
 
     // RSI
     const rsi = IND.RSI[i];
     if (rsi != null) {
-      if (rsi >= 70) add("冷熱指數過熱（RSI " + rsi.toFixed(0) + "）", "sell", "短線漲太多，留意回檔。");
-      else if (rsi <= 30) add("冷熱指數過冷（RSI " + rsi.toFixed(0) + "）", "buy", "短線跌太多，留意反彈。");
-      else add("冷熱指數正常（RSI " + rsi.toFixed(0) + "）", "neutral", "沒有超買超賣。", 0);
+      if (rsi >= 70) add("冷熱指數過熱（RSI " + rsi.toFixed(0) + "）", "sell", "短線漲太多，留意回檔。", 1, rsi);
+      else if (rsi <= 30) add("冷熱指數過冷（RSI " + rsi.toFixed(0) + "）", "buy", "短線跌太多，留意反彈。", 1, rsi);
+      else add("冷熱指數正常（RSI " + rsi.toFixed(0) + "）", "neutral", "沒有超買超賣。", 0, rsi);
     }
 
     // KDJ
     const k = IND.KDJ.K[i], d = IND.KDJ.D[i], j = IND.KDJ.J[i];
-    if (j != null && j < 0) add("KDJ極度過冷（J " + j.toFixed(0) + "）", "buy", "J值跌破0，極短線可能反彈。");
-    else if (j != null && j > 100) add("KDJ極度過熱（J " + j.toFixed(0) + "）", "sell", "J值衝上100，極短線可能回調。");
-    else if (k != null && d != null && k < d && IND.KDJ.K[i - 1] >= IND.KDJ.D[i - 1]) add("KDJ死叉", "sell", "K從上跌破D。");
-    else if (k != null && d != null && k > d && IND.KDJ.K[i - 1] <= IND.KDJ.D[i - 1]) add("KDJ金叉", "buy", "K從下翻上D。");
+    if (j != null && j < 0) add("KDJ極度過冷（J " + j.toFixed(0) + "）", "buy", "J值跌破0，極短線可能反彈。", 1, j);
+    else if (j != null && j > 100) add("KDJ極度過熱（J " + j.toFixed(0) + "）", "sell", "J值衝上100，極短線可能回調。", 1, j);
+    else if (k != null && d != null && k < d && i > 0 && IND.KDJ.K[i - 1] >= IND.KDJ.D[i - 1]) add("KDJ死叉", "sell", "K從上跌破D。", 1, k);
+    else if (k != null && d != null && k > d && i > 0 && IND.KDJ.K[i - 1] <= IND.KDJ.D[i - 1]) add("KDJ金叉", "buy", "K從下翻上D。", 1, k);
+    else if (k != null && d != null) add("KDJ中性", "neutral", "K=" + k.toFixed(1) + "、D=" + d.toFixed(1) + "、J=" + (j != null ? j.toFixed(1) : "—") + "。", 0, k);
 
     // BOLL
     const bu = IND.BOLL.upper[i], bl = IND.BOLL.lower[i];
     if (bu != null && bl != null) {
-      if (c > bu) add("突破布林上軌", "buy", "收盤站上布林上軌，短線強勢。");
-      else if (c < bl) add("跌破布林下軌", "sell", "收盤跌破布林下軌，短線偏弱。");
+      if (c > bu) add("突破布林上軌", "buy", "收盤站上布林上軌（" + bu.toFixed(2) + "），短線強勢。", 1, bu);
+      else if (c < bl) add("跌破布林下軌", "sell", "收盤跌破布林下軌（" + bl.toFixed(2) + "），短線偏弱。", 1, bl);
+      else add("布林通道內", "neutral", "收盤在布林通道內（上軌 " + bu.toFixed(2) + "、下軌 " + bl.toFixed(2) + "）。", 0, c);
     }
 
     // BIAS
     const bias = IND.BIAS20[i];
     if (bias != null) {
-      if (bias > 10) add("偏離20日均價過大（" + bias.toFixed(1) + "%）", "sell", "價格離20日均價太遠，可能有回檔壓力。");
-      else if (bias < -10) add("偏離20日均價過大（" + bias.toFixed(1) + "%）", "buy", "價格離20日均價太遠，可能有回補機會。");
+      if (bias > 10) add("偏離20日均價過大（+" + bias.toFixed(1) + "%）", "sell", "價格離20日均價太遠，可能有回檔壓力。", 1, bias);
+      else if (bias < -10) add("偏離20日均價過大（" + bias.toFixed(1) + "%）", "buy", "價格離20日均價太遠，可能有回補機會。", 1, bias);
+      else add("價格乖離正常（" + (bias >= 0 ? "+" : "") + bias.toFixed(1) + "%）", "neutral", "價格與20日均價乖離幅度正常。", 0, bias);
+    }
+
+    // 成交量（VROC：20日量比）
+    const vroc = IND.VROC ? IND.VROC[i] : null;
+    if (vroc != null) {
+      if (vroc > 30) add("成交量明顯放大（+" + vroc.toFixed(0) + "%）", c >= (i > 0 ? IND.rows[i-1].close : c) ? "buy" : "sell", "量比20日前放大 " + vroc.toFixed(0) + "%。", 1, vroc);
+      else if (vroc < -30) add("成交量明顯萎縮（" + vroc.toFixed(0) + "%）", c >= (i > 0 ? IND.rows[i-1].close : c) ? "buy" : "sell", "量比20日前萎縮 " + Math.abs(vroc).toFixed(0) + "%。", 1, vroc);
+      else add("成交量正常（量比 " + (vroc >= 0 ? "+" : "") + vroc.toFixed(0) + "%）", "neutral", "成交量與20日前相比沒有明顯變化。", 0, vroc);
+    }
+
+    // 波動幅度（ATR）
+    const atr = IND.ATR ? IND.ATR[i] : null;
+    if (atr != null && c != null && c > 0) {
+      const atrPct = (atr / c * 100).toFixed(1);
+      add("近期波動幅度（ATR " + atr.toFixed(2) + "）", "neutral", "平均每日價差約 " + atr.toFixed(2) + "（約 " + atrPct + "%）。", 0, atr);
     }
 
     return s;
