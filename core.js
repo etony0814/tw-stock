@@ -178,9 +178,13 @@
     // MACD 交叉
     const ml = IND.MACD.line, ms = IND.MACD.signal;
     if (i > 0 && ml[i] != null && ms[i] != null && ml[i - 1] != null && ms[i - 1] != null) {
-      if (ms[i - 1] <= ml[i - 1] && ms[i] > ml[i]) add("MACD金叉（動能翻多）", "buy", "MACD線從下方翻上訊號線。", 2, ml[i]);
-      else if (ms[i - 1] >= ml[i - 1] && ms[i] < ml[i]) add("MACD死叉（動能翻空）", "sell", "MACD線從上方跌破訊號線。", 2, ml[i]);
-      else add("MACD " + (ml[i] > 0 ? "偏多" : "偏空"), ml[i] > 0 ? "buy" : "sell", "MACD在" + (ml[i] > 0 ? "零軸上方（偏多）" : "零軸下方（偏空）") + "。", 1, ml[i]);
+      if (ms[i - 1] <= ml[i - 1] && ms[i] > ml[i]) add("MACD 金叉", "buy", "動能指標剛翻正，代表近期買盤增加。", 2, ml[i]);
+      else if (ms[i - 1] >= ml[i - 1] && ms[i] < ml[i]) add("MACD 死叉", "sell", "動能指標剛轉負，代表近期賣壓增加。", 2, ml[i]);
+      else {
+        const pos = ml[i] > 0;
+        add("MACD 動能狀態", pos ? "buy" : "sell",
+          pos ? "動能指標為正，代表近期偏多。" : "動能指標為負，代表近期偏空。", 1, ml[i]);
+      }
     }
 
     // RSI
