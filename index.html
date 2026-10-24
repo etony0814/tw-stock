@@ -165,6 +165,12 @@
     <label class="hint"><input type="checkbox" id="ckNews" checked style="width:auto;vertical-align:middle"> 消息面</label>
     <label class="hint"><input type="checkbox" id="ckFund" checked style="width:auto;vertical-align:middle"> 籌碼面</label>
     <span class="hint">例：2330、2303、0050（名稱會自動帶出）</span>
+    <div style="width:100%;font-size:12px;color:var(--muted);margin-top:6px">
+      上櫃股（5/6/8 字頭，如 3105）需 FinMind token：
+      <input id="finToken" type="text" placeholder="FinMind token（選填）" style="background:var(--card2);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-size:12px;width:200px"
+        oninput="localStorage.setItem('FINMIND_TOKEN',this.value.trim())"
+        onfocus="if(!this.value)this.value=localStorage.getItem('FINMIND_TOKEN')||''">
+    </div>
   </div>
 
   <!-- 分析結果標題（代號＋名稱）＋ 自選按鈕 -->
@@ -336,7 +342,29 @@ async function fetchRows(code, period){
       return buildRows(jinaParse(text), code);
     } catch (e) { lastErr = e; }
   }
-  throw new Error("取不到 " + code + " 行情（直抓與 Jina 代理皆失敗：" + (lastErr ? lastErr.message : "無") + "）");
+  // 3) 上櫃股（5/6/8 字頭）Yahoo 沒有 → 改走 FinMind（需 token，存 localStorage）
+  const pure = code.replace(/\.TW$|"', '', '').toUpperCase();
+  const finToken = localStorage.getItem('FINMIND_TOKEN') || '';
+  if (finToken && '568'.includes(pure[0] || '')) {
+    try {
+      const end = new Date().toISOString().slice(0, 10);
+      const fq = "token=" + encodeURIComponent(finToken) + "&scope=a&start=1990-01-01&end=" + end +
+                 "&symbol=" + encodeURIComponent(pure) +
+                 "&fields=date,open,high,low,close,volume&lang=zh_TW";
+      const fr = await fetch("https://api.finmind.com.tw/v1/a?" + fq, { headers: { "Accept": "application/json" } });
+      if (!fr.ok) throw new Error("FinMind HTTP " + fr.status);
+      const fd = await fr.json();
+      const data = (fd.data || []).slice().reverse(); // FinMind 回傳新→舊，改成舊→新
+      if (data.length) {
+        return data.map(d => ({
+          date: d.date, open: +d.open, high: +d.high, low: +d.low,
+          close: +d.close, volume: +d.volume || 0
+        }));
+      }
+    } catch (e) { lastErr = e; }
+  }
+  throw new Error("取不到 " + code + " 行情（直抓與 Jina 代理皆失敗：" + (lastErr ? lastErr.message : "無") +
+    (pure[0] && '568'.includes(pure[0]) ? "；上櫃股需設定 FinMind token" : "") + "）");
 }
 
 function buildRows(j, code){
