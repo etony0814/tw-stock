@@ -616,23 +616,38 @@ function render(A, rows, t){
   const macdVal = ind && ind.MACD ? ind.MACD.line[ind.MACD.line.length-1] : null;
   setStat('statMacd', macdVal!=null ? macdVal.toFixed(3) : '—', macdVal>0?'pos':macdVal<0?'neg':'');
 
-  // 看多 / 看空理由
+  // 看多 / 看空理由（跟電腦版一致：從各面訊號全列出來，不只名稱含詳情）
   const bullEl = document.getElementById('bullReasons');
   const bearEl = document.getElementById('bearReasons');
   const bullBox = document.getElementById('bullBox');
   const bearBox = document.getElementById('bearBox');
-  if (f.bull_reasons && f.bull_reasons.length) {
-    bullBox.style.display = 'block';
-    bullEl.innerHTML = f.bull_reasons.map(r => `<li>${r}</li>`).join('');
-  } else {
-    bullBox.style.display = 'none';
+  // 技術面：把 buy/sell 訊號全列（含 detail）
+  const techBull = sigs.filter(s => s.state === 'buy');
+  const techBear = sigs.filter(s => s.state === 'sell');
+  const bullList = [], bearList = [];
+  if (techBull.length) bullList.push('【技術面】' + techBull.map(s => s.name + '（' + (s.detail||'') + '）').join('；'));
+  if (techBear.length) bearList.push('【技術面】' + techBear.map(s => s.name + '（' + (s.detail||'') + '）').join('；'));
+  // 籌碼面
+  if (A.fund_flow && A.fund_flow.ok) {
+    if (A.fund_flow.score >= 0.25) bullList.push('【籌碼面】三大法人偏多（' + A.fund_flow.label + '），當日全場淨買。');
+    else if (A.fund_flow.score <= -0.25) bearList.push('【籌碼面】三大法人偏空（' + A.fund_flow.label + '），當日全場淨賣。');
   }
-  if (f.bear_reasons && f.bear_reasons.length) {
-    bearBox.style.display = 'block';
-    bearEl.innerHTML = f.bear_reasons.map(r => `<li>${r}</li>`).join('');
-  } else {
-    bearBox.style.display = 'none';
+  // 消息面
+  if (A.news && A.news.count > 0) {
+    if (A.news.score >= 0.2) bullList.push('【消息面】近期新聞情緒偏正面（分數 ' + A.news.score.toFixed(2) + '）。');
+    else if (A.news.score <= -0.2) bearList.push('【消息面】近期新聞情緒偏負面（分數 ' + A.news.score.toFixed(2) + '）。');
   }
+  // 盤面
+  if (A.intraday && A.intraday.score >= 0.2) bullList.push('【盤面】' + A.intraday.advice);
+  else if (A.intraday && A.intraday.score <= -0.2) bearList.push('【盤面】' + A.intraday.advice);
+  // 大盤
+  if (A.taiex && A.taiex.score >= 0.3) bullList.push('【大盤】' + A.taiex.advice);
+  else if (A.taiex && A.taiex.score <= -0.3) bearList.push('【大盤】' + A.taiex.advice);
+  if (!bullList.length && !bearList.length) bullList.push('【綜合】各方訊號中性，無明確看多或看空偏斜。');
+  bullBox.style.display = bullList.length ? 'block' : 'none';
+  bullEl.innerHTML = bullList.map(r => `<li>${r}</li>`).join('');
+  bearBox.style.display = bearList.length ? 'block' : 'none';
+  bearEl.innerHTML = bearList.map(r => `<li>${r}</li>`).join('');
 
   // 盤面
   const it=A.intraday;
