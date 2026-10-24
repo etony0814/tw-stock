@@ -113,11 +113,19 @@
   <div id="err" class="card"></div>
   <div id="results" style="display:none">
 
-    <!-- 綜合評論卡（五方結論 + 分數明細整合）-->
+    <!-- 綜合評論卡（五方結論 + 分數明細 + 看多/看空理由整合）-->
     <div class="card final" id="finalCard">
       <h2>🎯 綜合評論（今天要不要買賣）</h2>
       <div class="final-text" id="finalText">—</div>
       <div class="bd" id="finalBd"></div>
+      <div id="bullBox" style="display:none;margin-top:10px">
+        <div style="font-size:13px;font-weight:700;color:var(--green);margin-bottom:6px">✅ 看多理由</div>
+        <ul id="bullReasons" style="margin:0;padding-left:18px;font-size:13px;line-height:1.7;color:var(--text)"></ul>
+      </div>
+      <div id="bearBox" style="display:none;margin-top:10px">
+        <div style="font-size:13px;font-weight:700;color:var(--red);margin-bottom:6px">⚠️ 看空理由</div>
+        <ul id="bearReasons" style="margin:0;padding-left:18px;font-size:13px;line-height:1.7;color:var(--text)"></ul>
+      </div>
     </div>
 
     <div class="grid">
@@ -426,6 +434,24 @@ function render(A, rows, t){
   ft.textContent=f.final_advice;
   document.getElementById('finalBd').innerHTML = Object.keys(f.score_breakdown).map(k=>
     `<div class="it">${k}<b>${f.score_breakdown[k].toFixed(2)}</b></div>`).join('');
+
+  // 看多 / 看空理由
+  const bullEl = document.getElementById('bullReasons');
+  const bearEl = document.getElementById('bearReasons');
+  const bullBox = document.getElementById('bullBox');
+  const bearBox = document.getElementById('bearBox');
+  if (f.bull_reasons && f.bull_reasons.length) {
+    bullBox.style.display = 'block';
+    bullEl.innerHTML = f.bull_reasons.map(r => `<li>${r}</li>`).join('');
+  } else {
+    bullBox.style.display = 'none';
+  }
+  if (f.bear_reasons && f.bear_reasons.length) {
+    bearBox.style.display = 'block';
+    bearEl.innerHTML = f.bear_reasons.map(r => `<li>${r}</li>`).join('');
+  } else {
+    bearBox.style.display = 'none';
+  }
 
   // 盤面
   const it=A.intraday;
