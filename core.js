@@ -494,9 +494,10 @@
       headlines: headlines.slice() };
   }
 
-  // 前端直抓 Google News RSS（瀏覽器直抓被 CORS 擋，走 allorigins 代理）
+  // 前端直抓 Google News RSS（瀏覽器直抓被 CORS 擋，走代理）
   const JINA_RSS = "https://r.jina.ai/";
   const ALLORIGINS = "https://api.allorigins.win/raw?url=";
+  const CORSPROXY = "https://corsproxy.io/?url=";
   async function fetchNewsHeadlines(ticker, name, days) {
     const q = encodeURIComponent((name || "") + " " + ticker);
     const url = "https://news.google.com/rss/search?q=" + q + "&hl=zh-TW&gl=TW&ce=zh";
@@ -513,7 +514,14 @@
         if (r.ok) { const t = await r.text(); if (t.indexOf("<rss") > 0 || t.indexOf("<item") > 0) text = t; }
       } catch (e) {}
     }
-    // 3) Jina Reader 代理（fallback）
+    // 3) corsproxy.io 代理（備援，免金鑰）
+    if (!text) {
+      try {
+        const r = await fetch(CORSPROXY + encodeURIComponent(url));
+        if (r.ok) { const t = await r.text(); if (t.indexOf("<rss") > 0 || t.indexOf("<item") > 0) text = t; }
+      } catch (e) {}
+    }
+    // 4) Jina Reader 代理（最後 fallback）
     if (!text) {
       try {
         const jr = await fetch(JINA_RSS + url, { headers: { "Accept": "text/plain" } });
