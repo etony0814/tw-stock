@@ -6,7 +6,7 @@
 <title>Tony 台股技術分析 小幫手</title>
 <style>
   :root{--bg:#0f1419;--card:#1a202c;--card2:#1e2633;--border:#2a3441;--text:#e2e8f0;
-    --muted:#94a3b8;--accent:#38bdf8;--green:#22c55e;--red:#ef4444;--yellow:#f59e0b;}
+    --muted:#94a3b8;--accent:#38bdf8;--bull:#ef4444;--bear:#22c55e;--green:#ef4444;--red:#22c55e;--yellow:#f59e0b;}
   *{box-sizing:border-box;margin:0;padding:0;}
   body{font-family:-apple-system,"Segoe UI","Microsoft JhengHei",sans-serif;
     background:var(--bg);color:var(--text);min-height:100vh;padding:16px;}
@@ -37,8 +37,8 @@
   .score-row{display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap;}
   .badge{display:inline-block;min-width:44px;height:24px;border-radius:6px;display:flex;
     align-items:center;justify-content:center;font-size:11px;font-weight:700;}
-  .badge.buy{background:rgba(34,197,94,.15);color:var(--green);}
-  .badge.sell{background:rgba(239,68,68,.15);color:var(--red);}
+  .badge.buy{background:rgba(239,68,68,.15);color:var(--bull);}
+  .badge.sell{background:rgba(34,197,94,.15);color:var(--bear);}
   .badge.neutral{background:rgba(245,158,11,.15);color:var(--yellow);}
   .sig{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;}
   .sig:last-child{border-bottom:none;}
@@ -644,8 +644,8 @@ function render(A, rows, t){
     const fmt = x => x.toLocaleString(undefined, {maximumFractionDigits:2});
     slTpEl.style.display = 'block';
     slTpContent.innerHTML =
-      `建議止損 <b style="color:var(--red)">${fmt(sl)}</b>（收盤 − 1.5×ATR，跌破即減碼）<br>` +
-      `第一止盈 <b style="color:var(--green)">${fmt(tp1)}</b>（＋1×ATR）、第二止盈 <b style="color:var(--green)">${fmt(tp2)}</b>（＋2×ATR）`;
+      `建議止損 <b style="color:var(--bear)">${fmt(sl)}</b>（收盤 − 1.5×ATR，跌破即減碼）<br>` +
+      `第一止盈 <b style="color:var(--bull)">${fmt(tp1)}</b>（＋1×ATR）、第二止盈 <b style="color:var(--bull)">${fmt(tp2)}</b>（＋2×ATR）`;
   } else if (slTpEl) { slTpEl.style.display = 'none'; }
 
   // 五方分數白話一句話（plainRead）
@@ -1053,7 +1053,7 @@ function drawChart(rows, IND){
   const bw=Math.max(1,plotW/n*0.6);
   rows.forEach((r,i)=>{
     const up=r.close>=r.open;
-    ctx.strokeStyle=ctx.fillStyle=up?'#22c55e':'#ef4444';
+    ctx.strokeStyle=ctx.fillStyle=up?'#ef4444':'#22c55e';
     const cx=x(i);
     ctx.beginPath();ctx.moveTo(cx,y(r.high));ctx.lineTo(cx,y(r.low));ctx.stroke();
     const top=y(Math.max(r.open,r.close)),bot=y(Math.min(r.open,r.close));
@@ -1079,7 +1079,7 @@ function drawChart(rows, IND){
     const isBuy = ev.type==='buy';
     const price = isBuy ? (rows[idx].low) : (rows[idx].high);
     const ty = y(price) + (isBuy ? 10 : -10);
-    ctx.fillStyle = isBuy ? '#22c55e' : '#ef4444';
+    ctx.fillStyle = isBuy ? '#ef4444' : '#22c55e';
     ctx.beginPath();
     if (isBuy) { // 往上三角
       ctx.moveTo(cx, ty); ctx.lineTo(cx-5, ty+8); ctx.lineTo(cx+5, ty+8);
