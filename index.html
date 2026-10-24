@@ -380,10 +380,11 @@ async function run(){
     all._stockRows = stockRows;
     all._taiexRows = taiexRows;
 
-    render(all, stockRows, t);
-    showResultTitle(t, nmAuto);
     document.getElementById('results').style.display='block';
     document.getElementById('demoBanner').style.display='none';
+    await new Promise(r=>requestAnimationFrame(r)); // 等版面展開再畫圖
+    render(all, stockRows, t);
+    showResultTitle(t, nmAuto);
   }catch(e){
     // 真實行情都抓不到（如 Yahoo 限流），改用示範資料把整頁跑通
     document.getElementById('demoBanner').style.display='block';
@@ -394,6 +395,8 @@ async function run(){
     all.fund_multi = demoFundMulti(t);
     all.relative = StockCore.relativeStrength(stockRows, twRows, 20);
     all._stockRows = stockRows; all._taiexRows = twRows;
+    document.getElementById('results').style.display='block';
+    await new Promise(r=>requestAnimationFrame(r));
     render(all, stockRows, t);
     showResultTitle(t, WNAMES[t]||'');
     document.getElementById('results').style.display='block';
@@ -484,6 +487,8 @@ function render(A, rows, t){
     : '<span style="color:var(--muted)">近期沒有特別明顯的買賣時機</span>';
 
   drawChart(rows, A.indicators);
+  window._lastRows = rows;
+  window._lastIND = A.indicators;
 }
 
 // ── 個股 vs 大盤 相對強度圖（近 20 日收盤涨跌幅雙折線）──
@@ -543,7 +548,7 @@ function setVal(id, v, c){
 function drawChart(rows, IND){
   const cv=document.getElementById('chart');
   const dpr=window.devicePixelRatio||1;
-  const W=cv.clientWidth, H=300;
+  const W=cv.clientWidth||cv.parentElement.clientWidth||800, H=300;
   cv.width=W*dpr; cv.height=H*dpr; cv.style.height=H+'px';
   const ctx=cv.getContext('2d'); ctx.scale(dpr,dpr);
   const n=rows.length, pad={l:44,r:10,t:14,b:24};
@@ -621,7 +626,7 @@ window.addEventListener('load',()=>{
   renderWatch(loadWatch());
   run();
 });
-window.addEventListener('resize',()=>{ if(window._lastRows) drawChart(window._lastRows, window._lastIND); });
+window.addEventListener('resize',()=>{ if(window._lastRows) { drawChart(window._lastRows, window._lastIND); const [sr, tr, tt] = window._rsArgs||[]; if(sr && tr) drawRSChart(null, sr, tr, tt); } });
 
 </script>
 </body>
