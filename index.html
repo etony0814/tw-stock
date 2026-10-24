@@ -55,9 +55,50 @@
   @keyframes sp{to{transform:rotate(360deg);}}
   .disclaimer{text-align:center;font-size:12px;color:var(--muted);margin-top:16px;line-height:1.6;}
   @media(max-width:700px){
-    .grid,.two{grid-template-columns:1fr;}
-    .header h1{font-size:17px;} .controls input{width:72px;}
+    body{padding:8px;}
+    .wrap{max-width:100%;}
+    .header h1{font-size:17px;}
+    .header .sub{font-size:12px;}
+    /* 操作列：全欄堆疊 */
+    .controls{flex-direction:column;align-items:stretch;gap:8px;padding:12px;}
+    .controls input{width:100%;}
+    .controls select{width:100%;}
+    .controls button{width:100%;padding:10px;font-size:15px;}
+    .controls .hint{font-size:11px;}
+    /* 卡片 */
+    .card{padding:14px;margin-bottom:12px;border-radius:10px;}
+    .card h3{font-size:13px;margin-bottom:8px;}
+    /* 綜合評論 */
+    .final{padding:14px;}
+    .final h2{font-size:14px;}
     .final-text{font-size:16px;}
+    .bd{gap:6px;}
+    .bd .it{padding:5px 10px;font-size:11px;flex:1 1 calc(50% - 6px);text-align:center;}
+    .bd .it b{font-size:13px;margin-left:2px;}
+    /* 盤面/大盤/籌碼/消息：分數+說明改上下堆疊 */
+    .grid{grid-template-columns:1fr;gap:12px;}
+    .two{grid-template-columns:1fr;gap:12px;}
+    .score-box{min-width:0;width:100%;padding:8px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px;}
+    .score-box .val{font-size:20px;}
+    /* 訊號列表 */
+    .sig{padding:6px 0;font-size:12px;gap:8px;}
+    .sig .d{font-size:11px;}
+    .badge{min-width:36px;height:20px;font-size:10px;}
+    /* 圖表 */
+    canvas{max-height:260px;}
+    /* 看多/看空理由 */
+    #bullBox,#bearBox{margin-top:8px;}
+    #bullReasons,#bearReasons{font-size:12px;line-height:1.6;}
+    /* 自選股按鈕 */
+    #watchBtns{gap:6px;}
+    #watchBtns button{font-size:12px;padding:5px 10px;}
+    /* 結果標題 */
+    #rtName{font-size:16px !important;}
+    #rtWatch{font-size:12px !important;padding:5px 10px !important;}
+  }
+  @media(max-width:400px){
+    .bd .it{flex:1 1 100%;text-align:left;}
+    .final-text{font-size:14px;}
   }
 </style>
 </head>
