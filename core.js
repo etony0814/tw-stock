@@ -479,8 +479,9 @@
     return { p, n };
   }
 
-  function newsSentiment(headlines) {
+  function newsSentiment(headlines, days) {
     // headlines: string[]
+    days = days || 7;
     let P = 0, N = 0;
     for (const h of headlines) { const s = scoreHeadline(h); P += s.p; N += s.n; }
     const total = P + N;
@@ -489,7 +490,7 @@
     const advice = score >= 0.25 ? "近期新聞偏正面，市場情緒較好。"
       : score <= -0.25 ? "近期新聞偏負面，注意消息面壓力。"
       : "近期新聞多空持平。";
-    return { score: Math.round(score * 1000) / 1000, label, advice,
+    return { score: Math.round(score * 1000) / 1000, label, advice, days,
       pos: P, neg: N, count: headlines.length,
       headlines: headlines.slice() };
   }
@@ -591,7 +592,7 @@
     let news = null;
     if (opts.with_news) {
       const heads = await fetchNewsHeadlines(opts.ticker, opts.name, opts.news_days || 7);
-      if (heads.length) news = newsSentiment(heads);
+      if (heads.length) news = newsSentiment(heads, opts.news_days || 7);
     }
 
     const final = fiveWayComposite(comp, ff, intra, taiex, news);
