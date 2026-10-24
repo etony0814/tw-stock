@@ -130,6 +130,8 @@
     #bullBox,#bearBox{margin-top:8px;}
     #bullReasons,#bearReasons{font-size:12px;line-height:1.65;}
     #bullReasons li,#bearReasons li{margin-bottom:3px;}
+    /* 手風琴收折：前 3 條以外的 li 隱藏 */
+    #bullReasons.collapsed li:nth-child(n+4),#bearReasons.collapsed li:nth-child(n+4){display:none;}
     /* 自選股按鈕 */
     #watchBtns{gap:6px;}
     #watchBtns button{font-size:12px;padding:5px 10px;white-space:nowrap;}
@@ -182,15 +184,6 @@
     <div id="watchBtns" style="display:flex;gap:6px;flex-wrap:wrap"></div>
   </div>
 
-  <!-- 分析結果標題：代號＋名稱＋自選按鈕 -->
-  <div id="resultTitle" class="card" style="display:none">
-    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-      <b id="rtName" style="font-size:18px">—</b>
-      <button id="rtWatch" onclick="rtWatchToggle()"
-        style="background:var(--card2);color:var(--accent);border:1px solid var(--accent);border-radius:8px;padding:6px 12px;font-size:13px;cursor:pointer">＋ 加入自選</button>
-    </div>
-  </div>
-
   <div id="loading"><div class="spin"></div>正在抓取行情與分析，請稍候…</div>
   <div id="demoBanner" class="card" style="display:none;border:1px solid var(--yellow);background:rgba(245,158,11,.08)">
     <b style="color:var(--yellow)">⚠ 示範資料</b> — 真實行情暫時抓不到（Yahoo 跨域受限），以下為內建示範 K 線，僅展示介面與分析流程。稍後重試，或用電腦版（python server.py）取真實資料。
@@ -198,22 +191,35 @@
   <div id="err" class="card"></div>
   <div id="results" style="display:none">
 
-    <!-- 綜合評論卡（五方結論 + 分數明細 + 看多/看空理由 + 收盤價/RSI/MACD）-->
+    <!-- 綜合評論卡（五方結論 + 分數明細 + 看多/看空理由 + 收盤價/RSI/MACD + 止損止盈）-->
     <div class="card final" id="finalCard">
       <h2>🎯 綜合評論（今天要不要買賣）</h2>
       <div class="final-text" id="finalText">—</div>
+      <!-- 五方分數白話一句話 -->
+      <div id="plainRead" style="font-size:13px;color:var(--text);line-height:1.55;margin:6px 0 8px;padding:8px 10px;background:rgba(56,189,248,.08);border:1px solid rgba(56,189,248,.25);border-radius:8px;display:none"></div>
       <!-- 技術面摘要（看多/看空理由數 + 籌碼/消息 note）-->
       <div id="adviceSummary" style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:10px"></div>
       <!-- 五方分數明細 -->
       <div class="bd" id="finalBd"></div>
-      <!-- 看多 / 看空理由 -->
+      <!-- 止損 / 止盈參考價 -->
+      <div id="slTp" style="display:none;margin-top:10px;padding:8px 10px;background:rgba(0,0,0,.25);border-radius:8px;font-size:13px;color:var(--muted);line-height:1.6">
+        <div style="font-weight:700;color:var(--text);font-size:12px;margin-bottom:4px">📌 止損 / 止盈參考（依 ATR 波動估算，僅供參考）</div>
+        <div id="slTpContent"></div>
+      </div>
+      <!-- 看多 / 看空理由（手風琴，預設 3 條可展開） -->
       <div id="bullBox" style="display:none;margin-top:10px">
-        <div style="font-size:13px;font-weight:700;color:var(--green);margin-bottom:4px">✅ 看多理由</div>
-        <ul id="bullReasons" style="margin:0;padding-left:18px;font-size:13px;line-height:1.7;color:var(--text)"></ul>
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <span style="font-size:13px;font-weight:700;color:var(--green)">✅ 看多理由（<span id="bullCount">0</span>）</span>
+          <span id="bullToggle" onclick="toggleAccordion('bull')" style="font-size:12px;color:var(--accent);cursor:pointer;user-select:none">展開全部 ▾</span>
+        </div>
+        <ul id="bullReasons" style="margin:4px 0 0;padding-left:18px;font-size:13px;line-height:1.7;color:var(--text)"></ul>
       </div>
       <div id="bearBox" style="display:none;margin-top:8px">
-        <div style="font-size:13px;font-weight:700;color:var(--red);margin-bottom:4px">⚠️ 看空理由</div>
-        <ul id="bearReasons" style="margin:0;padding-left:18px;font-size:13px;line-height:1.7;color:var(--text)"></ul>
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <span style="font-size:13px;font-weight:700;color:var(--red)">⚠️ 看空理由（<span id="bearCount">0</span>）</span>
+          <span id="bearToggle" onclick="toggleAccordion('bear')" style="font-size:12px;color:var(--accent);cursor:pointer;user-select:none">展開全部 ▾</span>
+        </div>
+        <ul id="bearReasons" style="margin:4px 0 0;padding-left:18px;font-size:13px;line-height:1.7;color:var(--text)"></ul>
       </div>
       <!-- 關鍵指標快覽 -->
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px" id="statGrid">
@@ -221,6 +227,10 @@
         <div class="stat-mini"><div class="sm-lbl">分析日期</div><div class="sm-val sm-sm" id="statDate">—</div></div>
         <div class="stat-mini"><div class="sm-lbl">RSI（30冷/70熱）</div><div class="sm-val" id="statRsi">—</div></div>
         <div class="stat-mini"><div class="sm-lbl">MACD（正多/負空）</div><div class="sm-val" id="statMacd">—</div></div>
+        <div class="stat-mini"><div class="sm-lbl">日平均擺動（ATR）</div><div class="sm-val sm-sm" id="statAtr">—</div></div>
+        <div class="stat-mini"><div class="sm-lbl">5日報酬</div><div class="sm-val sm-sm" id="statRet5">—</div></div>
+        <div class="stat-mini"><div class="sm-lbl">20日報酬</div><div class="sm-val sm-sm" id="statRet20">—</div></div>
+        <div class="stat-mini"><div class="sm-lbl">量比（vs 20日前）</div><div class="sm-val sm-sm" id="statVol">—</div></div>
       </div>
     </div>
 
@@ -475,6 +485,20 @@ function demoFundMulti(code){
 
 function cls(s){ return s>=0.05?"pos":s<=-0.05?"neg":"neu"; }
 
+// 手風琴：看多/看空理由 收折 ↔ 展開
+function toggleAccordion(kind){
+  const el = document.getElementById(kind === 'bull' ? 'bullReasons' : 'bearReasons');
+  const toggle = document.getElementById(kind === 'bull' ? 'bullToggle' : 'bearToggle');
+  if (!el) return;
+  if (el.classList.contains('collapsed')) {
+    el.classList.remove('collapsed');
+    if (toggle) toggle.textContent = '收折 ▴';
+  } else {
+    el.classList.add('collapsed');
+    if (toggle) toggle.textContent = '展開全部 ▾';
+  }
+}
+
 async function run(){
   const t=document.getElementById('ticker').value.trim();
   const nm=document.getElementById('ticker').value.trim(); // 代號；名稱稍後自動帶出
@@ -586,6 +610,49 @@ function render(A, rows, t){
   setStat('statRsi', rsiVal!=null ? rsiVal.toFixed(1) : '—', rsiVal>=70?'neg':rsiVal<=30?'pos':'');
   const macdVal = ind && ind.MACD ? ind.MACD.line[ind.MACD.line.length-1] : null;
   setStat('statMacd', macdVal!=null ? macdVal.toFixed(3) : '—', macdVal>0?'pos':macdVal<0?'neg':'');
+  // 新增 statGrid：ATR、5日/20日報酬、量比
+  const atrVal = ind && ind.ATR14 ? ind.ATR14[ind.ATR14.length-1] : null;
+  setStat('statAtr', atrVal!=null ? atrVal.toFixed(2) : '—');
+  const retN = n => {
+    if (!rows || rows.length <= n) return null;
+    const base = rows[rows.length-1-n].close, now = rows[rows.length-1].close;
+    if (!base || now == null) return null;
+    return (now - base) / base * 100;
+  };
+  const r5 = retN(5), r20 = retN(20);
+  setStat('statRet5', r5!=null ? (r5>=0?'+':'')+r5.toFixed(1)+'%' : '—', r5!=null?(r5>0?'pos':r5<0?'neg':''):'');
+  setStat('statRet20', r20!=null ? (r20>=0?'+':'')+r20.toFixed(1)+'%' : '—', r20!=null?(r20>0?'pos':r20<0?'neg':''):'');
+  const volRatio = ind && ind.VROC20 ? ind.VROC20[ind.VROC20.length-1] : null;
+  setStat('statVol', volRatio!=null ? (volRatio>=0?'+':'')+volRatio.toFixed(0)+'%' : '—', volRatio!=null?(volRatio>30?'pos':volRatio<-30?'neg':''):'');
+
+  // 止損 / 止盈參考價（ATR 估算）
+  const slTpEl = document.getElementById('slTp');
+  const slTpContent = document.getElementById('slTpContent');
+  if (slTpEl && slTpContent && lastRow && atrVal != null && atrVal > 0) {
+    const close = lastRow.close;
+    const sl = close - 1.5 * atrVal;
+    const tp1 = close + 1 * atrVal;
+    const tp2 = close + 2 * atrVal;
+    const fmt = x => x.toLocaleString(undefined, {maximumFractionDigits:2});
+    slTpEl.style.display = 'block';
+    slTpContent.innerHTML =
+      `建議止損 <b style="color:var(--red)">${fmt(sl)}</b>（收盤 − 1.5×ATR，跌破即減碼）<br>` +
+      `第一止盈 <b style="color:var(--green)">${fmt(tp1)}</b>（＋1×ATR）、第二止盈 <b style="color:var(--green)">${fmt(tp2)}</b>（＋2×ATR）`;
+  } else if (slTpEl) { slTpEl.style.display = 'none'; }
+
+  // 五方分數白話一句話（plainRead）
+  const plainEl = document.getElementById('plainRead');
+  if (plainEl && f && f.score_breakdown) {
+    const sb = f.score_breakdown;
+    const phrase = (v) => v>=0.25?'偏多':v<=-0.25?'偏空':Math.abs(v)<0.05?'幾乎中性':'略偏'+(v>0?'多':'空');
+    const order = ['技術面','籌碼面','消息面','盤面','大盤'];
+    const parts = order.filter(k => sb[k]!=null).map(k => `${k}${phrase(sb[k])}`);
+    if (parts.length) {
+      plainEl.style.display = 'block';
+      plainEl.textContent = '白話說：' + parts.join('、') + '。' +
+        (c >= 0.2 ? ' 整體偏多，可留意逢低布局。' : c <= -0.2 ? ' 整體偏空，建議觀望或減碼。' : ' 整體中性，方向不明確可先觀望。');
+    } else plainEl.style.display = 'none';
+  } else if (plainEl) { plainEl.style.display = 'none'; }
 
   // 看多 / 看空理由（跟電腦版一致：從各面訊號全列出來，不只名稱含詳情）
   const bullEl = document.getElementById('bullReasons');
@@ -617,8 +684,29 @@ function render(A, rows, t){
   if (!bullList.length && !bearList.length) bullList.push('【綜合】各方訊號中性，無明確看多或看空偏斜。');
   bullBox.style.display = bullList.length ? 'block' : 'none';
   bullEl.innerHTML = bullList.map(r => `<li>${r}</li>`).join('');
+  // 手風琴：預設收折（前 3 條），有 4 條以上才顯示展開按鈕
+  const bullCountEl = document.getElementById('bullCount');
+  const bullToggleEl = document.getElementById('bullToggle');
+  if (bullCountEl) bullCountEl.textContent = bullList.length;
+  if (bullList.length > 3) {
+    bullEl.classList.add('collapsed');
+    if (bullToggleEl) { bullToggleEl.style.display = ''; bullToggleEl.textContent = '展開全部 ▾'; }
+  } else {
+    bullEl.classList.remove('collapsed');
+    if (bullToggleEl) bullToggleEl.style.display = 'none';
+  }
   bearBox.style.display = bearList.length ? 'block' : 'none';
   bearEl.innerHTML = bearList.map(r => `<li>${r}</li>`).join('');
+  const bearCountEl = document.getElementById('bearCount');
+  const bearToggleEl = document.getElementById('bearToggle');
+  if (bearCountEl) bearCountEl.textContent = bearList.length;
+  if (bearList.length > 3) {
+    bearEl.classList.add('collapsed');
+    if (bearToggleEl) { bearToggleEl.style.display = ''; bearToggleEl.textContent = '展開全部 ▾'; }
+  } else {
+    bearEl.classList.remove('collapsed');
+    if (bearToggleEl) bearToggleEl.style.display = 'none';
+  }
 
   // 盤面
   const it=A.intraday;
