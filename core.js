@@ -495,17 +495,18 @@
       headlines: headlines.slice() };
   }
 
-  // 前端直抓 Google News RSS（瀏覽器直抓被 CORS 擋，走代理）
+  // 前端直抓 Google News RSS（瀏覽器直抓被 CORS 擋，走代理；多代理 fallback）
   const JINA_RSS = "https://r.jina.ai/";
   const ALLORIGINS = "https://api.allorigins.win/raw?url=";
   const CORSPROXY = "https://corsproxy.io/?url=";
+  const THINGPROXY = "https://api.thingproxy.com/?url=";
   async function fetchNewsHeadlines(ticker, name, days) {
     const q = encodeURIComponent((name || "") + " " + ticker);
     const url = "https://news.google.com/rss/search?q=" + q + "&hl=zh-TW&gl=TW&ce=zh";
     let text = null;
     // 1) 直抓（本地 / 允許 CORS 的環境）
     try {
-      const r = await fetch(url);
+      const r = await fetch(url, { mode: "cors" });
       if (r.ok) { text = await r.text(); if (!text || text.indexOf("<rss") < 0) text = null; }
     } catch (e) { text = null; }
     // 2) allorigins 代理（瀏覽器跨域可用，免金鑰）
@@ -515,14 +516,21 @@
         if (r.ok) { const t = await r.text(); if (t.indexOf("<rss") > 0 || t.indexOf("<item") > 0) text = t; }
       } catch (e) {}
     }
-    // 3) corsproxy.io 代理（備援，免金鑰）
+    // 3) thingproxy 代理（備援，免金鑰）
+    if (!text) {
+      try {
+        const r = await fetch(THINGPROXY + encodeURIComponent(url));
+        if (r.ok) { const t = await r.text(); if (t.indexOf("<rss") > 0 || t.indexOf("<item") > 0) text = t; }
+      } catch (e) {}
+    }
+    // 4) corsproxy.io 代理（備援）
     if (!text) {
       try {
         const r = await fetch(CORSPROXY + encodeURIComponent(url));
         if (r.ok) { const t = await r.text(); if (t.indexOf("<rss") > 0 || t.indexOf("<item") > 0) text = t; }
       } catch (e) {}
     }
-    // 4) Jina Reader 代理（最後 fallback）
+    // 5) Jina Reader 代理（最後 fallback）
     if (!text) {
       try {
         const jr = await fetch(JINA_RSS + url, { headers: { "Accept": "text/plain" } });
@@ -537,13 +545,23 @@
       const doc = new DOMParser().parseFromString(text, "text/xml");
       const now = Date.now();
       const cutoff = now - (days || 7) * 86400000;
-      const items2 = Array.from(doc.querySelectorAll("item")).map(it => ({
-        title: it.querySelector("title").textContent.trim(),
-        ts: it.querySelector("pubDate") ? Date.parse(it.querySelector("pubDate").textContent) : 0
-      })).filter(it => it.ts >= cutoff || it.ts === 0);
-      return (items2.length ? items2.map(it => it.title)
-        : Array.from(doc.querySelectorAll("item")).map(it => it.querySelector("title").textContent.trim())
-      ).slice(0, 30);
+      const items = Array.from(doc.querySelectorAll("item")).map(it => {
+        const tEl = it.querySelector("title");
+        const title = tEl ? tEl.textContent.trim() : "";
+        const pEl = it.querySelector("pubDate");
+        let ts = 0;
+        if (pEl && pEl.textContent) ts = Date.parse(pEl.textContent);
+        // pubDate 解析失敗（NaN）→ 視為「時間不明」，保留；
+        // pubDate 有效 → 只保留近 days 天內的
+        const keep = isNaN(ts) ? true : ts >= cutoff;
+        return { title, ts, keep };
+      }).filter(it => it.title && it.keep);
+      if (items.length) return items.map(it => it.title).slice(0, 30);
+      // fallback：cutoff 太嚴時，全部收（不filter）
+      return Array.from(doc.querySelectorAll("item")).map(it => {
+        const t = it.querySelector("title");
+        return t ? t.textContent.trim() : "";
+      }).filter(Boolean).slice(0, 30);
     } catch (e) { return []; }
   }
 
