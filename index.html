@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tony 台股技術分析 小幫手</title>
+<style>
+  :root{--bg:#0f1419;--card:#1a202c;--card2:#1e2633;--border:#2a3441;--text:#e2e8f0;
+    --muted:#94a3b8;--accent:#38bdf8;--green:#22c55e;--red:#ef4444;--yellow:#f59e0b;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:-apple-system,"Segoe UI","Microsoft JhengHei",sans-serif;
+    background:var(--bg);color:var(--text);min-height:100vh;padding:16px;}
+  .wrap{max-width:1080px;margin:0 auto;}
+  .header h1{font-size:20px;font-weight:700;}
+  .header h1 span{color:var(--accent);}
+  .header .sub{font-size:13px;color:var(--muted);margin-top:4px;}
+  .controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;background:var(--card);
+    padding:14px;border-radius:12px;border:1px solid var(--border);margin:16px 0;}
+  .controls label{font-size:13px;color:var(--muted);}
+  .controls input,.controls select{background:var(--card2);color:var(--text);
+    border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:14px;}
+  .controls input{width:90px;}
+  .controls button{background:var(--accent);color:#0f1419;border:none;border-radius:8px;
+    padding:9px 20px;font-size:14px;font-weight:700;cursor:pointer;}
+  .controls .hint{font-size:12px;color:var(--muted);}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;
+    padding:18px;margin-bottom:18px;}
+  .card h3{font-size:14px;color:var(--muted);margin-bottom:12px;}
+  .final{border:1px solid var(--accent);background:linear-gradient(135deg,#1e3a5f,#1a202c);}
+  .final h2{font-size:15px;color:var(--accent);margin-bottom:8px;}
+  .final-text{font-size:19px;font-weight:700;line-height:1.5;}
+  .final-text.pos{color:var(--green);} .final-text.neg{color:var(--red);} .final-text.neu{color:var(--yellow);}
+  .bd{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}
+  .bd .it{background:rgba(0,0,0,.25);border-radius:8px;padding:7px 12px;font-size:12px;color:var(--muted);}
+  .bd .it b{color:var(--text);font-size:14px;margin-left:4px;}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .badge{display:inline-block;min-width:44px;height:24px;border-radius:6px;display:flex;
+    align-items:center;justify-content:center;font-size:11px;font-weight:700;}
+  .badge.buy{background:rgba(34,197,94,.15);color:var(--green);}
+  .badge.sell{background:rgba(239,68,68,.15);color:var(--red);}
+  .badge.neutral{background:rgba(245,158,11,.15);color:var(--yellow);}
+  .sig{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;}
+  .sig:last-child{border-bottom:none;}
+  .sig .d{color:var(--muted);font-size:12px;}
+  .score-box{background:var(--card2);border-radius:10px;padding:10px 14px;min-width:150px;}
+  .score-box .lbl{font-size:12px;color:var(--muted);}
+  .score-box .val{font-size:24px;font-weight:800;}
+  .val.pos{color:var(--green);} .val.neg{color:var(--red);} .val.neu{color:var(--yellow);}
+  canvas{width:100%;display:block;}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+  .msg{font-size:13px;color:var(--muted);line-height:1.6;}
+  #loading,#err{display:none;text-align:center;padding:40px;color:var(--muted);}
+  .spin{width:30px;height:30px;border:3px solid var(--border);border-top-color:var(--accent);
+    border-radius:50%;animation:sp .8s linear infinite;margin:0 auto 10px;}
+  @keyframes sp{to{transform:rotate(360deg);}}
+  .disclaimer{text-align:center;font-size:12px;color:var(--muted);margin-top:16px;line-height:1.6;}
+  @media(max-width:700px){
+    .grid,.two{grid-template-columns:1fr;}
+    .header h1{font-size:17px;} .controls input{width:72px;}
+    .final-text{font-size:16px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <h1>📈 Tony 台股<span>技術分析</span> 小幫手</h1>
+    <div class="sub">輸入股票代號，一次看 技術＋籌碼＋消息＋盤面＋大盤 五個面向（僅供學習，不構成投資建議）</div>
+  </div>
+
+  <div class="controls">
+    <label>代號</label>
+    <input id="ticker" value="2330" placeholder="2330">
+    <label>名稱</label>
+    <input id="name" value="台積電" placeholder="台積電" style="width:90px">
+    <label>看多久</label>
+    <select id="period">
+      <option value="1mo">1月</option><option value="3mo">3月</option>
+      <option value="6mo" selected>6月</option><option value="1y">1年</option><option value="2y">2年</option>
+    </select>
+    <button id="btn" onclick="run()">開始分析</button>
+    <label class="hint"><input type="checkbox" id="ckNews" checked style="width:auto;vertical-align:middle"> 消息面</label>
+    <label class="hint"><input type="checkbox" id="ckFund" checked style="width:auto;vertical-align:middle"> 籌碼面</label>
+    <span class="hint">例：2330 台積電、2303 華碩、0050 大S50</span>
+  </div>
+
+  <div id="loading"><div class="spin"></div>正在抓取行情與分析，請稍候…</div>
+  <div id="demoBanner" class="card" style="display:none;border:1px solid var(--yellow);background:rgba(245,158,11,.08)">
+    <b style="color:var(--yellow)">⚠ 示範資料</b> — 真實行情暫時抓不到，以下為內建示範 K 線，僅展示介面與分析流程。上 GitHub Pages 後即為真實資料。
+  </div>
+  <div id="err" class="card"></div>
+  <div id="results" style="display:none">
+
+    <!-- 綜合評論卡（五方結論 + 分數明細整合）-->
+    <div class="card final" id="finalCard">
+      <h2>🎯 綜合評論（今天要不要買賣）</h2>
+      <div class="final-text" id="finalText">—</div>
+      <div class="bd" id="finalBd"></div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h3>⏰ 即時盤面（當天）</h3>
+        <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">
+          <div class="score-box"><div class="lbl">盤面分數</div><div class="val" id="iScore">—</div></div>
+          <div class="msg" id="iInfo" style="flex:1;min-width:180px"></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>🏛 大盤環境（加權）</h3>
+        <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">
+          <div class="score-box"><div class="lbl">大盤分數</div><div class="val" id="tScore">—</div></div>
+          <div class="msg" id="tInfo" style="flex:1;min-width:180px"></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>💰 籌碼面（外資／三大法人）</h3>
+        <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">
+          <div class="score-box"><div class="lbl">法人分數</div><div class="val" id="fScore">—</div></div>
+          <div class="msg" id="fInfo" style="flex:1;min-width:180px"></div>
+        </div>
+        <div class="msg" id="fMulti" style="margin-top:10px"></div>
+      </div>
+      <div class="card">
+        <h3>📰 消息面（新聞情緒）</h3>
+        <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">
+          <div class="score-box"><div class="lbl">情緒分數</div><div class="val" id="nScore">—</div></div>
+          <div class="msg" id="nInfo" style="flex:1;min-width:180px"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>🎯 技術面訊號</h3>
+      <div id="sigList"></div>
+    </div>
+
+    <div class="card">
+      <h3>📍 近期買賣時機（新→舊）</h3>
+      <div id="evList" class="msg"></div>
+    </div>
+
+    <div class="card">
+      <h3>📊 K 線（技術面圖表）</h3>
+      <canvas id="chart" height="300"></canvas>
+    </div>
+
+    <div class="card">
+      <h3>📐 個股 vs 大盤（相對強度）</h3>
+      <canvas id="rsChart" height="160"></canvas>
+      <div class="msg" id="rsInfo" style="margin-top:8px"></div>
+    </div>
+
+  </div>
+
+  <div class="disclaimer">
+    ⚠️ 本工具整理公開資料供學習研究，<b>不構成投資建議</b>。股市有風險，下單前請自行評估基本面與風險承受能力。
+  </div>
+</div>
+
+<script src="core.js"></script>
+<script>
+// ── 用公開端點抓個股日K 與 加權指數 ──────────────────────
+// 台股：Yahoo chart API；上線(GitHub Pages https 安全來源)可直抓，
+// 本地 https 測試或被擋時 fallback 到跨域代理。
+const STOCK_URLS = [
+  "https://query2.finance.yahoo.com/v8/finance/chart/",
+  "https://query1.finance.yahoo.com/v8/finance/chart/",
+];
+const CORS_PROXY = "https://api.allorigins.win/raw?url=";
+function toYahoo(t){ return t.endsWith(".TWO") ? t : (t.toUpperCase().replace(/\.TW$/,"")+".TW"); }
+
+async function fetchJsonOne(url){
+  const r = await fetch(url, { headers: { "Accept": "application/json" } });
+  if(!r.ok) throw new Error("HTTP " + r.status);
+  return await r.json();
+}
+
+async function fetchRows(code, period){
+  const qs = "?range=" + period + "&interval=1d";
+  // 依序直抓多個 Yahoo 端點
+  let lastErr = null;
+  for (const base of STOCK_URLS) {
+    try {
+      return await buildRows(await fetchJsonOne(base + code + qs), code);
+    } catch (e) { lastErr = e; }
+  }
+  // 直抓都失敗，走跨域代理
+  try {
+    const target = STOCK_URLS[0] + code + qs;
+    const j = await fetchJsonOne(CORS_PROXY + encodeURIComponent(target));
+    return buildRows(j, code);
+  } catch (e) {
+    throw new Error("取不到 " + code + " 行情（直抓與代理皆失敗：" + (lastErr || e) + "）");
+  }
+}
+
+function buildRows(j, code){
+  const res = j.chart && j.chart.result && j.chart.result[0];
+  if(!res) throw new Error("查不到 " + code + " 行情");
+  const ts = res.timestamp; const q = res.indicators.quote[0];
+  const rows = [];
+  for(let k=0;k<ts.length;k++){
+    if(q.close[k]==null) continue;
+    const d = new Date(ts[k]*1000);
+    rows.push({ date:d.toISOString().slice(0,10), open:q.open[k], high:q.high[k],
+      low:q.low[k], close:q.close[k], volume:q.volume[k]||0 });
+  }
+  if(!rows.length) throw new Error("查不到 " + code + " 行情（無資料）");
+  return rows;
+}
+
+// 示範資料 fallback：Yahoo 與代理都被擋（如本地測試）時，
+// 產生一段真實感台積電 K 線把整頁跑通，並明確標「示範資料」。上線走真實端點。
+function demoRows(code, period){
+  const days = { "1mo":22, "3mo":63, "6mo":126, "1y":252, "2y":504 }[period] || 63;
+  let p = code === "2303" ? 120 : code === "0050" ? 100 : 2400;
+  const rows = [];
+  const end = new Date();
+  for(let k=0;k<days;k++){
+    const d = new Date(end.getTime() - (days-1-k)*86400000);
+    const drift = Math.sin(k/6)*p*0.004 + (Math.random()-0.5)*p*0.012;
+    const open = p, close = p + drift;
+    const hi = Math.max(open, close) + Math.random()*p*0.006;
+    const lo = Math.min(open, close) - Math.random()*p*0.006;
+    const vol = Math.round(p*0.4 + Math.random()*p);
+    rows.push({ date:d.toISOString().slice(0,10), open:+open.toFixed(2),
+      high:+hi.toFixed(2), low:+lo.toFixed(2), close:+close.toFixed(2), volume:vol });
+    p = close;
+  }
+  return rows;
+}
+
+function demoTaiexRows(){
+  const days = 22;
+  let p = 46000;
+  const rows = [];
+  for(let k=0;k<days;k++){
+    const d = new Date(); d.setDate(d.getDate() - (days-1-k));
+    const drift = Math.sin(k/5)*p*0.003 + (Math.random()-0.5)*p*0.005;
+    const open = p, close = p + drift;
+    rows.push({ date:d.toISOString().slice(0,10), open:open, high:Math.max(open,close),
+      low:Math.min(open,close), close:close, volume:0 });
+    p = close;
+  }
+  return rows;
+}
+
+function demoFundMulti(code){
+  const days = 5;
+  const history = [];
+  let tickerNet = 0, onList = false;
+  for(let k=0;k<days;k++){
+    const sum = (Math.random()-0.4)*2000000;
+    const score = Math.max(-1, Math.min(1, sum/2000000));
+    if (k%3===0) { onList = true; tickerNet += Math.round(sum/3); }
+    history.push({ date:"2026-10-"+(20+k), total_net_sum:Math.round(sum),
+      ticker_net: k%3===0 ? Math.round(sum/3) : null,
+      label: score>=0.25?"偏多":score<=-0.25?"偏空":"中性" });
+  }
+  const upDays = history.filter(h => h.total_net_sum > 0).length;
+  const avg = history.reduce((a,h)=>a + (h.total_net_sum/2000000), 0) / days;
+  return { ok:true, days, up_days:upDays, down_days:days-upDays,
+    avg_tone:Math.round(avg*1000)/1000,
+    label: avg>=0.2?"近期法人持續偏多":avg<=-0.2?"近期法人持續偏空":"近期法人多空交織",
+    ticker_on_list_days:onList?1:0, ticker_net_sum:Math.round(tickerNet),
+    history };
+}
+
+function cls(s){ return s>=0.05?"pos":s<=-0.05?"neg":"neu"; }
+
+async function run(){
+  const t=document.getElementById('ticker').value.trim();
+  const nm=document.getElementById('name').value.trim();
+  const period=document.getElementById('period').value;
+  const btn=document.getElementById('btn');
+  document.getElementById('loading').style.display='block';
+  document.getElementById('results').style.display='none';
+  document.getElementById('err').style.display='none';
+  btn.disabled=true;
+  try{
+    const stockRows = await fetchRows(toYahoo(t), period);
+    const taiexRows = await fetchRows("^TWII", "1mo");
+    const with_news = document.getElementById('ckNews').checked;
+    const with_fund = document.getElementById('ckFund').checked;
+    const all = await StockCore.computeAll(stockRows,
+      { ticker:t, name:nm, taiexRows, with_news, with_fund });
+
+    // 籌碼面多日統計
+    if (with_fund) {
+      all.fund_multi = await StockCore.fetchFundFlowMulti(t, 5);
+    }
+    // 個股相對大盤強度：直接重用已抓到的個股日K 與大盤日K（不重抓，避免 429）
+    all.relative = StockCore.relativeStrength(stockRows, taiexRows, 20);
+    all._stockRows = stockRows;
+    all._taiexRows = taiexRows;
+
+    render(all, stockRows, t);
+    document.getElementById('results').style.display='block';
+    document.getElementById('demoBanner').style.display='none';
+  }catch(e){
+    // 真實行情都抓不到（如 Yahoo 限流），改用示範資料把整頁跑通
+    document.getElementById('demoBanner').style.display='block';
+    const stockRows = demoRows(t, period);
+    const twRows = demoTaiexRows();
+    const all = await StockCore.computeAll(stockRows,
+      { ticker:t, name:nm, taiexRows:twRows, with_news:false, with_fund:false });
+    all.fund_multi = demoFundMulti(t);
+    all.relative = StockCore.relativeStrength(stockRows, twRows, 20);
+    all._stockRows = stockRows; all._taiexRows = twRows;
+    render(all, stockRows, t);
+    document.getElementById('results').style.display='block';
+    document.getElementById('err').style.display='block';
+    document.getElementById('err').textContent =
+      "⚠️ 真實行情目前取不到（Yahoo 可能限流），下方為「示範資料」以展示介面。稍後重試或上 GitHub Pages 即為真實資料。";
+  }finally{
+    document.getElementById('loading').style.display='none';
+    btn.disabled=false;
+  }
+}
+
+function render(A, rows, t){
+  // 五方綜合
+  const f=A.final, c=f.combined_score;
+  const ft=document.getElementById('finalText');
+  ft.className='final-text '+(c>=0.15?'pos':c<=-0.15?'neg':'neu');
+  ft.textContent=f.final_advice;
+  document.getElementById('finalBd').innerHTML = Object.keys(f.score_breakdown).map(k=>
+    `<div class="it">${k}<b>${f.score_breakdown[k].toFixed(2)}</b></div>`).join('');
+
+  // 盤面
+  const it=A.intraday;
+  setVal('iScore', it.score, cls(it.score));
+  document.getElementById('iInfo').innerHTML =
+    `現價 <b>${it.last!=null?it.last.toLocaleString():'—'}</b>、開盤 ${it.open!=null?it.open.toLocaleString():'—'}、`+
+    `漲跌 ${it.chg_pct!=null?(it.chg_pct>0?'+':'')+it.chg_pct+'%':'—'}、量比 ${it.vol_ratio!=null?it.vol_ratio:'—'}；<br>`+
+    `<span style="font-size:12px;color:var(--muted)">${it.price_state}；20日均線${it.vs_sma20}、60日${it.vs_sma60}。${it.advice}</span>`;
+
+  // 大盤
+  const tx=A.taiex;
+  setVal('tScore', tx.score, cls(tx.score));
+  document.getElementById('tInfo').innerHTML = tx.ok
+    ? `加權 <b>${tx.point.toLocaleString()}</b>、${tx.chg_pct>0?'+':''}${tx.chg_pct}%、${tx.direction}。<br><span style="font-size:12px;color:var(--muted)">${tx.advice}</span>`
+    : `<span style="color:var(--muted)">大盤資料未取得。</span>`;
+
+  // 籌碼
+  const ff=A.fund_flow;
+  setVal('fScore', ff.score||0, cls(ff.score||0));
+  document.getElementById('fInfo').innerHTML = ff.ok
+    ? `${ff.label}（當日榜單 ${ff.net_buy_count} 家淨買／${ff.net_sell_count} 家淨賣）。`+
+      (ff.on_list&&ff.inst?`<br><span style="font-size:12px;color:var(--muted)">本股當榜：三大法人 ${ff.inst.total_net>=0?'+':''}${ff.inst.total_net.toLocaleString()} 股、外資 ${ff.inst.foreign_net>=0?'+':''}${ff.inst.foreign_net.toLocaleString()} 股。</span>`
+      :`<br><span style="font-size:12px;color:var(--muted)">本股未進當日全場法人榜單，法人淨額相對不大。</span>`)
+    : `<span style="color:var(--muted)">籌碼面未取得（${ff.err||''}）。</span>`;
+  // 籌碼多日統計
+  const fm = A.fund_multi;
+  document.getElementById('fMulti').innerHTML = fm && fm.ok
+    ? `近 ${fm.days} 日：全場法人偏多 <b>${fm.up_days}</b> 天／偏空 <b>${fm.down_days}</b> 天，整體「${fm.label}」。` +
+      (fm.ticker_on_list_days>0 ? ` 本股當榜 <b>${fm.ticker_on_list_days}</b> 天、合計 ${fm.ticker_net_sum>=0?'+':''}${fm.ticker_net_sum.toLocaleString()} 股。`
+      : ` 本股近期未進全場法人榜單。`)
+    : `<span style="color:var(--muted)">籌碼多日統計未取得。</span>`;
+
+  // 相對大盤強度
+  const rs = A.relative;
+  document.getElementById('rsInfo').innerHTML = rs && rs.ok
+    ? `個股近20日 <b>${rs.stock_ret>0?'+':''}${rs.stock_ret}%</b>、大盤 <b>${rs.taiex_ret>0?'+':''}${rs.taiex_ret}%</b>，<b>${rs.label}</b>（差 ${rs.diff>0?'+':''}${rs.diff}%）。<br>${rs.advice}`
+    : `<span style="color:var(--muted)">相對強度暫無法計算。</span>`;
+  drawRSChart(rs, A._stockRows, A._taiexRows, t);
+  window._rsArgs = [A._stockRows, A._taiexRows, t];
+
+  // 消息
+  const nw=A.news;
+  setVal('nScore', nw?nw.score:0, cls(nw?nw.score:0));
+  document.getElementById('nInfo').innerHTML = nw
+    ? `${nw.label}（近 ${nw.count} 則新聞，利多 ${nw.pos}／利空 ${nw.neg}）。<br><span style="font-size:12px;color:var(--muted)">${nw.advice}</span>`
+    : `<span style="color:var(--muted)">目前沒有抓到相關新聞。</span>`;
+
+  // 訊號：依「權重/重要性 + 新到舊」排列（偏多偏空在前、中性靠後）
+  const order = { buy: 0, sell: 0, neutral: 1 };
+  const sortedSigs = [...A.signals].sort((a, b) => {
+    const wa = order[a.state] ?? 1, wb = order[b.state] ?? 1;
+    if (wa !== wb) return wa - wb;                 // 偏多/偏空優先
+    return (b.weight || 0) - (a.weight || 0);        // 同組內依權重
+  });
+  document.getElementById('sigList').innerHTML = sortedSigs.map(s=>{
+    const b = s.state==='buy'?'buy':s.state==='sell'?'sell':'neutral';
+    const txt = s.state==='buy'?'偏多':s.state==='sell'?'偏空':'中性';
+    return `<div class="sig"><span class="badge ${b}">${txt}</span><div><div>${s.name}</div><div class="d">${s.detail||''}</div></div></div>`;
+  }).join('');
+
+  // 近期買賣時機（新→舊）
+  const evs = StockCore.findBuySellPoints(A.indicators, A._stockRows || [], 60);
+  document.getElementById('evList').innerHTML = evs.length
+    ? evs.slice(0, 12).map(e =>
+      `<div class="sig"><span class="badge ${e.type==='buy'?'buy':'sell'}">${e.type==='buy'?'▲ 買入':'▼ 賣出'}</span>` +
+      `<div><div><b>${e.date}</b> · ${e.price.toLocaleString()}</div><div class="d">${e.description}</div></div></div>`
+    ).join('')
+    : '<span style="color:var(--muted)">近期沒有特別明顯的買賣時機</span>';
+
+  drawChart(rows, A.indicators);
+}
+
+// ── 個股 vs 大盤 相對強度圖（近 20 日收盤涨跌幅雙折線）──
+function drawRSChart(rs, stockRows, taiexRows, t){
+  const cv=document.getElementById('rsChart');
+  if(!cv) return;
+  const dpr=window.devicePixelRatio||1;
+  const W=cv.clientWidth||800, H=160;
+  cv.width=W*dpr; cv.height=H*dpr; cv.style.height=H+'px';
+  const ctx=cv.getContext('2d'); ctx.scale(dpr,dpr);
+  ctx.clearRect(0,0,W,H);
+  if(!stockRows || !taiexRows || !stockRows.length || !taiexRows.length){
+    ctx.textAlign='center'; ctx.fillStyle='#94a3b8'; ctx.fillText('暫無資料', W/2, H/2);
+    return;
+  }
+  const N = Math.min(20, stockRows.length);
+  const s = stockRows.slice(-N), base = s[0].close;
+  const tRows = taiexRows.slice(-N), tBase = tRows[0].close;
+  const sPct = s.map(r => (r.close - base) / base * 100);
+  const tPct = tRows.length === N ? tRows.map(r => (r.close - tBase) / tBase * 100) : sPct.map(x => 0);
+  let lo = -Infinity, hi = Infinity;
+  sPct.forEach(v => { lo = Math.min(lo, v); hi = Math.max(hi, v); });
+  tPct.forEach(v => { lo = Math.min(lo, v); hi = Math.max(hi, v); });
+  lo = Math.min(lo, -0.5); hi = Math.max(hi, 0.5);
+  const pad = { l: 40, r: 12, t: 14, b: 22 };
+  const pw = W - pad.l - pad.r, ph = H - pad.t - pad.b;
+  const X = i => pad.l + (i / Math.max(1, N - 1)) * pw;
+  const Y = v => pad.t + (hi - v) / (hi - lo) * ph;
+  ctx.font = '10px sans-serif'; ctx.textAlign = 'right';
+  [-4, -2, 0, 2, 4].forEach(v => {
+    if (v < lo || v > hi) return;
+    const y = Y(v);
+    ctx.strokeStyle = v === 0 ? '#3a4658' : '#2a3441';
+    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(W - pad.r, y); ctx.stroke();
+    ctx.fillStyle = '#94a3b8'; ctx.fillText(v + '%', pad.l - 4, y + 3);
+  });
+  ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 1.5; ctx.beginPath();
+  tPct.forEach((v, i) => { i === 0 ? ctx.moveTo(X(i), Y(v)) : ctx.lineTo(X(i), Y(v)); });
+  ctx.stroke();
+  ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 2; ctx.beginPath();
+  sPct.forEach((v, i) => { i === 0 ? ctx.moveTo(X(i), Y(v)) : ctx.lineTo(X(i), Y(v)); });
+  ctx.stroke();
+  ctx.textAlign = 'left'; ctx.font = '11px sans-serif';
+  ctx.strokeStyle = '#38bdf8'; ctx.beginPath(); ctx.moveTo(pad.l + 4, pad.t + 2); ctx.lineTo(pad.l + 24, pad.t + 2); ctx.stroke();
+  ctx.fillStyle = '#38bdf8'; ctx.fillText(t, pad.l + 28, pad.t + 6);
+  ctx.strokeStyle = '#94a3b8'; ctx.beginPath(); ctx.moveTo(pad.l + 70, pad.t + 2); ctx.lineTo(pad.l + 90, pad.t + 2); ctx.stroke();
+  ctx.fillStyle = '#94a3b8'; ctx.fillText('加權', pad.l + 94, pad.t + 6);
+}
+
+function setVal(id, v, c){
+  const el=document.getElementById(id);
+  el.textContent = Number.isFinite(v)?v.toFixed(2):'—';
+  el.className='val '+c;
+}
+
+// ── K 線＋均線（原生 Canvas）──────────────────────────────
+function drawChart(rows, IND){
+  const cv=document.getElementById('chart');
+  const dpr=window.devicePixelRatio||1;
+  const W=cv.clientWidth, H=300;
+  cv.width=W*dpr; cv.height=H*dpr; cv.style.height=H+'px';
+  const ctx=cv.getContext('2d'); ctx.scale(dpr,dpr);
+  const n=rows.length, pad={l:44,r:10,t:14,b:24};
+  const plotW=W-pad.l-pad.r, plotH=H-pad.t-pad.b;
+  let hi=-Infinity,lo=Infinity;
+  rows.forEach(r=>{hi=Math.max(hi,r.high);lo=Math.min(lo,r.low);});
+  const y=v=>pad.t+(hi-v)/(hi-lo)*plotH;
+  const x=i=>pad.l+i*(plotW/n);
+  // 網格
+  ctx.strokeStyle='#2a3441';ctx.fillStyle='#94a3b8';ctx.font='11px sans-serif';ctx.textAlign='right';
+  for(let g=0;g<=4;g++){const v=lo+(hi-lo)*g/4;const yy=y(v);ctx.beginPath();ctx.moveTo(pad.l,yy);ctx.lineTo(W-pad.r,yy);ctx.stroke();ctx.fillText(v.toFixed(0),pad.l-6,yy+3);}
+  // K 線
+  const bw=Math.max(1,plotW/n*0.6);
+  rows.forEach((r,i)=>{
+    const up=r.close>=r.open;
+    ctx.strokeStyle=ctx.fillStyle=up?'#22c55e':'#ef4444';
+    const cx=x(i);
+    ctx.beginPath();ctx.moveTo(cx,y(r.high));ctx.lineTo(cx,y(r.low));ctx.stroke();
+    const top=y(Math.max(r.open,r.close)),bot=y(Math.min(r.open,r.close));
+    ctx.fillRect(cx-bw/2,top,bw,Math.max(1,bot-top));
+  });
+  // 均線
+  const smaLine=(arr,color)=>{ctx.strokeStyle=color;ctx.beginPath();let started=false;
+    arr.forEach((v,i)=>{if(v==null)return;const xx=x(i),yy=y(v);if(!started){ctx.moveTo(xx,yy);started=true;}else ctx.lineTo(xx,yy);});ctx.stroke();};
+  smaLine(IND.SMA5,'#f59e0b');smaLine(IND.SMA20,'#38bdf8');smaLine(IND.SMA60,'#a855f7');
+  ctx.textAlign='left';ctx.font='11px sans-serif';
+  ctx.fillStyle='#f59e0b';ctx.fillText('SMA5',pad.l,pad.t+10);
+  ctx.fillStyle='#38bdf8';ctx.fillText('SMA20',pad.l+34,pad.t+10);
+  ctx.fillStyle='#a855f7';ctx.fillText('SMA60',pad.l+80,pad.t+10);
+}
+
+// 自動分析
+document.getElementById('ticker').addEventListener('keydown',e=>{if(e.key==='Enter')run();});
+window.addEventListener('load',run);
+window.addEventListener('resize',()=>{ if(window._lastRows) drawChart(window._lastRows, window._lastIND); });
+
+</script>
+</body>
+</html>
