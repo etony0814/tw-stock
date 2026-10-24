@@ -302,7 +302,7 @@ function showResultTitle(t, nm){
   const box = document.getElementById('resultTitle');
   if(!box) return;
   box.style.display = 'block';
-  document.getElementById('rtName').textContent = t + (nm ? " " + nm : "");
+  document.getElementById('rtName').textContent = (nm && nm !== t) ? t + " " + nm : t;
   updateWatchBtn(t);
 }
 function updateWatchBtn(t){
