@@ -81,7 +81,14 @@
     <button id="btn" onclick="run()">開始分析</button>
     <label class="hint"><input type="checkbox" id="ckNews" checked style="width:auto;vertical-align:middle"> 消息面</label>
     <label class="hint"><input type="checkbox" id="ckFund" checked style="width:auto;vertical-align:middle"> 籌碼面</label>
+    <label class="hint"><input type="checkbox" id="ckWatch" style="width:auto;vertical-align:middle"> 加入自選股</label>
     <span class="hint">例：2330 台積電、2303 華碩、0050 大S50</span>
+  </div>
+
+  <!-- 自選股列 -->
+  <div id="watchlist" style="display:none;margin:10px 0">
+    <div style="font-size:12px;color:var(--muted);margin-bottom:6px">⭐ 自選股（點一下即分析）</div>
+    <div id="watchBtns" style="display:flex;gap:6px;flex-wrap:wrap"></div>
   </div>
 
   <div id="loading"><div class="spin"></div>正在抓取行情與分析，請稍候…</div>
@@ -273,6 +280,9 @@ async function run(){
   const t=document.getElementById('ticker').value.trim();
   const nm=document.getElementById('name').value.trim();
   const period=document.getElementById('period').value;
+  // 若代號有中文名且未填名稱，自動補上
+  if(!document.getElementById('name').value && WNAMES[t])
+    document.getElementById('name').value=WNAMES[t];
   const btn=document.getElementById('btn');
   document.getElementById('loading').style.display='block';
   document.getElementById('results').style.display='none';
@@ -488,9 +498,47 @@ function drawChart(rows, IND){
   ctx.fillStyle='#a855f7';ctx.fillText('SMA60',pad.l+80,pad.t+10);
 }
 
+// ── 自選股（localStorage）──────────────────────────────
+const WATCH_KEY = "tony_watchlist_web";
+const WNAMES = {"2330":"台積電","2303":"華碩","2317":"聯發科","2326":"鴻海","2454":"神基","6669":"國巨","0050":"大S50","0051":"自創50","3009":"欣興","2357":"大聯大","8071":"日月光投控","2325":"大智","2809":"新美","3231":"台達電"};
+function loadWatch(){ try{ return JSON.parse(localStorage.getItem(WATCH_KEY)||"[]"); }catch(e){ return []; } }
+function saveWatch(list){
+  localStorage.setItem(WATCH_KEY, JSON.stringify(list));
+  renderWatch(list);
+}
+function renderWatch(list){
+  const panel=document.getElementById('watchlist');
+  const box=document.getElementById('watchBtns');
+  if(!list.length){ panel.style.display='none'; box.innerHTML=''; return; }
+  panel.style.display='block';
+  box.innerHTML=list.map(t=>{
+    const nm=WNAMES[t]||'';
+    return `<button onclick="pickWatch('${t}')" style="background:var(--card2);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:6px 12px;font-size:13px;cursor:pointer">${t} ${nm}</button>`;
+  }).join('');
+}
+function pickWatch(t){
+  document.getElementById('ticker').value=t;
+  const nmEl=document.getElementById('name');
+  if(nmEl && WNAMES[t]) nmEl.value=WNAMES[t];
+  run();
+}
+function watchToggle(){
+  const ck=document.getElementById('ckWatch').checked;
+  const t=document.getElementById('ticker').value.trim().toUpperCase();
+  if(!/^\d{4}$/.test(t)) return;
+  let list=loadWatch();
+  if(ck && !list.includes(t)) list.push(t);
+  else if(!ck && list.includes(t)) list=list.filter(x=>x!==t);
+  saveWatch(list);
+}
+
 // 自動分析
 document.getElementById('ticker').addEventListener('keydown',e=>{if(e.key==='Enter')run();});
-window.addEventListener('load',run);
+document.getElementById('ckWatch').addEventListener('change',watchToggle);
+window.addEventListener('load',()=>{
+  renderWatch(loadWatch());
+  run();
+});
 window.addEventListener('resize',()=>{ if(window._lastRows) drawChart(window._lastRows, window._lastIND); });
 
 </script>
