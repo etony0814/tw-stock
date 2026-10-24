@@ -93,7 +93,7 @@
 
   <div id="loading"><div class="spin"></div>正在抓取行情與分析，請稍候…</div>
   <div id="demoBanner" class="card" style="display:none;border:1px solid var(--yellow);background:rgba(245,158,11,.08)">
-    <b style="color:var(--yellow)">⚠ 示範資料</b> — 真實行情暫時抓不到，以下為內建示範 K 線，僅展示介面與分析流程。上 GitHub Pages 後即為真實資料。
+    <b style="color:var(--yellow)">⚠ 示範資料</b> — 真實行情暫時抓不到（Yahoo 跨域受限），以下為內建示範 K 線，僅展示介面與分析流程。稍後重試，或用電腦版（python server.py）取真實資料。
   </div>
   <div id="err" class="card"></div>
   <div id="results" style="display:none">
@@ -168,13 +168,14 @@
 <script src="core.js"></script>
 <script>
 // ── 用公開端點抓個股日K 與 加權指數 ──────────────────────
-// 台股：Yahoo chart API；上線(GitHub Pages https 安全來源)可直抓，
-// 本地 https 測試或被擋時 fallback 到跨域代理。
+// 台股：Yahoo chart API。瀏覽器跨域直抓 Yahoo 會被 CORS 擋，
+// 改走 Jina Reader（r.jina.ai，免金鑰可跨域）代理取真實資料；
+// 直抓 / Jina 任一成功即用真實資料，都失敗才回退示範資料。
 const STOCK_URLS = [
   "https://query2.finance.yahoo.com/v8/finance/chart/",
   "https://query1.finance.yahoo.com/v8/finance/chart/",
 ];
-const CORS_PROXY = "https://api.allorigins.win/raw?url=";
+const JINA = "https://r.jina.ai/";   // 免金鑰跨域讀取端點
 function toYahoo(t){ return t.endsWith(".TWO") ? t : (t.toUpperCase().replace(/\.TW$/,"")+".TW"); }
 
 async function fetchJsonOne(url){
@@ -183,23 +184,35 @@ async function fetchJsonOne(url){
   return await r.json();
 }
 
+// 從 Jina Reader 的 Markdown 包裝抽出內層 JSON
+function jinaParse(text){
+  const idx = text.indexOf("Markdown Content:");
+  let body = idx >= 0 ? text.slice(idx + "Markdown Content:".length) : text;
+  body = body.trim();
+  const open = body.indexOf("{");
+  if (open >= 0) body = body.slice(open);
+  return JSON.parse(body);
+}
+
 async function fetchRows(code, period){
   const qs = "?range=" + period + "&interval=1d";
-  // 依序直抓多個 Yahoo 端點
   let lastErr = null;
+  // 1) 直抓 Yahoo（本地 / 允許 CORS 的環境）
+  for (const base of STOCK_URLS) {
+    try { return buildRows(await fetchJsonOne(base + code + qs), code); }
+    catch (e) { lastErr = e; }
+  }
+  // 2) 走 Jina Reader 代理（瀏覽器跨域可直抓）
   for (const base of STOCK_URLS) {
     try {
-      return await buildRows(await fetchJsonOne(base + code + qs), code);
+      const target = base + code + qs;
+      const r = await fetch(JINA + target, { headers: { "Accept": "text/plain" } });
+      if(!r.ok) throw new Error("Jina HTTP " + r.status);
+      const text = await r.text();
+      return buildRows(jinaParse(text), code);
     } catch (e) { lastErr = e; }
   }
-  // 直抓都失敗，走跨域代理
-  try {
-    const target = STOCK_URLS[0] + code + qs;
-    const j = await fetchJsonOne(CORS_PROXY + encodeURIComponent(target));
-    return buildRows(j, code);
-  } catch (e) {
-    throw new Error("取不到 " + code + " 行情（直抓與代理皆失敗：" + (lastErr || e) + "）");
-  }
+  throw new Error("取不到 " + code + " 行情（直抓與 Jina 代理皆失敗：" + (lastErr ? lastErr.message : "無") + "）");
 }
 
 function buildRows(j, code){
@@ -322,7 +335,7 @@ async function run(){
     document.getElementById('results').style.display='block';
     document.getElementById('err').style.display='block';
     document.getElementById('err').textContent =
-      "⚠️ 真實行情目前取不到（Yahoo 可能限流），下方為「示範資料」以展示介面。稍後重試或上 GitHub Pages 即為真實資料。";
+      "⚠️ 真實行情暫時取不到（Yahoo 跨域受限），下方為「示範資料」僅展示介面。稍後重試，或改用電腦版（python server.py）拿真實資料。";
   }finally{
     document.getElementById('loading').style.display='none';
     btn.disabled=false;
