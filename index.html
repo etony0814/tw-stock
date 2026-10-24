@@ -497,7 +497,8 @@ function drawRSChart(rs, stockRows, taiexRows, t){
   const cv=document.getElementById('rsChart');
   if(!cv) return;
   const dpr=window.devicePixelRatio||1;
-  const W=cv.clientWidth||800, H=160;
+  const W=cv.clientWidth||cv.parentElement.clientWidth||800, H=160;
+  if(W<=0) return;
   cv.width=W*dpr; cv.height=H*dpr; cv.style.height=H+'px';
   const ctx=cv.getContext('2d'); ctx.scale(dpr,dpr);
   ctx.clearRect(0,0,W,H);
@@ -518,25 +519,41 @@ function drawRSChart(rs, stockRows, taiexRows, t){
   const pw = W - pad.l - pad.r, ph = H - pad.t - pad.b;
   const X = i => pad.l + (i / Math.max(1, N - 1)) * pw;
   const Y = v => pad.t + (hi - v) / (hi - lo) * ph;
+  // 背景網格 + 水平參考線
   ctx.font = '10px sans-serif'; ctx.textAlign = 'right';
   [-4, -2, 0, 2, 4].forEach(v => {
     if (v < lo || v > hi) return;
     const y = Y(v);
-    ctx.strokeStyle = v === 0 ? '#3a4658' : '#2a3441';
+    ctx.strokeStyle = v === 0 ? '#3a4658' : '#1e2a3a';
+    ctx.lineWidth = v === 0 ? 1 : 0.5;
     ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(W - pad.r, y); ctx.stroke();
     ctx.fillStyle = '#94a3b8'; ctx.fillText(v + '%', pad.l - 4, y + 3);
   });
-  ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 1.5; ctx.beginPath();
+  // X 軸日期標籤（首、中、尾）
+  ctx.textAlign='center'; ctx.fillStyle='#64748b';
+  [0, Math.floor(N/2), N-1].forEach(i => {
+    const d = s[i].date || '';
+    ctx.fillText(d.slice(5), X(i), H - 4);
+  });
+  // 加權折線（灰）
+  ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 1.5; ctx.lineJoin='round'; ctx.beginPath();
   tPct.forEach((v, i) => { i === 0 ? ctx.moveTo(X(i), Y(v)) : ctx.lineTo(X(i), Y(v)); });
   ctx.stroke();
-  ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 2; ctx.beginPath();
+  // 個股折線（藍，粗）
+  ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 2.5; ctx.lineJoin='round'; ctx.beginPath();
   sPct.forEach((v, i) => { i === 0 ? ctx.moveTo(X(i), Y(v)) : ctx.lineTo(X(i), Y(v)); });
   ctx.stroke();
-  ctx.textAlign = 'left'; ctx.font = '11px sans-serif';
-  ctx.strokeStyle = '#38bdf8'; ctx.beginPath(); ctx.moveTo(pad.l + 4, pad.t + 2); ctx.lineTo(pad.l + 24, pad.t + 2); ctx.stroke();
-  ctx.fillStyle = '#38bdf8'; ctx.fillText(t, pad.l + 28, pad.t + 6);
-  ctx.strokeStyle = '#94a3b8'; ctx.beginPath(); ctx.moveTo(pad.l + 70, pad.t + 2); ctx.lineTo(pad.l + 90, pad.t + 2); ctx.stroke();
-  ctx.fillStyle = '#94a3b8'; ctx.fillText('加權', pad.l + 94, pad.t + 6);
+  // 圓點標記
+  ctx.fillStyle = '#38bdf8';
+  sPct.forEach((v, i) => { if (i % 4 === 0 || i === N-1) { ctx.beginPath(); ctx.arc(X(i), Y(v), 2.5, 0, Math.PI*2); ctx.fill(); }});
+  ctx.fillStyle = '#94a3b8';
+  tPct.forEach((v, i) => { if (i % 4 === 0 || i === N-1) { ctx.beginPath(); ctx.arc(X(i), Y(v), 2, 0, Math.PI*2); ctx.fill(); }});
+  // 圖例
+  ctx.textAlign='left'; ctx.font='11px sans-serif';
+  ctx.strokeStyle='#38bdf8'; ctx.lineWidth=2.5; ctx.beginPath(); ctx.moveTo(pad.l+4, pad.t+2); ctx.lineTo(pad.l+24, pad.t+2); ctx.stroke();
+  ctx.fillStyle='#38bdf8'; ctx.fillText(t, pad.l+28, pad.t+6);
+  ctx.strokeStyle='#94a3b8'; ctx.lineWidth=1.5; ctx.beginPath(); ctx.moveTo(pad.l+72, pad.t+2); ctx.lineTo(pad.l+92, pad.t+2); ctx.stroke();
+  ctx.fillStyle='#94a3b8'; ctx.fillText('加權', pad.l+96, pad.t+6);
 }
 
 function setVal(id, v, c){
@@ -549,7 +566,9 @@ function setVal(id, v, c){
 function drawChart(rows, IND){
   const cv=document.getElementById('chart');
   const dpr=window.devicePixelRatio||1;
-  const W=cv.clientWidth||cv.parentElement.clientWidth||800, H=300;
+  let W=cv.clientWidth||cv.parentElement?.clientWidth||800;
+  if(W<=0) W=800;
+  const H=300;
   cv.width=W*dpr; cv.height=H*dpr; cv.style.height=H+'px';
   const ctx=cv.getContext('2d'); ctx.scale(dpr,dpr);
   const n=rows.length, pad={l:44,r:10,t:14,b:24};
