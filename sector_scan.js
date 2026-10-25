@@ -105,8 +105,8 @@ function calcIndicators(rows){
           BIAS20,VROC20,close:c,high:h,low:l,rows};
 }
 
-// ── 5 維度布局分數（消息面 35% 最高） ─────────────────────────
-function layoutScore(IND, i, newsScore, vsTaiex){
+// ── 6 維度布局分數（消息面導向：情緒分數 + 新聞聲量雙因子） ─
+function layoutScore(IND, i, newsScore, newsVolume, vsTaiex){
   const ind = IND;
   const reasons = {};
   const c=ind.close[i], macd=ind.MACD[i], msig=ind.MACD_signal[i], rsi=ind.RSI[i];
@@ -118,8 +118,15 @@ function layoutScore(IND, i, newsScore, vsTaiex){
   if (macdGold && rsiRec) reasons.turn_strong=1.0;
   else if (macdGold || rsiRec || macdPos) reasons.turn_strong=0.5;
   else reasons.turn_strong=0.0;
-  // 2) 消息面（35%）
+  // 2) 消息情緒（25%）：正面詞 vs 負面詞分數（0~1）
   reasons.news = newsScore!=null?newsScore:0.5;
+  // 2b) 新聞聲量（15%）：暴量新聞 = 消息面突破訊號
+  const vol=newsVolume||0;
+  if (vol>=50) reasons.news_volume=1.0;
+  else if (vol>=30) reasons.news_volume=0.8;
+  else if (vol>=10) reasons.news_volume=0.5;
+  else reasons.news_volume=0.2;
+  reasons.news_volume_raw=vol;
   // 3) 量能（15%）：VROC20 90~130 最佳
   const v=ind.VROC20[i];
   if (v!=null && v>=90 && v<=130) reasons.volume=1.0;
@@ -135,15 +142,18 @@ function layoutScore(IND, i, newsScore, vsTaiex){
   if (bias>=-3&&bias<=3&&atrPct<5) reasons.bias=1.0;
   else if (bias>=-5&&bias<=5&&atrPct<8) reasons.bias=0.6;
   else reasons.bias=0.0;
-  const score=reasons.turn_strong*25+reasons.news*35+reasons.volume*15+reasons.relative*10+reasons.bias*15;
+  // 總分（合計 105%，截斷 100）
+  const score=Math.min(100,
+    reasons.turn_strong*25+reasons.news*25+reasons.news_volume*15+
+    reasons.volume*15+reasons.relative*10+reasons.bias*15);
   return {score:Math.round(score*10)/10, reasons};
 }
 
-// ── 消息面（Google News RSS） ────────────────────────────────
+// ── 消息面（Google News RSS：情緒分數 + 新聞聲量 + 鉅亨網來源） ─
 async function fetchNewsSentiment(code, name, days){
   days=days||7;
   const q=encodeURIComponent((name||"")+" "+code);
-  const url=`https://news.google.com/rss/search?q=${q}&hl=zh-TW&gl=TW&ce=zh`;
+  const url=`https://news.google.com/rss/search?q=${q}&hl=zh-TW&gl=TW&ce=zh&when=${days}d`;
   let text=null;
   // 1) 直抓
   try{const r=await fetch(url,{mode:"cors"});if(r.ok){text=await r.text();if(!text||text.indexOf("<rss")<0)text=null;}}catch(e){}
@@ -155,13 +165,14 @@ async function fetchNewsSentiment(code, name, days){
     const doc=new DOMParser().parseFromString(text,"text/xml");
     const items=Array.from(doc.querySelectorAll("item")).map(it=>{
       const t=it.querySelector("title");return t?t.textContent.trim():"";}).filter(Boolean);
+    const result={score:0.5, volume:items.length, anue_volume:items.filter(t=>t.indexOf("鉅亨")>=0).length};
     let P=0,N=0;
     for(const t of items){const tt=t.toLowerCase();
       for(const w of POS)if(tt.includes(w))P++;
       for(const w of NEG)if(tt.includes(w))N++;}
     const total=P+N;
-    if(total===0)return 0.5;
-    return Math.round(((P-N)/total*0.5+0.5)*1000)/1000;
+    result.score = total===0 ? 0.5 : Math.round(((P-N)/total*0.5+0.5)*1000)/1000;
+    return result;
   }catch(e){return null;}
 }
 
@@ -203,10 +214,13 @@ async function scanSector(sectorName, limit){
   const top=results.slice(0,20);
   for(const item of top){
     try{item.news=await fetchNewsSentiment(item.code,item.name,7);}catch(e){item.news=null;}
-    if(item.news==null)item.news=0.5;
-    const full=layoutScore(item.indicators,item.indicators.close.length-1,item.news,tw);
+    // 新聞 dict：{score, volume, anue_volume}；null → 中性
+    const ns=item.news?item.news.score:0.5;
+    const nv=item.news?item.news.volume:0;
+    const full=layoutScore(item.indicators,item.indicators.close.length-1,ns,nv,tw);
     item.score=full.score;
     item.reasons=full.reasons;
+    item.news=item.news; // 保留完整 dict 供 UI 顯示鉅亨網來源
   }
   results.sort((a,b)=>b.score-a.score);
   return {sector:sectorName, taiex_20d:tw, count:results.length, results:results.slice(0,limit||30)};
@@ -247,10 +261,16 @@ function renderResults(d){
   sum.innerHTML=`共 <b style="color:var(--text)">${d.count}</b> 檔、產業別 ${d.sector}、加權指數近 20 日 <b style="color:${d.taiex_20d>0?"var(--bull)":"var(--bear)"}">${tw}</b>`;
   body.innerHTML=d.results.map(x=>{
     const rs=x.reasons||{};
-    const checks=chk(rs.turn_strong>=1,"轉強")+chk(rs.news>=0.7,"消息")+chk(rs.volume>=0.6,"量能")+chk(rs.bias>=0.6,"乖離")+chk(rs.relative>=1,"相對");
+    const checks=chk(rs.turn_strong>=1,"轉強")+chk(rs.news>=0.7,"消息")+chk((rs.news_volume||0)>=0.8,"聲量")+chk(rs.volume>=0.6,"量能")+chk(rs.bias>=0.6,"乖離")+chk(rs.relative>=1,"相對");
     const scoreCls=scoreClass(x.score);
+    // 新聞聲量 + 鉅亨網來源（顯示在「名稱」欄下方）
+    const nv=rs.news_volume_raw||0;
+    const an=(x.news&&typeof x.news==="object")?x.news.anue_volume:0;
+    const newsMeta=`<div style="font-size:11px;color:var(--muted);margin-top:2px">📰 近7天 <b style="color:var(--text)">${nv}</b> 則、鉅亨 <b style="color:var(--accent)">${an}</b> 則</div>`;
     return `<tr style="cursor:pointer" onclick="quickDetail('${x.code}')">
-      <td class="code-cell">${x.code}</td><td>${x.name||"—"}</td><td>${x.industry}</td>
+      <td class="code-cell">${x.code}</td>
+      <td>${x.name||"—"}${newsMeta}</td>
+      <td>${x.industry}</td>
       <td>${x.price!=null?x.price.toFixed(2):"—"}</td>
       <td class="score-cell ${scoreCls}">${x.score}</td>
       <td><div class="checks">${checks}</div></td></tr>`;
