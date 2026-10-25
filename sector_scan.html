@@ -68,7 +68,7 @@ body{font-family:-apple-system,"Segoe UI","Microsoft JhengHei",sans-serif;
   <div class="header">
     <h1>📊 產業淺力股 <span>掃描小幫手</span></h1>
     <div class="sub">選定產業別，掃出「剛轉強 + 有量能 + 消息偏正面」的早期布局機會股<br>
-    布局分數 = 消息面 35%＋轉強訊號 25%＋量能 15%＋乖離收斂 15%＋相對強度 10%（僅供學習，不構成投資建議）</div>
+    布局分數 = 消息情緒 25%＋新聞聲量 15%＋轉強訊號 25%＋量能 15%＋乖離收斂 15%＋相對強度 10%（僅供學習，不構成投資建議）</div>
   </div>
 
   <div class="controls">
@@ -89,16 +89,16 @@ body{font-family:-apple-system,"Segoe UI","Microsoft JhengHei",sans-serif;
       <div style="overflow-x:auto">
         <table class="result-table" id="resTable">
           <thead><tr>
-            <th>代號</th><th>名稱</th><th>產業別</th><th>現價</th><th>布局分數</th><th>五大訊號</th>
+            <th>代號</th><th>名稱</th><th>產業別</th><th>現價</th><th>布局分數</th><th>六大訊號</th>
           </tr></thead>
           <tbody id="resBody"></tbody>
         </table>
       </div>
       <div class="hint-box">
-        <b>五大訊號說明：</b><br>
-        ① <b>轉強訊號</b>（MACD 剛金叉 + RSI 回升到 40~55）｜② <b>消息面</b>（近 7 天 Google News 情緒）<br>
-        ③ <b>量能</b>（量比 1~1.3 最佳，有進場跡象、非爆量）｜④ <b>乖離收斂</b>（BIAS20 接近 0、ATR 低）<br>
-        ⑤ <b>相對強度</b>（近 20 日跑贏加權指數）<br>
+        <b>六大訊號說明：</b><br>
+        ① <b>轉強訊號</b>（MACD 剛金叉 + RSI 回升到 40~55）｜② <b>消息情緒</b>（近 7 天 Google News 正面詞 vs 負面詞）<br>
+        ③ <b>新聞聲量</b>（近 7 天全網新聞篇數，暴量 = 消息面突破）｜④ <b>量能</b>（量比 1~1.3 最佳，有進場跡象、非爆量）<br>
+        ⑤ <b>乖離收斂</b>（BIAS20 接近 0、ATR 低）｜⑥ <b>相對強度</b>（近 20 日跑贏加權指數）<br>
         <span style="color:var(--accent)">點一檔 → 跳個股詳細分析卡（複用既有 renderFinal）</span>
       </div>
     </div>
