@@ -109,11 +109,11 @@ function calcIndicators(rows){
 function layoutScore(IND, i, newsScore, newsVolume, vsTaiex){
   const ind = IND;
   const reasons = {};
-  const c=ind.close[i], macd=ind.MACD[i], msig=ind.MACD_signal[i], rsi=ind.RSI[i];
+  const cl=ind.close[i], macd=ind.MACD[i], msig=ind.MACD_signal[i], rsiV=ind.RSI[i];
   const pmacd=i>0?ind.MACD[i-1]:null, pmsig=i>0?ind.MACD_signal[i-1]:null;
   // 1) 轉強訊號（25%）：MACD 金叉 或 RSI 回升到 35~55
   const macdGold = pmacd!==null && pmsig!==null && pmacd<=pmsig && macd>msig;
-  const rsiRec = rsi!=null && rsi>=35 && rsi<=55;
+  const rsiRec = rsiV!=null && rsiV>=35 && rsiV<=55;
   const macdPos = macd>0;
   if (macdGold && rsiRec) reasons.turn_strong=1.0;
   else if (macdGold || rsiRec || macdPos) reasons.turn_strong=0.5;
@@ -138,7 +138,7 @@ function layoutScore(IND, i, newsScore, newsVolume, vsTaiex){
   else reasons.relative=0.5;
   // 5) 乖離收斂（15%）
   const bias=ind.BIAS20[i]||0;
-  const atrPct=(ind.ATR[i]&&c)?(ind.ATR[i]/c*100):0;
+  const atrPct=(ind.ATR[i]&&cl)?(ind.ATR[i]/cl*100):0;
   if (bias>=-3&&bias<=3&&atrPct<5) reasons.bias=1.0;
   else if (bias>=-5&&bias<=5&&atrPct<8) reasons.bias=0.6;
   else reasons.bias=0.0;
@@ -203,8 +203,8 @@ async function scanSector(sectorName, limit){
     if(!rows||rows.length<30)continue;
     const IND=calcIndicators(rows);
     const nRows=rows.length;
-    // 先算「不含新聞」分數
-    const base=layoutScore(IND,nRows-1,0.5,tw);
+    // 先算「不含新聞」分數（news 未抓 → 0.5 中性、聲量 0）
+    const base=layoutScore(IND,nRows-1,0.5,0,tw);
     results.push({code, name:(SECTOR_MAP.code_to_name||{})[code]||"", industry:sectorName,
       price:rows[nRows-1].close, scoreNoNews:base.score, reasons:base.reasons, indicators:IND,
       news:null});
