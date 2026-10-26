@@ -190,6 +190,13 @@
     <div style="font-size:12px;color:var(--muted);margin-bottom:6px">⭐ 自選股（點一下即分析，✕ 移除）</div>
     <div id="watchBtns" style="display:flex;gap:6px;flex-wrap:wrap"></div>
   </div>
+  <!-- 自選股總覽表 -->
+  <div id="watchOverview" style="display:none;margin:10px 0">
+    <div class="card" style="margin:0">
+      <h3>⭐ 自選股總覽（近 20 日表現）</h3>
+      <div id="watchOvTable" style="overflow-x:auto"></div>
+    </div>
+  </div>
 
   <div id="loading"><div class="spin"></div>正在抓取行情與分析，請稍候…</div>
   <div id="demoBanner" class="card" style="display:none;border:1px solid var(--yellow);background:rgba(245,158,11,.08)">
@@ -601,14 +608,47 @@ function render(A, rows, t){
     adviceSummaryEl.innerHTML = sumHtml;
   }
 
-  // 五方分數明細
+  // 五方分數明細（progress bar 長條：紅多、綠空）
   document.getElementById('finalBd').innerHTML =
-    '<div style="font-size:11px;color:var(--muted);margin-bottom:6px">五方分數明細（技術＋籌碼＋消息＋盤面＋大盤）：</div>' +
-    '<div style="display:flex;gap:8px;flex-wrap:wrap">'+
-    Object.keys(f.score_breakdown).map(k=>
-      `<div class="it">${k}<b>${f.score_breakdown[k].toFixed(2)}</b></div>`
-    ).join('')+
-    '</div>';
+    '<div style="font-size:11px;color:var(--muted);margin-bottom:8px">五方分數長條（紅＝看多、綠＝看空，中間為中性）：</div>' +
+    (function(){
+      const keys = Object.keys(f.score_breakdown).filter(k => k !== "綜合");
+      let html = '<div style="display:flex;flex-direction:column;gap:7px">';
+      keys.forEach(k => {
+        const v = f.score_breakdown[k];
+        const w = (f.weights && f.weights[k] != null) ? f.weights[k] : null;
+        // 長條：0 在中間，正往右（紅）、負往左（綠）
+        const posPct = Math.abs(v) * 50; // 0.5 → 50%
+        const isPos = v >= 0;
+        const wLabel = w != null ? ` <span style="font-size:10px;color:var(--muted)">權${Math.round(w*100)}%</span>` : '';
+        html += '<div>' +
+          `<div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:2px">' +
+            `<span style="color:var(--text)">${k}${wLabel}</span>` +
+            `<span style="color:var(--muted)">${v.toFixed(2)}</span></div>` +
+          '<div style="height:8px;background:var(--card2);border-radius:4px;overflow:hidden;position:relative">' +
+            '<div style="position:absolute;left:50%;top:0;bottom:0;width:1px;background:var(--border)"></div>' +
+            (isPos
+              ? `<div style="position:absolute;left:50%;top:0;bottom:0;width:${posPct}%;background:var(--bull);border-radius:0 4px 4px 0"></div>`
+              : `<div style="position:absolute;right:50%;top:0;bottom:0;width:${posPct}%;background:var(--bear);border-radius:4px 0 0 4px"></div>`) +
+          '</div></div>';
+      });
+      // 綜合分數長條
+      const cv = f.score_breakdown["綜合"] != null ? f.score_breakdown["綜合"] : 0;
+      const cp = Math.abs(cv) * 50;
+      const cIsPos = cv >= 0;
+      html += '<div style="margin-top:6px;padding-top:8px;border-top:1px solid var(--border)">' +
+        `<div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:2px">' +
+          `<span style="color:var(--text);font-weight:700">綜合分數</span>` +
+          `<span style="font-weight:700;color:${cIsPos?'var(--bull)':'var(--bear)'}">${cv.toFixed(2)}</span></div>` +
+        '<div style="height:10px;background:var(--card2);border-radius:5px;overflow:hidden;position:relative">' +
+          '<div style="position:absolute;left:50%;top:0;bottom:0;width:1px;background:var(--border)"></div>' +
+          (cIsPos
+            ? `<div style="position:absolute;left:50%;top:0;bottom:0;width:${cp}%;background:var(--bull);border-radius:0 5px 5px 0"></div>`
+            : `<div style="position:absolute;right:50%;top:0;bottom:0;width:${cp}%;background:var(--bear);border-radius:5px 0 0 5px"></div>`) +
+        '</div></div>';
+      html += '</div>';
+      return html;
+    })();
 
   // 關鍵指標快覽
   const lastRow = rows[rows.length-1];
@@ -749,24 +789,37 @@ function render(A, rows, t){
   document.getElementById('fMulti').innerHTML = fm && fm.ok
     ? `近 ${fm.days} 日：全場法人偏多 <b>${fm.up_days}</b> 天／偏空 <b>${fm.down_days}</b> 天，整體「${fm.label}」。` +
       (fm.ticker_on_list_days>0 ? ` 本股當榜 <b>${fm.ticker_on_list_days}</b> 天、合計 ${fm.ticker_net_sum>=0?'+':''}${fm.ticker_net_sum.toLocaleString()} 股。`
-      : ` 本股近期未進全場法人榜單。`)
+      : ` 本股近期未進全場法人榜單。`) +
+      (fm.ticker_consec_label ? `<br><span style="color:var(--accent);font-size:12px">📊 外資連續操作：${fm.ticker_consec_label}。</span>` : '')
     : `<span style="color:var(--muted)">籌碼多日統計未取得。</span>`;
-  // 籌碼榜單清單（三大法人淨買／淨賣 Top 5）
+  // 籌碼榜單清單（三大法人淨買／淨賣 Top 5，本股當榜高亮）
   const ffList = ff.ok && ff.rows ? ff.rows : null;
   const fFlowEl = document.getElementById('fFlowList');
   if (ffList && ffList.length) {
     fFlowEl.style.display = 'block';
-    fFlowEl.innerHTML =
-      `<div style="font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:700">當日三大法人淨額 Top 5</div>` +
-      ffList.slice(0,5).map(item => {
+    const tKey = String(t).padStart(6, '0');
+    const onList = ffList.find(r => r.ticker === tKey || r.ticker === t);
+    let html = '';
+    if (onList) {
+      const nn = (onList.net != null ? onList.net : onList.total_net) || 0;
+      const nCls = nn >= 0 ? 'pos' : 'neg';
+      html += `<div style="background:rgba(56,189,248,.08);border:1px solid var(--accent);border-radius:8px;padding:8px;margin-bottom:8px">` +
+        `<div style="font-size:11px;color:var(--accent);font-weight:700;margin-bottom:4px">📌 本股當日當榜</div>` +
+        `<div class="flow-item" style="border:none;padding:0"><span class="fn"><b>${onList.name || tKey}</b></span>` +
+        `<span class="fv ${nCls}">${nn >= 0 ? '+' : ''}${nn.toLocaleString()} 股</span></div></div>`;
+    }
+    html += `<div style="font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:700">當日三大法人淨額 Top 5</div>` +
+      ffList.slice(0, 5).map(item => {
         const n = (item.net != null ? item.net : item.total_net) || 0;
         const cls2 = n >= 0 ? 'pos' : 'neg';
         const nm = item.name || item.ticker || '';
-        return `<div class="flow-item">` +
-          `<span class="fn">${nm}</span>` +
+        const isSelf = item.ticker === tKey || item.ticker === t;
+        return `<div class="flow-item" ${isSelf ? 'style="background:rgba(56,189,248,.08);border-radius:6px;padding:6px"' : ''}>` +
+          `<span class="fn">${isSelf ? '📌 ' : ''}${nm}</span>` +
           `<span class="fv ${cls2}">${n >= 0 ? '+' : ''}${n.toLocaleString()} 股</span>` +
           `</div>`;
       }).join('');
+    fFlowEl.innerHTML = html;
   } else { fFlowEl.style.display = 'none'; }
 
   // 相對大盤強度
@@ -1140,11 +1193,58 @@ function watchToggle(){
   saveWatch(list);
 }
 
+// 自選股總覽表：並抓每只近 20 日收盤算報酬，顯示 代號/名稱/收盤/20日報酬
+async function refreshWatchOverview(){
+  const list = loadWatch().map(x => x.code || x);
+  const panel = document.getElementById('watchOverview');
+  const table = document.getElementById('watchOvTable');
+  if (!list.length || !panel || !table) { if(panel) panel.style.display='none'; return; }
+  panel.style.display = 'block';
+  table.innerHTML = '<div style="color:var(--muted);font-size:12px">載入中…</div>';
+  const rows = [];
+  for (const t of list.slice(0, 8)) { // 上限 8 只，避免太慢
+    try {
+      const stockRows = await fetchRows(toYahoo(t), '1mo');
+      const tail = stockRows.slice(-21);
+      const close = stockRows[stockRows.length-1].close;
+      const r20 = tail.length >= 2
+        ? (close - tail[0].close) / tail[0].close * 100
+        : null;
+      const nm = WNAMES[t] || '';
+      rows.push({ code:t, name:nm, close, r20 });
+    } catch (e) {
+      rows.push({ code:t, name:WNAMES[t]||'', close:null, r20:null, err:true });
+    }
+  }
+  table.innerHTML =
+    '<table style="width:100%;border-collapse:collapse;font-size:12px">' +
+    '<thead><tr style="color:var(--muted);border-bottom:1px solid var(--border)">' +
+    '<th style="text-align:left;padding:6px 8px">代號</th>' +
+    '<th style="text-align:left;padding:6px 8px">名稱</th>' +
+    '<th style="text-align:right;padding:6px 8px">收盤</th>' +
+    '<th style="text-align:right;padding:6px 8px">20 日報酬</th>' +
+    '<th style="text-align:right;padding:6px 8px"></th></tr></thead>' +
+    '<tbody>' +
+    rows.map(r => {
+      const chgCls = r.r20 == null ? '' : r.r20 > 0 ? 'pos' : r.r20 < 0 ? 'neg' : '';
+      const chgTxt = r.r20 == null ? '—' : (r.r20 >= 0 ? '+' : '') + r.r20.toFixed(1) + '%';
+      return `<tr style="border-bottom:1px solid var(--border)">` +
+        `<td style="padding:6px 8px"><b>${r.code}</b></td>` +
+        `<td style="padding:6px 8px">${r.name || '—'}</td>` +
+        `<td style="padding:6px 8px;text-align:right">${r.close != null ? r.close.toFixed(2) : '—'}</td>` +
+        `<td style="padding:6px 8px;text-align:right" class="${chgCls}">${chgTxt}</td>` +
+        `<td style="padding:6px 8px;text-align:right"><button onclick="pickWatch('${r.code}')" style="background:none;border:1px solid var(--accent);color:var(--accent);border-radius:6px;padding:2px 8px;font-size:11px;cursor:pointer">分析</button></td>` +
+        `</tr>`;
+    }).join('') +
+    '</tbody></table>';
+}
+
 // 自動分析
 document.getElementById('ticker').addEventListener('keydown',e=>{if(e.key==='Enter')run();});
 if (document.getElementById('ckWatch')) document.getElementById('ckWatch').addEventListener('change',watchToggle);
 window.addEventListener('load',()=>{
   renderWatch(loadWatch());
+  refreshWatchOverview();
   // 不再自動分析，等使用者輸入代號後再按「分析」或按 Enter
 });
 window.addEventListener('resize',()=>{ if(window._lastRows) { drawChart(window._lastRows, window._lastIND); drawMACD(window._lastRows, window._lastIND); drawRSI(window._lastRows, window._lastIND); const [sr, tr, tt] = window._rsArgs||[]; if(sr && tr) drawRSChart(null, sr, tr, tt); } });
