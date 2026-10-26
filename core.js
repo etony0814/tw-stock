@@ -510,19 +510,36 @@
     return { p, n };
   }
 
-  function newsSentiment(headlines, days) {
-    // headlines: string[]
+  function newsSentiment(headlines, days, ticker, stockName) {
+    // headlines: string[]；ticker/stockName 提供時做「相關度過濾」（雜音標題降權）
     days = days || 7;
-    let P = 0, N = 0;
-    for (const h of headlines) { const s = scoreHeadline(h); P += s.p; N += s.n; }
+    let P = 0, N = 0, relevantCount = 0;
+    const hasKey = ticker || stockName;
+    for (const h of headlines) {
+      const s = scoreHeadline(h);
+      // 相關度：標題含代號或名稱才算「相關」，否則降為 0.5 權重（雜音過濾）
+      let w = 1;
+      if (hasKey) {
+        const hay = h.toLowerCase();
+        const hasTicker = ticker ? hay.indexOf(String(ticker)) >= 0 : false;
+        const hasName = stockName ? hay.indexOf(String(stockName)) >= 0 : false;
+        if (!hasTicker && !hasName) { w = 0.5; } else { relevantCount++; }
+      }
+      P += s.p * w;
+      N += s.n * w;
+    }
     const total = P + N;
-    const score = total === 0 ? 0 : (P - N) / total;
+    let score = total === 0 ? 0 : (P - N) / total;
+    // 相關新聞少於 3 則 → 情緒分數再打折（避免少數標題扭曲）
+    if (hasKey && relevantCount < 3 && total > 0) score *= 0.7;
+    score = Math.max(-1, Math.min(1, score));
     const label = score >= 0.25 ? "偏正面" : score <= -0.25 ? "偏負面" : "中性";
-    const advice = score >= 0.25 ? "近期新聞偏正面，市場情緒較好。"
-      : score <= -0.25 ? "近期新聞偏負面，注意消息面壓力。"
-      : "近期新聞多空持平。";
+    const advice = score >= 0.25 ? "近期相關新聞偏正面，市場情緒較好。"
+      : score <= -0.25 ? "近期相關新聞偏負面，注意消息面壓力。"
+      : "近期相關新聞多空持平。";
     return { score: Math.round(score * 1000) / 1000, label, advice, days,
-      pos: P, neg: N, count: headlines.length,
+      pos: Math.round(P), neg: Math.round(N), count: headlines.length,
+      relevant: relevantCount,
       headlines: headlines.slice() };
   }
 
@@ -627,51 +644,54 @@
     const newsScore = news ? news.score : 0;
     const iScore = intra.score || 0;
     const tScore = taiex.score || 0;
-    // 基礎權重
-    let wT = 0.40, wF = 0.15, wN = 0.15, wI = 0.15, wTa = 0.15;
+    // 方案 B 新權重：技術 40 / 籌碼 25 / 消息 10 / 盤面 10 / 大盤 15
+    let wT = 0.40, wF = 0.25, wN = 0.10, wI = 0.10, wTa = 0.15;
+    let note = "";
 
-    // 大盤 vs SMA20：加權收於 20 日均線下方時，大盤分數再扣 0.1
-    let taiexNote = "";
+    // 籌碼面：外資連續淨買/賣 3 日以上加分（折進 fScore）
+    let adjFF = fScore;
+    if (ff.ticker_consec >= 3) {
+      const boost = ff.ticker_consec >= 5 ? 0.25 : 0.15;
+      adjFF = Math.max(1, fScore + boost);
+      note += "籌碼面加權：外資連續 " + ff.ticker_consec + " 日同向，分數 +" + boost + "；";
+    }
+
+    // 消息面：相關度過濾後（news.relevant 少）再降權
+    if (news && news.count > 0 && news.relevant != null && news.relevant < 3) {
+      wN = 0.05;
+      note += "相關新聞少於 3 則，消息面權重降為 5%；";
+    }
+
+    // 大盤雙條件：加權 vs SMA20 + 單日漲跌（取代只看單日）
+    let adjT = tScore;
     if (ctx.taiexSma20 != null && taiex.point != null) {
-      if (taiex.point < ctx.taiexSma20) {
-        const adjusted = Math.max(-1, tScore - 0.1);
-        taiexNote = "加權收於 20 日均線下方，大盤分數再調降 0.1。";
-        return _finishComposite(tech, fScore, newsScore, iScore, adjusted, wT, wF, wN, wI, wTa, news, taiexNote);
-      } else if (taiex.point > ctx.taiexSma20 && taiex.score > 0) {
-        taiexNote = "加權收於 20 日均線上方，大盤分數可略微上調。";
-      }
+      const belowSma20 = taiex.point < ctx.taiexSma20;
+      const drop = taiex.chg_pct != null && taiex.chg_pct < -0.5;
+      const rise = taiex.chg_pct != null && taiex.chg_pct > 0.5;
+      if (belowSma20 && drop) { adjT = Math.max(-1, tScore - 0.15); note += "加權收於 20 日均線下方且當日下跌，大盤分數再降 0.15；"; }
+      else if (!belowSma20 && rise) { adjT = Math.min(1, tScore + 0.1); note += "加權收於 20 日均線上方且當日上漲，大盤分數上調 0.1；"; }
     }
 
-    // 情境切換：系統性大跌日（大盤當日 -2% 以上）調高權重
-    const isSystemicDrop = taiex.chg_pct != null && taiex.chg_pct <= -2.0;
-    const isSystemicRise = taiex.chg_pct != null && taiex.chg_pct >= 2.0;
-    if (isSystemicDrop) {
-      // 大盤大跌：把技術面 0.40 → 0.30、大盤 0.15 → 0.25，提醒個股難獨善其身
-      wT = 0.30; wTa = 0.25;
-      taiexNote = (taiexNote ? taiexNote + " " : "") + "大盤系統性大跌，權重調整：技術面 30%、大盤 25%。";
-    } else if (isSystemicRise) {
-      wT = 0.45; wTa = 0.10;
-      taiexNote = (taiexNote ? taiexNote + " " : "") + "大盤系統性大漲，權重調整：技術面 45%、大盤 10%。";
-    }
-
-    // 消息面權重依新聞數分級：<5 則時降半
-    if (news && news.count > 0 && news.count < 5) {
-      wN = 0.075;
-      wT = Math.min(1, wT + 0.075);
-      taiexNote = (taiexNote ? taiexNote + " " : "") + "近期新聞少於 5 則，消息面權重降為 7.5%。";
+    // 情境切換：系統性大跌/大漲日動態調權
+    if (taiex.chg_pct != null && taiex.chg_pct <= -2.0) {
+      wT = 0.30; wTa = 0.25; wF = 0.20; wN = 0.05; wI = 0.10;
+      note += "系統性大跌日：權重 技30/籌20/消5/盤10/大25；";
+    } else if (taiex.chg_pct != null && taiex.chg_pct >= 2.0) {
+      wT = 0.45; wTa = 0.10; wF = 0.25; wN = 0.05; wI = 0.15;
+      note += "系統性大漲日：權重 技45/籌25/消5/盤15/大10；";
     }
 
     // 盤面量能配速：收漲但量 < 0.5×20 日均量 → 盤面分數降
-    let adjustedIScore = iScore;
+    let adjI = iScore;
     if (intra.chg_pct != null && intra.chg_pct > 0 && intra.vol_ratio != null && intra.vol_ratio < 0.5) {
-      adjustedIScore = Math.max(-1, iScore - 0.15);
-      taiexNote = (taiexNote ? taiexNote + " " : "") + "收漲但量能偏淡（量比 " + intra.vol_ratio.toFixed(2) + "），盤面分數調降。";
+      adjI = Math.max(-1, iScore - 0.15);
+      note += "收漲但量能偏淡（量比 " + intra.vol_ratio.toFixed(2) + "），盤面分數調降；";
     }
 
-    // 消息面失靈（news.failed）時：把它的權重移轉給技術面
-    if (news && news.failed) { wT = Math.min(1, wT + wN); wN = 0; }
+    // 消息面失靈：把它的權重移轉給籌碼面（法人是最可靠訊號）
+    if (news && news.failed) { wF = Math.min(1, wF + wN); wN = 0; }
 
-    return _finishComposite(tech, fScore, newsScore, adjustedIScore, tScore, wT, wF, wN, wI, wTa, news, taiexNote);
+    return _finishComposite(tech, adjFF, newsScore, adjI, adjT, wT, wF, wN, wI, wTa, news, note);
   }
 
   function _finishComposite(tech, fScore, newsScore, iScore, tScore, wT, wF, wN, wI, wTa, news, notes) {
@@ -724,7 +744,7 @@
     if (opts.with_news) {
       const heads = await fetchNewsHeadlines(opts.ticker, opts.name, opts.news_days || 7);
       if (Array.isArray(heads) && heads.length) {
-        news = newsSentiment(heads, opts.news_days || 7);
+        news = newsSentiment(heads, opts.news_days || 7, opts.ticker, opts.name);
       } else if (heads === null) {
         // 代理失靈、抓不到：標記 news_failed 讓 UI 顯示「暫時取不到」
         news = { score: 0, label: "取不到", advice: "消息面暫時取不到（網路代理失靈），稍後重試。",
