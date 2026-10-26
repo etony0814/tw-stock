@@ -3,10 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0f1419">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='18' fill='%230f1419'/%3E%3Ctext x='50' y='62' font-size='48' text-anchor='middle' fill='%2338bdf8'%3E%F0%9F%93%88%3C/text%3E%3C/svg%3E">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="台股分析">
 <title>Tony 台股技術分析 小幫手</title>
 <style>
   :root{--bg:#0f1419;--card:#1a202c;--card2:#1e2633;--border:#2a3441;--text:#e2e8f0;
     --muted:#94a3b8;--accent:#38bdf8;--bull:#ef4444;--bear:#22c55e;--green:#ef4444;--red:#22c55e;--yellow:#f59e0b;}
+  :root[data-theme="light"]{--bg:#f1f5f9;--card:#ffffff;--card2:#f8fafc;--border:#e2e8f0;--text:#0f172a;
+    --muted:#64748b;--accent:#0284c7;--bull:#dc2626;--bear:#16a34a;--green:#dc2626;--red:#16a34a;--yellow:#d97706;}
+  html{scroll-behavior:smooth;}
+  .theme-toggle{background:var(--card2);color:var(--text);border:1px solid var(--border);border-radius:8px;
+    padding:8px 12px;font-size:13px;cursor:pointer;}
+  .share-btn{background:var(--accent);color:#0f1419;border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;margin-top:8px;width:100%;}
   *{box-sizing:border-box;margin:0;padding:0;}
   body{font-family:-apple-system,"Segoe UI","Microsoft JhengHei",sans-serif;
     background:var(--bg);color:var(--text);min-height:100vh;padding:16px;}
@@ -173,6 +184,7 @@
       <option value="30">近 30 天</option>
     </select>
     <label class="hint"><input type="checkbox" id="ckFund" checked style="width:auto;vertical-align:middle"> 籌碼面</label>
+    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="切換深／淺色">🌙 深色</button>
     <span class="hint">例：2330、2303、0050（名稱會自動帶出）</span>
   </div>
 
@@ -182,6 +194,7 @@
       <b id="rtName" style="font-size:18px">—</b>
       <button id="rtWatch" onclick="rtWatchToggle()"
         style="background:var(--card2);color:var(--accent);border:1px solid var(--accent);border-radius:8px;padding:6px 12px;font-size:13px;cursor:pointer">＋ 加入自選</button>
+      <button class="share-btn" id="shareBtn" onclick="shareAnalysis()" style="display:none;width:auto;margin-top:0">📤 分享結果</button>
     </div>
   </div>
 
@@ -591,6 +604,27 @@ function render(A, rows, t){
   ft.className='final-text '+(c>=0.15?'pos':c<=-0.15?'neg':'neu');
   ft.textContent=f.final_advice;
 
+  // #9 分享資料（供「分享結果」按鈕複製）
+  const indShare = A.indicators;
+  const lastRow2 = rows[rows.length-1];
+  const atrV = indShare && indShare.ATR14 ? indShare.ATR14[indShare.ATR14.length-1] : null;
+  const slVal = (lastRow2 && atrV!=null) ? lastRow2.close - 1.5*atrV : null;
+  const tpVal = (lastRow2 && atrV!=null) ? lastRow2.close + atrV : null;
+  window._shareData = {
+    ticker: t, name: WNAMES[t] || '',
+    advice: f.final_advice,
+    tech: f.score_breakdown['技術面']!=null?f.score_breakdown['技術面'].toFixed(2):'—',
+    fund: f.score_breakdown['籌碼面']!=null?f.score_breakdown['籌碼面'].toFixed(2):'—',
+    news: f.score_breakdown['消息面']!=null?f.score_breakdown['消息面'].toFixed(2):'—',
+    intra: f.score_breakdown['盤面']!=null?f.score_breakdown['盤面'].toFixed(2):'—',
+    taiex: f.score_breakdown['大盤']!=null?f.score_breakdown['大盤'].toFixed(2):'—',
+    combined: c.toFixed(2),
+    sl: slVal!=null?slVal.toFixed(0):'—', tp: tpVal!=null?tpVal.toFixed(0):'—',
+  };
+  const shareBtn=document.getElementById('shareBtn');
+  if(shareBtn) shareBtn.style.display='';
+  document.getElementById('resultTitle').style.display='block';
+
   // 技術面摘要（看多/看空理由數 + 各面 note）
   const comp = A.composite;
   const sigs = A.signals || [];
@@ -657,7 +691,7 @@ function render(A, rows, t){
     })();
 
   // 關鍵指標快覽
-  const lastRow = rows[rows.length-1];
+  const lastRowForStat = rows[rows.length-1];
   const ind = A.indicators;
   const setStat = (id, val, colorClass) => {
     const el = document.getElementById(id);
@@ -665,8 +699,8 @@ function render(A, rows, t){
     el.textContent = val;
     el.className = 'sm-val' + (colorClass ? ' '+colorClass : '');
   };
-  setStat('statClose', lastRow ? lastRow.close.toLocaleString() : '—');
-  setStat('statDate', lastRow ? lastRow.date : '—');
+  setStat('statClose', lastRowForStat ? lastRowForStat.close.toLocaleString() : '—');
+  setStat('statDate', lastRowForStat ? lastRowForStat.date : '—');
   const rsiVal = ind && ind.RSI ? ind.RSI[ind.RSI.length-1] : null;
   setStat('statRsi', rsiVal!=null ? rsiVal.toFixed(1) : '—', rsiVal>=70?'neg':rsiVal<=30?'pos':'');
   const macdVal = ind && ind.MACD ? ind.MACD.line[ind.MACD.line.length-1] : null;
@@ -901,6 +935,12 @@ function render(A, rows, t){
     : '<span style="color:var(--muted)">近期沒有特別明顯的買賣時機</span>';
 
   window._lastEvents = evs;
+  // #6 止損/止盈納入 K 線圖水平線（依 ATR 算，跟綜合卡一致）
+  const lastRow = rows[rows.length-1];
+  const ATR = A.indicators.ATR14 ? A.indicators.ATR14[A.indicators.ATR14.length-1] : null;
+  if (lastRow && ATR != null) {
+    window._slTp = { sl: lastRow.close - 1.5*ATR, tp1: lastRow.close + ATR, tp2: lastRow.close + 2*ATR };
+  } else { window._slTp = null; }
   drawChart(rows, A.indicators);
   drawMACD(rows, A.indicators);
   drawRSI(rows, A.indicators);
@@ -922,7 +962,8 @@ function drawMACD(rows, IND){
   const ctx = cv.getContext('2d'); ctx.scale(dpr, dpr);
   ctx.clearRect(0, 0, W, H);
 
-  const N = Math.min(60, rows.length);
+  // #5 對齊 K 線「近 120 根」：折線取近 120 根（不足全取），讓 X 軸日期刻度與 K 線對齊
+  const N = Math.min(120, rows.length);
   const start = rows.length - N;
   const line = IND.MACD.line.slice(start), sig = IND.MACD.signal.slice(start);
   const vals = [...line, ...sig].filter(v => v != null);
@@ -977,7 +1018,7 @@ function drawRSI(rows, IND){
   const ctx = cv.getContext('2d'); ctx.scale(dpr, dpr);
   ctx.clearRect(0, 0, W, H);
 
-  const N = Math.min(60, rows.length);
+  const N = Math.min(120, rows.length);
   const start = rows.length - N;
   const rsi = IND.RSI.slice(start);
   const pad = { l: 30, r: 40, t: 10, b: 20 };
@@ -1032,11 +1073,12 @@ function drawVolChart(rows, IND){
     ctx.textAlign='center'; ctx.fillStyle='#94a3b8'; ctx.fillText('暫無資料', W/2, H/2);
     return;
   }
+  // #2 量比 baseVol 用固定 60 日窗（不足 60 日再用全部可用資料），跟電腦版「60 日均量」精確對齊
   const N = Math.min(60, rows.length);
   const start = rows.length - N;
   const s = rows.slice(start);
-  // 每根的 60 日均量（用整段 60 日窗滾動，簡單用前 N 日平均當基準）
-  const baseVol = s.reduce((a, r) => a + (r.volume || 0), 0) / N;
+  const window60 = rows.slice(-60); // 固定 60 日窗（不足 60 日用全部）
+  const baseVol = window60.reduce((a, r) => a + (r.volume || 0), 0) / window60.length;
   const volRatio = s.map(r => (r.volume || 0) / baseVol);
   let hi = Math.max.apply(null, volRatio.concat([1.5]));
   const pad = { l: 40, r: 12, t: 14, b: 22 };
@@ -1172,10 +1214,18 @@ function drawChart(rows, IND){
   const H=300;
   cv.width=W*dpr; cv.height=H*dpr; cv.style.height=H+'px';
   const ctx=cv.getContext('2d'); ctx.scale(dpr,dpr);
-  const n=rows.length, pad={l:44,r:50,t:14,b:24};
+
+  // #3 1年/2年 密集處理：最多顯示近 120 根（折線全範圍，K 線取近 120）
+  const MAX=120;
+  const showRows = rows.length>MAX ? rows.slice(-MAX) : rows;
+  const off = rows.length - showRows.length; // 全域 offset（供 IND 陣列對齊）
+  const n=showRows.length, pad={l:44,r:50,t:14,b:24};
   const plotW=W-pad.l-pad.r, plotH=H-pad.t-pad.b;
   let hi=-Infinity,lo=Infinity;
-  rows.forEach(r=>{hi=Math.max(hi,r.high);lo=Math.min(lo,r.low);});
+  showRows.forEach(r=>{hi=Math.max(hi,r.high);lo=Math.min(lo,r.low);});
+  // #6 止損止盈納入 Y 軸範圍
+  const slTp = window._slTp || null;
+  if (slTp && slTp.sl != null) { lo = Math.min(lo, slTp.sl); hi = Math.max(hi, slTp.tp1 || 0, slTp.sl); }
   const y=v=>pad.t+(hi-v)/(hi-lo)*plotH;
   const x=i=>pad.l+i*(plotW/n);
 
@@ -1185,7 +1235,7 @@ function drawChart(rows, IND){
 
   // K 線（漲紅跌綠：依「紅多綠空」慣例，上漲用紅、下跌用綠）
   const bw=Math.max(1,plotW/n*0.6);
-  rows.forEach((r,i)=>{
+  showRows.forEach((r,i)=>{
     const up=r.close>=r.open;
     ctx.strokeStyle=ctx.fillStyle=up?'#ef4444':'#22c55e';
     const cx=x(i);
@@ -1194,28 +1244,49 @@ function drawChart(rows, IND){
     ctx.fillRect(cx-bw/2,top,bw,Math.max(1,bot-top));
   });
 
-  // 均線（5日紅、20日黃、60日藍，跟電腦版一致）
+  // 均線（5日紅、20日黃、60日藍，跟電腦版一致；對齊 offset）
   const smaLine=(arr,color,lw)=>{ctx.strokeStyle=color;ctx.lineWidth=lw||1.2;ctx.beginPath();let started=false;
-    arr.forEach((v,i)=>{if(v==null)return;const xx=x(i),yy=y(v);if(!started){ctx.moveTo(xx,yy);started=true;}else ctx.lineTo(xx,yy);});ctx.stroke();};
+    showRows.forEach((r,i)=>{const v=arr[off+i];if(v==null)return;const xx=x(i),yy=y(v);if(!started){ctx.moveTo(xx,yy);started=true;}else ctx.lineTo(xx,yy);});ctx.stroke();};
   smaLine(IND.SMA5,'#ef4444',1.2);  // 5日 紅
   smaLine(IND.SMA20,'#f59e0b',1.2); // 20日 黃
   smaLine(IND.SMA60,'#38bdf8',1.2);// 60日 藍
-  // 均線圖例
+  // #1 均線圖例改色塊（色塊+文字，不重疊、靠右上角）
   ctx.textAlign='left';ctx.font='11px sans-serif';
-  ctx.fillStyle='#ef4444';ctx.fillText('5日',pad.l,pad.t+10);
-  ctx.fillStyle='#f59e0b';ctx.fillText('20日',pad.l+28,pad.t+10);
-  ctx.fillStyle='#38bdf8';ctx.fillText('60日',pad.l+56,pad.t+10);
+  const legend=[['5日','#ef4444'],['20日','#f59e0b'],['60日','#38bdf8']];
+  let lx=W-pad.r-110;
+  legend.forEach(([lb,colr])=>{
+    ctx.fillStyle=colr;ctx.fillRect(lx,pad.t+2,10,10);
+    ctx.fillStyle='var(--text)';ctx.fillStyle=getComputedStyle(document.documentElement).getPropertyValue('--text')||'#e2e8f0';
+    ctx.fillText(lb,lx+14,pad.t+11);
+    lx+=42;
+  });
 
-  // 買賣點三角標記（最近 60 日）
+  // #6 止損/止盈水平線（止損綠虛線、止盈紅實線）
+  if (slTp) {
+    if (slTp.sl != null) {
+      ctx.strokeStyle='rgba(34,197,94,0.8)';ctx.setLineDash([4,4]);ctx.lineWidth=1;
+      ctx.beginPath();ctx.moveTo(pad.l,y(slTp.sl));ctx.lineTo(W-pad.r,y(slTp.sl));ctx.stroke();ctx.setLineDash([]);
+      ctx.fillStyle='#22c55e';ctx.font='10px sans-serif';ctx.textAlign='right';
+      ctx.fillText('止損 '+slTp.sl.toFixed(0),W-pad.r-4,y(slTp.sl)-3);
+    }
+    if (slTp.tp1 != null) {
+      ctx.strokeStyle='rgba(239,68,68,0.8)';ctx.lineWidth=1;
+      ctx.beginPath();ctx.moveTo(pad.l,y(slTp.tp1));ctx.lineTo(W-pad.r,y(slTp.tp1));ctx.stroke();
+      ctx.fillStyle='#ef4444';ctx.font='10px sans-serif';ctx.textAlign='right';
+      ctx.fillText('止盈 '+slTp.tp1.toFixed(0),W-pad.r-4,y(slTp.tp1)-3);
+    }
+  }
+
+  // 買賣點三角標記（最近 60 日，對齊 offset）
   const events = window._lastEvents || [];
   const dateToIdx = {};
-  rows.forEach((r,ri)=>{ dateToIdx[r.date]=ri; });
+  showRows.forEach((r,ri)=>{ dateToIdx[r.date]=ri; });
   events.forEach(ev=>{
     const idx = dateToIdx[ev.date];
     if (idx==null) return;
     const cx = x(idx);
     const isBuy = ev.type==='buy';
-    const price = isBuy ? (rows[idx].low) : (rows[idx].high);
+    const price = isBuy ? (showRows[idx].low) : (showRows[idx].high);
     const ty = y(price) + (isBuy ? 12 : -12);
     ctx.fillStyle = isBuy ? '#ef4444' : '#22c55e';
     ctx.beginPath();
@@ -1227,11 +1298,21 @@ function drawChart(rows, IND){
     ctx.closePath(); ctx.fill();
   });
 
+  // #4 收盤價標記（最後一根 K 線右側）
+  const last = showRows[n-1];
+  if (last) {
+    const ly = y(last.close);
+    ctx.fillStyle='#38bdf8';ctx.font='bold 11px sans-serif';ctx.textAlign='left';
+    ctx.fillText('收盤 '+last.close.toFixed(0), W-pad.r+2, ly+4);
+    ctx.strokeStyle='#38bdf8';ctx.lineWidth=0.5;ctx.setLineDash([2,2]);
+    ctx.beginPath();ctx.moveTo(pad.l,ly);ctx.lineTo(W-pad.r,ly);ctx.stroke();ctx.setLineDash([]);
+  }
+
   // X 軸日期刻度（電腦版有：在 K 線區間底部 4~5 個刻度）
   ctx.textAlign='center'; ctx.fillStyle='#94a3b8'; ctx.font='10px sans-serif';
   const step=Math.max(1,Math.floor(n/5));
   for(let i=0;i<n;i+=step){
-    const d=rows[i].date; if(!d) continue;
+    const d=showRows[i].date; if(!d) continue;
     const cx=x(i);
     ctx.fillText(d.slice(5), cx, H-8); // MM-DD
   }
@@ -1331,7 +1412,42 @@ async function refreshWatchOverview(){
 // 自動分析
 document.getElementById('ticker').addEventListener('keydown',e=>{if(e.key==='Enter')run();});
 if (document.getElementById('ckWatch')) document.getElementById('ckWatch').addEventListener('change',watchToggle);
+
+// #7 深淺色切換（localStorage 記憶）
+function toggleTheme(){
+  const root=document.documentElement;
+  const cur = root.getAttribute('data-theme')==='light' ? 'dark' : 'light';
+  root.setAttribute('data-theme', cur);
+  localStorage.setItem('tony_theme', cur);
+  const btn=document.getElementById('themeToggle');
+  if(btn) btn.textContent = cur==='light' ? '☀️ 淺色' : '🌙 深色';
+  // 重畫圖表（配色跟主題走）
+  if(window._lastRows){ drawChart(window._lastRows, window._lastIND); drawMACD(window._lastRows, window._lastIND); drawRSI(window._lastRows, window._lastIND); drawVolChart(window._lastRows, window._lastIND); }
+}
+function initTheme(){
+  const saved=localStorage.getItem('tony_theme')||(window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark');
+  document.documentElement.setAttribute('data-theme', saved);
+  const btn=document.getElementById('themeToggle');
+  if(btn) btn.textContent = saved==='light' ? '☀️ 淺色' : '🌙 深色';
+}
+
+// #9 分享按鈕（複製綜合結論＋五方分數到剪貼簿）
+function shareAnalysis(){
+  if(!window._shareData) return;
+  const d=window._shareData;
+  const txt = `📈 ${d.ticker} ${d.name||''} 五方綜合：${d.advice}\n` +
+    `五方分數（權重）：技術 ${d.tech}（40%）、籌碼 ${d.fund}（25%）、消息 ${d.news}（10%）、盤面 ${d.intra}（10%）、大盤 ${d.taiex}（15%）\n` +
+    `綜合分數 ${d.combined}。止損 ${d.sl}／止盈 ${d.tp}。`;
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(()=>{
+      const btn=document.getElementById('shareBtn');
+      if(btn){ const old=btn.textContent; btn.textContent='✅ 已複製'; setTimeout(()=>btn.textContent=old,1500); }
+    }).catch(()=>prompt('複製以下內容：',txt));
+  } else { prompt('複製以下內容：',txt); }
+}
+
 window.addEventListener('load',()=>{
+  initTheme();
   renderWatch(loadWatch());
   refreshWatchOverview();
   // 不再自動分析，等使用者輸入代號後再按「分析」或按 Enter
