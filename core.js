@@ -534,7 +534,7 @@
   // 自家中繼：部署後填上你的 Cloudflare Worker URL（免金鑰、最穩）
   // 例：https://tw-news-relay.你的帳號.workers.dev/?q={encoded_query}&days=7
   // 留空則跳過此層（仍會走下方其他代理）
-  const SELF_RELY_URL = "";   // ← 部署後在 deploy/config.js 覆寫此值
+  const SELF_RELY_URL = "tw-news-relay.etonylin.workers.dev";   // ← 部署後在 deploy/config.js 覆寫此值
 
   // 代理抓 XML：成功回傳 XML 字串，失敗回傳 null（含重試）
   async function fetchViaProxy(prefix, target, retries) {
