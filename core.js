@@ -170,61 +170,70 @@
     // SMA 排列
     const s5 = IND.SMA5[i], s20 = IND.SMA20[i], s60 = IND.SMA60[i];
     if (s5 && s20 && s60) {
-      if (s5 > s20 && s20 > s60) add("5日均線翻上20日再翻上60日（強多排列）", "buy", "短期、中期、長期均線全翻紅，多頭排列。", 2, s5);
-      else if (s5 < s20 && s20 < s60) add("5日、20日、60日均線全朝下（強空排列）", "sell", "均線全朝下，空頭排列。", 2, s5);
-      else add("均線交纏", "neutral", "5日、20日、60日均線沒有明確排列。", 0, s5);
+      if (s5 > s20 && s20 > s60) add("均線多頭排列（短長全翻上）", "buy", "短、中、長期均線全朝上，多頭格局。", 2, s5);
+      else if (s5 < s20 && s20 < s60) add("均線空頭排列（短長全朝下）", "sell", "短、中、長期均線全朝下，空頭格局。", 2, s5);
+      else add("均線交纏", "neutral", "短、中、長期均線沒有明確排列。", 0, s5);
     }
 
     // MACD 交叉
     const ml = IND.MACD.line, ms = IND.MACD.signal;
     if (i > 0 && ml[i] != null && ms[i] != null && ml[i - 1] != null && ms[i - 1] != null) {
-      if (ms[i - 1] <= ml[i - 1] && ms[i] > ml[i]) add("MACD 金叉", "buy", "動能指標剛翻正，代表近期買盤增加。", 2, ml[i]);
-      else if (ms[i - 1] >= ml[i - 1] && ms[i] < ml[i]) add("MACD 死叉", "sell", "動能指標剛轉負，代表近期賣壓增加。", 2, ml[i]);
+      if (ms[i - 1] <= ml[i - 1] && ms[i] > ml[i]) add("MACD 金叉（買盤轉強）", "buy", "MACD 從下方翻上訊號線，動能轉強。", 2, ml[i]);
+      else if (ms[i - 1] >= ml[i - 1] && ms[i] < ml[i]) add("MACD 死叉（賣壓轉重）", "sell", "MACD 從上方跌破訊號線，動能轉弱。", 2, ml[i]);
       else {
         const pos = ml[i] > 0;
-        add("MACD 動能狀態", pos ? "buy" : "sell",
-          pos ? "動能指標為正，代表近期偏多。" : "動能指標為負，代表近期偏空。", 1, ml[i]);
+        add("MACD 偏" + (pos ? "多" : "空"), pos ? "buy" : "sell",
+          pos ? "MACD 在零軸上方，買盤稍強於賣盤。" : "MACD 在零軸下方，賣壓稍強於買盤。", 1, ml[i]);
       }
     }
 
     // RSI
     const rsi = IND.RSI[i];
     if (rsi != null) {
-      if (rsi >= 70) add("冷熱指數過熱（RSI " + rsi.toFixed(0) + "）", "sell", "短線漲太多，留意回檔。", 1, rsi);
-      else if (rsi <= 30) add("冷熱指數過冷（RSI " + rsi.toFixed(0) + "）", "buy", "短線跌太多，留意反彈。", 1, rsi);
-      else add("冷熱指數正常（RSI " + rsi.toFixed(0) + "）", "neutral", "沒有超買超賣。", 0, rsi);
+      if (rsi >= 70) add("短線偏熱（RSI " + rsi.toFixed(0) + "）", "sell", "漲太多，短線留意回檔。", 1, rsi);
+      else if (rsi <= 30) add("短線偏冷（RSI " + rsi.toFixed(0) + "）", "buy", "跌太多，短線留意反彈。", 1, rsi);
+      else add("短線不熱不冷（RSI " + rsi.toFixed(0) + "）", "neutral", "沒有明顯超買超賣。", 0, rsi);
     }
 
     // KDJ
     const k = IND.KDJ.K[i], d = IND.KDJ.D[i], j = IND.KDJ.J[i];
-    if (j != null && j < 0) add("KDJ極度過冷（J " + j.toFixed(0) + "）", "buy", "J值跌破0，極短線可能反彈。", 1, j);
-    else if (j != null && j > 100) add("KDJ極度過熱（J " + j.toFixed(0) + "）", "sell", "J值衝上100，極短線可能回調。", 1, j);
-    else if (k != null && d != null && k < d && i > 0 && IND.KDJ.K[i - 1] >= IND.KDJ.D[i - 1]) add("KDJ死叉", "sell", "K從上跌破D。", 1, k);
-    else if (k != null && d != null && k > d && i > 0 && IND.KDJ.K[i - 1] <= IND.KDJ.D[i - 1]) add("KDJ金叉", "buy", "K從下翻上D。", 1, k);
-    else if (k != null && d != null) add("KDJ中性", "neutral", "K=" + k.toFixed(1) + "、D=" + d.toFixed(1) + "、J=" + (j != null ? j.toFixed(1) : "—") + "。", 0, k);
+    if (j != null && j < 0) add("KDJ 極冷（J " + j.toFixed(0) + "）", "buy", "J 值跌破 0，極短線可能反彈。", 1, j);
+    else if (j != null && j > 100) add("KDJ 極熱（J " + j.toFixed(0) + "）", "sell", "J 值衝上 100，極短線可能回調。", 1, j);
+    else if (k != null && d != null && k < d && i > 0 && IND.KDJ.K[i - 1] >= IND.KDJ.D[i - 1]) add("KDJ 死叉", "sell", "K 值從上跌破 D 值，短線偏弱。", 1, k);
+    else if (k != null && d != null && k > d && i > 0 && IND.KDJ.K[i - 1] <= IND.KDJ.D[i - 1]) add("KDJ 金叉", "buy", "K 值從下翻上 D 值，短線偏強。", 1, k);
+    else if (k != null && d != null) add("KDJ 中性", "neutral", "K=" + k.toFixed(1) + "、D=" + d.toFixed(1) + "，短線無明顯偏多偏空。", 0, k);
 
     // BOLL
     const bu = IND.BOLL.upper[i], bl = IND.BOLL.lower[i];
     if (bu != null && bl != null) {
-      if (c > bu) add("突破布林上軌", "buy", "收盤站上布林上軌（" + bu.toFixed(2) + "），短線強勢。", 1, bu);
-      else if (c < bl) add("跌破布林下軌", "sell", "收盤跌破布林下軌（" + bl.toFixed(2) + "），短線偏弱。", 1, bl);
-      else add("布林通道內", "neutral", "收盤在布林通道內（上軌 " + bu.toFixed(2) + "、下軌 " + bl.toFixed(2) + "）。", 0, c);
+      if (c > bu) add("收盤站上壓力線（布林上軌）", "buy", "收盤站上布林上軌（" + bu.toFixed(2) + "），短線強勢。", 1, bu);
+      else if (c < bl) add("收盤跌破支撐線（布林下軌）", "sell", "收盤跌破布林下軌（" + bl.toFixed(2) + "），短線偏弱。", 1, bl);
+      else add("收盤在通道內（布林上下軌之間）", "neutral", "收盤在壓力線（上軌 " + bu.toFixed(2) + "）與支撐線（下軌 " + bl.toFixed(2) + "）之間。", 0, c);
     }
 
     // BIAS
     const bias = IND.BIAS20[i];
     if (bias != null) {
-      if (bias > 10) add("偏離20日均價過大（+" + bias.toFixed(1) + "%）", "sell", "價格離20日均價太遠，可能有回檔壓力。", 1, bias);
-      else if (bias < -10) add("偏離20日均價過大（" + bias.toFixed(1) + "%）", "buy", "價格離20日均價太遠，可能有回補機會。", 1, bias);
-      else add("價格乖離正常（" + (bias >= 0 ? "+" : "") + bias.toFixed(1) + "%）", "neutral", "價格與20日均價乖離幅度正常。", 0, bias);
+      if (bias > 10) add("價格高於 20 日均價 +" + bias.toFixed(1) + "%", "sell", "價格比 20 日均價高 " + bias.toFixed(1) + "%，可能有回檔壓力。", 1, bias);
+      else if (bias < -10) add("價格低於 20 日均價 " + bias.toFixed(1) + "%", "buy", "價格比 20 日均價低 " + Math.abs(bias).toFixed(1) + "%，可能有回補機會。", 1, bias);
+      else add("價格與 20 日均價乖離正常（" + (bias >= 0 ? "+" : "") + bias.toFixed(1) + "%）", "neutral", "價格與 20 日均價距離幅度正常。", 0, bias);
     }
 
     // 成交量（VROC20：20日量比）
     const vroc = IND.VROC20 ? IND.VROC20[i] : null;
     if (vroc != null) {
-      if (vroc > 30) add("成交量明顯放大（+" + vroc.toFixed(0) + "%）", c >= (i > 0 ? IND.rows[i-1].close : c) ? "buy" : "sell", "成交量比 20 天前放大 " + vroc.toFixed(0) + "%。", 1, vroc);
-      else if (vroc < -30) add("成交量明顯萎縮（" + vroc.toFixed(0) + "%）", c >= (i > 0 ? IND.rows[i-1].close : c) ? "buy" : "sell", "成交量比 20 天前萎縮 " + Math.abs(vroc).toFixed(0) + "%。", 1, vroc);
-      else add("成交量正常（量比 " + (vroc >= 0 ? "+" : "") + vroc.toFixed(0) + "%）", "neutral", "成交量與 20 日前相比沒有明顯變化。", 0, vroc);
+      if (vroc > 30) {
+        const isUp = c >= (i > 0 ? IND.rows[i-1].close : c);
+        add("成交量明顯放大（比 20 日前 +" + vroc.toFixed(0) + "%）",
+          isUp ? "buy" : "sell",
+          isUp ? "量縮後放量且收漲，買盤活躍。" : "量縮後放量且收跌，賣壓明顯。", 1, vroc);
+      } else if (vroc < -30) {
+        add("成交量明顯萎縮（比 20 日前 " + vroc.toFixed(0) + "%）", "neutral",
+          "成交明顯清淡，市場觀望。", 1, vroc);
+      } else {
+        add("成交量正常（量比 " + (vroc >= 0 ? "+" : "") + vroc.toFixed(0) + "%）", "neutral",
+          "成交量與 20 日前相比沒有明顯變化。", 0, vroc);
+      }
     }
 
     // 波動幅度（ATR）：#38 不進 sigList（永遠 neutral、權重 0 容易誤解偏多/偏空數），
@@ -339,12 +348,30 @@
     // 個別股當榜次數
     const onListDays = results.filter(r => r.on_list).length;
     const tickerNetSum = results.reduce((a, r) => a + (r.ticker_net || 0), 0);
+    // 外資連續淨買/淨賣天數（從最近一日往回数，依本股 ticker_net 方向連續）
+    const tickerNets = results.map(r => r.ticker_net);
+    let consec = 0;
+    const lastDir = tickerNets[tickerNets.length - 1];
+    if (lastDir != null) {
+      const dirSign = lastDir > 0 ? 1 : -1;
+      for (let k = tickerNets.length - 1; k >= 0; k--) {
+        const v = tickerNets[k];
+        if (v == null) continue;
+        if (v * dirSign > 0) consec++;
+        else break;
+      }
+    }
+    const consecLabel = consec >= 5 ? "外資連續 " + consec + " 日淨買/賣（動能強）"
+      : consec >= 3 ? "外資連續 " + consec + " 日同向操作"
+      : consec >= 2 ? "外資連續 " + consec + " 日同向操作"
+      : "外資未形成連續操作";
     const label = avgTone >= 0.2 ? "近期法人持續偏多"
       : avgTone <= -0.2 ? "近期法人持續偏空" : "近期法人多空交織";
     return {
       ok: true, days: results.length, up_days: upDays, down_days: dnDays,
       avg_tone: Math.round(avgTone * 1000) / 1000, label,
       ticker_on_list_days: onListDays, ticker_net_sum: tickerNetSum,
+      ticker_consec: consec, ticker_consec_label: consecLabel,
       history: results.map(r => ({ date: r.date, total_net_sum: r.total_net_sum,
         ticker_net: r.ticker_net, label: r.label })),
       daily: results
@@ -504,6 +531,10 @@
   const ALLORIGINS = "https://api.allorigins.win/raw?url=";
   const CORSPROXY = "https://corsproxy.io/?url=";
   const THINGPROXY = "https://api.thingproxy.com/?url=";
+  // 自家中繼：部署後填上你的 Cloudflare Worker URL（免金鑰、最穩）
+  // 例：https://tw-news-relay.你的帳號.workers.dev/?q={encoded_query}&days=7
+  // 留空則跳過此層（仍會走下方其他代理）
+  const SELF_RELY_URL = "";   // ← 部署後在 deploy/config.js 覆寫此值
 
   // 代理抓 XML：成功回傳 XML 字串，失敗回傳 null（含重試）
   async function fetchViaProxy(prefix, target, retries) {
@@ -521,21 +552,34 @@
   }
 
   async function fetchNewsHeadlines(ticker, name, days) {
+    days = days || 7;
     const q = encodeURIComponent((name || "") + " " + ticker);
     const url = "https://news.google.com/rss/search?q=" + q + "&hl=zh-TW&gl=TW&ce=zh";
     let text = null;
-    // 1) 直抓（本地 / 允許 CORS 的環境）
-    try {
-      const r = await fetch(url, { mode: "cors" });
-      if (r.ok) { text = await r.text(); if (!text || text.indexOf("<rss") < 0) text = null; }
-    } catch (e) { text = null; }
-    // 2) allorigins 代理（主力，重試 2 次）
+    // 1) 自家中繼（最穩，需填 SELF_RELY_URL）
+    if (SELF_RELY_URL) {
+      try {
+        const sr = await fetch(SELF_RELY_URL + "?q=" + q + "&days=" + days);
+        if (sr.ok) {
+          const st = await sr.text();
+          if (st.indexOf("<rss") > 0 || st.indexOf("<item") > 0 || st.indexOf('"title"') > 0) text = st;
+        }
+      } catch (e) {}
+    }
+    // 2) 直抓（本地 / 允許 CORS 的環境）
+    if (!text) {
+      try {
+        const r = await fetch(url, { mode: "cors" });
+        if (r.ok) { text = await r.text(); if (!text || text.indexOf("<rss") < 0) text = null; }
+      } catch (e) { text = null; }
+    }
+    // 3) allorigins 代理（主力，重試 2 次）
     if (!text) text = await fetchViaProxy(ALLORIGINS, url, 2);
-    // 3) thingproxy 代理（備援）
+    // 4) thingproxy 代理（備援）
     if (!text) text = await fetchViaProxy(THINGPROXY, url, 1);
-    // 4) corsproxy.io 代理（備援）
+    // 5) corsproxy.io 代理（備援）
     if (!text) text = await fetchViaProxy(CORSPROXY, url, 1);
-    // 5) Jina Reader 代理（最後 fallback，標準 GET）
+    // 6) Jina Reader 代理（最後 fallback，標準 GET）
     if (!text) {
       try {
         const jr = await fetch(JINA_RSS + url);
@@ -576,15 +620,64 @@
   // ─────────────────────────────────────────────────────────
   // 五方綜合
   // ─────────────────────────────────────────────────────────
-  function fiveWayComposite(comp, ff, intra, taiex, news) {
+  function fiveWayComposite(comp, ff, intra, taiex, news, ctx) {
+    ctx = ctx || {};
     const tech = comp.tech_score;
     const fScore = ff.score || 0;
     const newsScore = news ? news.score : 0;
     const iScore = intra.score || 0;
     const tScore = taiex.score || 0;
-    // 消息面失靈（news.failed）時：把它的 15% 權重移轉給技術面，避免稀釋其他面的分數
-    let wT = 0.4, wF = 0.15, wN = 0.15, wI = 0.15, wTa = 0.15;
-    if (news && news.failed) { wT += 0.15; wN = 0; }
+    // 基礎權重
+    let wT = 0.40, wF = 0.15, wN = 0.15, wI = 0.15, wTa = 0.15;
+
+    // 大盤 vs SMA20：加權收於 20 日均線下方時，大盤分數再扣 0.1
+    let taiexNote = "";
+    if (ctx.taiexSma20 != null && taiex.point != null) {
+      if (taiex.point < ctx.taiexSma20) {
+        const adjusted = Math.max(-1, tScore - 0.1);
+        taiexNote = "加權收於 20 日均線下方，大盤分數再調降 0.1。";
+        return _finishComposite(tech, fScore, newsScore, iScore, adjusted, wT, wF, wN, wI, wTa, news, taiexNote);
+      } else if (taiex.point > ctx.taiexSma20 && taiex.score > 0) {
+        taiexNote = "加權收於 20 日均線上方，大盤分數可略微上調。";
+      }
+    }
+
+    // 情境切換：系統性大跌日（大盤當日 -2% 以上）調高權重
+    const isSystemicDrop = taiex.chg_pct != null && taiex.chg_pct <= -2.0;
+    const isSystemicRise = taiex.chg_pct != null && taiex.chg_pct >= 2.0;
+    if (isSystemicDrop) {
+      // 大盤大跌：把技術面 0.40 → 0.30、大盤 0.15 → 0.25，提醒個股難獨善其身
+      wT = 0.30; wTa = 0.25;
+      taiexNote = (taiexNote ? taiexNote + " " : "") + "大盤系統性大跌，權重調整：技術面 30%、大盤 25%。";
+    } else if (isSystemicRise) {
+      wT = 0.45; wTa = 0.10;
+      taiexNote = (taiexNote ? taiexNote + " " : "") + "大盤系統性大漲，權重調整：技術面 45%、大盤 10%。";
+    }
+
+    // 消息面權重依新聞數分級：<5 則時降半
+    if (news && news.count > 0 && news.count < 5) {
+      wN = 0.075;
+      wT = Math.min(1, wT + 0.075);
+      taiexNote = (taiexNote ? taiexNote + " " : "") + "近期新聞少於 5 則，消息面權重降為 7.5%。";
+    }
+
+    // 盤面量能配速：收漲但量 < 0.5×20 日均量 → 盤面分數降
+    let adjustedIScore = iScore;
+    if (intra.chg_pct != null && intra.chg_pct > 0 && intra.vol_ratio != null && intra.vol_ratio < 0.5) {
+      adjustedIScore = Math.max(-1, iScore - 0.15);
+      taiexNote = (taiexNote ? taiexNote + " " : "") + "收漲但量能偏淡（量比 " + intra.vol_ratio.toFixed(2) + "），盤面分數調降。";
+    }
+
+    // 消息面失靈（news.failed）時：把它的權重移轉給技術面
+    if (news && news.failed) { wT = Math.min(1, wT + wN); wN = 0; }
+
+    return _finishComposite(tech, fScore, newsScore, adjustedIScore, tScore, wT, wF, wN, wI, wTa, news, taiexNote);
+  }
+
+  function _finishComposite(tech, fScore, newsScore, iScore, tScore, wT, wF, wN, wI, wTa, news, notes) {
+    // 權重正規化（若 news.failed 移轉後總和可能超過 1）
+    const wSum = wT + wF + wN + wI + wTa;
+    if (wSum > 0) { wT /= wSum; wF /= wSum; wN /= wSum; wI /= wSum; wTa /= wSum; }
     let combined = Math.max(-1, Math.min(1,
       tech * wT + fScore * wF + newsScore * wN + iScore * wI + tScore * wTa));
     combined = Math.round(combined * 1000) / 1000;
@@ -598,7 +691,8 @@
       final_advice: final, combined_score: combined,
       score_breakdown: { "技術面": tech, "籌碼面": fScore, "消息面": newsScore,
         "盤面": iScore, "大盤": tScore, "綜合": combined },
-      weights: { "技術面": 0.4, "籌碼面": 0.15, "消息面": 0.15, "盤面": 0.15, "大盤": 0.15 }
+      weights: { "技術面": wT, "籌碼面": wF, "消息面": wN, "盤面": wI, "大盤": wTa },
+      adjustment_notes: notes ? notes : ""
     };
   }
 
@@ -618,6 +712,14 @@
     if (opts.taiexRows) taiex = fetchTaiexFromRows(opts.taiexRows);
     const intra = intradayFromRows(stockRows, IND, i);
 
+    // 大盤 SMA20（供綜合評估：加權收於 20 日均線下方時調降大盤分數）
+    let taiexSma20 = null;
+    if (opts.taiexRows && opts.taiexRows.length >= 20) {
+      let s = 0;
+      for (let k = opts.taiexRows.length - 20; k < opts.taiexRows.length; k++) s += opts.taiexRows[k].close;
+      taiexSma20 = s / 20;
+    }
+
     let news = null;
     if (opts.with_news) {
       const heads = await fetchNewsHeadlines(opts.ticker, opts.name, opts.news_days || 7);
@@ -630,7 +732,8 @@
       }
     }
 
-    const final = fiveWayComposite(comp, ff, intra, taiex, news);
+    const final = fiveWayComposite(comp, ff, intra, taiex, news,
+      { taiexSma20 });
 
     return {
       indicators: IND, signals, composite: comp, fund_flow: { ...ff, ...tf },
