@@ -723,8 +723,9 @@ function render(A, rows, t){
   // 止損 / 止盈參考價（ATR 估算）
   const slTpEl = document.getElementById('slTp');
   const slTpContent = document.getElementById('slTpContent');
-  if (slTpEl && slTpContent && lastRow && atrVal != null && atrVal > 0) {
-    const close = lastRow.close;
+  const slTpLastRow = rows[rows.length-1];
+  if (slTpEl && slTpContent && slTpLastRow && atrVal != null && atrVal > 0) {
+    const close = slTpLastRow.close;
     const sl = close - 1.5 * atrVal;
     const tp1 = close + 1 * atrVal;
     const tp2 = close + 2 * atrVal;
