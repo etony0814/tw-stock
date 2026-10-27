@@ -336,7 +336,7 @@
   </div>
 </div>
 
-<script src="core.js?v=20261028a"></script>
+<script src="core.js?v=20261028b"></script>
 <script>
 // ── 用公開端點抓個股日K 與 加權指數 ──────────────────────
 // 台股：Yahoo chart API。瀏覽器跨域直抓 Yahoo 會被 CORS 擋，
@@ -347,6 +347,9 @@ const STOCK_URLS = [
   "https://query1.finance.yahoo.com/v8/finance/chart/",
 ];
 const JINA = "https://r.jina.ai/";   // 免金鑰跨域讀取端點
+// 行情中繼：Cloudflare Worker（CORS 已開、瀏覽器不會噴 CORS 紅字）
+// 部署 deploy/cf-worker/relay.js 後填同一個 URL；留空則跳過此層
+const QUOTE_RELAY = "https://tw-news-relay.etonylin.workers.dev";
 function toYahoo(t){
   const c = t.toUpperCase().replace(/\.TW$/,'').replace(/\.TWO$/,'');
   // 上櫃股（3/4/5/6/8 字頭，如 3105 穩懋、4979 華星光、6182 合晶、8299 群聯）Yahoo 用 .TWO；
@@ -373,7 +376,19 @@ function jinaParse(text){
 async function fetchRows(code, period){
   const qs = "?range=" + period + "&interval=1d";
   let lastErr = null;
-  // 1) 直抓 Yahoo（本地 / 允許 CORS 的環境）
+  // 0) Cloudflare Worker 行情中繼（最穩：CORS 已開、瀏覽器不噴 CORS 紅字）
+  if (QUOTE_RELAY) {
+    try {
+      const r = await fetch(QUOTE_RELAY + "?ticker=" + encodeURIComponent(code) +
+        "&range=" + encodeURIComponent(period) + "&interval=1d");
+      if (r.ok) {
+        const j = await r.json();
+        if (j && j.chart) return buildRows(j, code);
+        if (j && j.ok === false) lastErr = new Error("relay " + j.error);
+      }
+    } catch (e) { lastErr = e; }
+  }
+  // 1) 直抓 Yahoo（本地 / 允許 CORS 的環境；GitHub Pages 會噴瀏覽器 CORS 紅字，故優先走中繼）
   for (const base of STOCK_URLS) {
     try { return buildRows(await fetchJsonOne(base + code + qs), code); }
     catch (e) { lastErr = e; }
