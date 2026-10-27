@@ -566,6 +566,10 @@ async function run(){
   document.getElementById('results').style.display='none';
   document.getElementById('err').style.display='none';
   btn.disabled=true;
+  const btnOriginalText=btn.textContent;
+  btn.textContent='分析中…';
+  btn.style.opacity='0.6';
+  btn.style.cursor='not-allowed';
   try{
     const stockRows = await fetchRows(toYahoo(t), period);
     const taiexRows = await fetchRows("^TWII", "1mo");
@@ -611,6 +615,9 @@ async function run(){
   }finally{
     document.getElementById('loading').style.display='none';
     btn.disabled=false;
+    btn.textContent=btnOriginalText;
+    btn.style.opacity='';
+    btn.style.cursor='';
   }
 }
 
@@ -1393,8 +1400,10 @@ async function refreshWatchOverview(){
   const list = loadWatch().map(x => x.code || x).filter(c => /^\d{4}$/.test(c));
   const panel = document.getElementById('watchOverview');
   const table = document.getElementById('watchOvTable');
+  const btn = document.getElementById('watchOvRefresh');
   if (!list.length || !panel || !table) { if(panel) panel.style.display='none'; return; }
   panel.style.display = 'block';
+  if(btn){ btn.disabled=true; btn.textContent='載入中…'; btn.style.opacity='0.6'; btn.style.cursor='not-allowed'; }
   table.innerHTML = '<div style="color:var(--muted);font-size:12px">載入中…</div>';
   // 並行抓取（上限 8 只）
   const tasks = list.slice(0, 8).map(async (t) => {
@@ -1412,6 +1421,7 @@ async function refreshWatchOverview(){
     }
   });
   const rows = await Promise.all(tasks);
+  const okCount = rows.filter(r=>!r.err).length;
   table.innerHTML =
     '<table style="width:100%;border-collapse:collapse;font-size:12px">' +
     '<thead><tr style="color:var(--muted);border-bottom:1px solid var(--border)">' +
@@ -1432,7 +1442,17 @@ async function refreshWatchOverview(){
         `<td style="padding:6px 8px;text-align:right"><button onclick="pickWatch('${r.code}')" style="background:none;border:1px solid var(--accent);color:var(--accent);border-radius:6px;padding:2px 8px;font-size:11px;cursor:pointer">分析</button></td>` +
         `</tr>`;
     }).join('') +
-    '</tbody></table>';
+    '</tbody></table>' +
+    (() => {
+      const ts = new Date().toLocaleTimeString('zh-TW', {hour12:false});
+      const msg = okCount === rows.length
+        ? `✅ 更新成功 — ${okCount}/${rows.length} 只，${ts}`
+        : (okCount === 0
+            ? `❌ 全部失敗 — 行情端點皆抓不到，${ts}。請稍後重試或改用電腦版。`
+            : `⚠️ 部分成功 — ${okCount}/${rows.length} 只更新成功，${rows.length-okCount} 只抓不到，${ts}。`);
+      return '<div style="margin-top:6px;font-size:12px;color:var(--muted)">' + msg + '</div>';
+    })();
+  if(btn){ btn.disabled=false; btn.textContent='⟳ 更新自選股總覽'; btn.style.opacity=''; btn.style.cursor=''; }
 }
 
 // 自動分析
