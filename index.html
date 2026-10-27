@@ -1444,7 +1444,7 @@ async function refreshWatchOverview(){
     }).join('') +
     '</tbody></table>' +
     (() => {
-      const ts = new Date().toLocaleTimeString('zh-TW', {hour12:false});
+      const ts = new Date().toLocaleString('zh-TW', {hour12:false, year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', second:'2-digit'});
       const msg = okCount === rows.length
         ? `✅ 更新成功 — ${okCount}/${rows.length} 只，${ts}`
         : (okCount === 0
