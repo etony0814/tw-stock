@@ -195,7 +195,7 @@
         : "該股訊號雜音大，務必配合止損、勿全倉";
     return { up_n: upN, up_win: upW, up_rate: up5,
       down_n: dnN, down_win: dnW, down_rate: dn5,
-      up_label, down_label, overall_label: overall };
+      up_label: upLabel, down_label: downLabel, overall_label: overall };
   }
 
   // ─────────────────────────────────────────────────────────
