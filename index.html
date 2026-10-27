@@ -1319,6 +1319,27 @@ function drawChart(rows, IND){
     lx+=42;
   });
 
+  // 布林通道 BOLL(20, 2)：中線（20日均價）已畫成「20日」黃線，故只補上軌/下軌
+  const bollColor = 'rgba(168,85,247,0.85)'; // 紫色
+  ctx.strokeStyle = bollColor; ctx.lineWidth = 1; ctx.setLineDash([6,3]);
+  ['upper','lower'].forEach(kk => {
+    const arr = IND.BOLL ? IND.BOLL[kk] : null;
+    if (!arr) return;
+    ctx.beginPath(); let started=false;
+    showRows.forEach((r,i)=>{
+      const v = arr[off+i]; if (v==null) return;
+      const xx=x(i), yy=y(v);
+      if(!started){ctx.moveTo(xx,yy);started=true;} else ctx.lineTo(xx,yy);
+    });
+    ctx.stroke();
+  });
+  ctx.setLineDash([]);
+  // 布林通道色塊圖例
+  ctx.fillStyle = bollColor; ctx.fillRect(lx, pad.t+2, 10, 10);
+  ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--text') || '#e2e8f0';
+  ctx.fillText('BOLL', lx+14, pad.t+11);
+  lx += 52;
+
   // #6 止損/止盈水平線（止損綠虛線、止盈紅實線）
   if (slTp) {
     if (slTp.sl != null) {
