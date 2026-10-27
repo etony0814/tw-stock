@@ -1365,6 +1365,9 @@ function renderWatch(list){
       <button onclick="delWatch('${t}')" style="background:none;border:none;color:var(--muted);font-size:14px;cursor:pointer" title="移除">✕</button>
     </span>`;
   }).join('');
+  // 自選股總覽表：有自選股就顯示整個區塊（含「⟳ 更新」按鈕），但不自動抓
+  const ov = document.getElementById('watchOverview');
+  if (ov) ov.style.display = 'block';
 }
 function pickWatch(t){
   document.getElementById('ticker').value=t;
