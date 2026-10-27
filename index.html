@@ -225,6 +225,8 @@
     <div class="card final" id="finalCard">
       <h2>🎯 綜合評論（今天要不要買賣）</h2>
       <div class="final-text" id="finalText">—</div>
+      <div id="finalAction" style="display:none;margin-top:8px;font-size:13px;line-height:1.6;color:var(--text);background:var(--card2);border-left:3px solid var(--accent);padding:8px 10px;border-radius:6px"></div>
+      <div style="margin-top:6px;font-size:11px;color:var(--muted)"><span id="sessionTag" style="display:none;background:var(--card2);border:1px solid var(--border);padding:2px 6px;border-radius:4px"></span></div>
       <!-- 五方分數白話一句話 -->
       <div id="plainRead" style="font-size:13px;color:var(--text);line-height:1.55;margin:6px 0 8px;padding:8px 10px;background:rgba(56,189,248,.08);border:1px solid rgba(56,189,248,.25);border-radius:8px;display:none"></div>
       <!-- 技術面摘要（看多/看空理由數 + 籌碼/消息 note）-->
@@ -627,6 +629,21 @@ function render(A, rows, t){
   const ft=document.getElementById('finalText');
   ft.className='final-text '+(c>=0.15?'pos':c<=-0.15?'neg':'neu');
   ft.textContent=f.final_advice;
+  // 依時段（開盤前/盤中/盤後）的白話行動建議
+  const act=document.getElementById('finalAction');
+  if(act){
+    const ms = (typeof marketSession !== 'undefined') ? marketSession() : StockCore.marketSession();
+    const af = (typeof actionForScore !== 'undefined') ? actionForScore(c, ms.code) : StockCore.actionForScore(c, ms.code);
+    act.textContent = af;
+    act.style.display = 'block';
+  }
+  // 時段標記（顯示在綜合評語旁）
+  const ss=document.getElementById('sessionTag');
+  if(ss){
+    const ms = (typeof marketSession !== 'undefined') ? marketSession() : StockCore.marketSession();
+    ss.textContent = ms.label + ' · ' + ms.t;
+    ss.style.display = 'inline-block';
+  }
 
   // #9 分享資料（供「分享結果」按鈕複製）
   const indShare = A.indicators;
