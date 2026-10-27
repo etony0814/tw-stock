@@ -157,6 +157,47 @@
     return res;
   }
 
+  // 歷史 5 日勝率：對「截至該日收盤」重放 tech 分數，看偏多/偏空訊號觸發後 5 日是否照做。
+  // 回傳 { up:{n,win,rate}, down:{n,win,rate}, up_label, down_label, overall_label }
+  function hist5(rows, IND, lookback) {
+    lookback = lookback || 120;
+    const closes = rows.map(r => r.close);
+    const n = closes.length;
+    const start = Math.max(60, n - lookback);
+    let upN = 0, upW = 0, dnN = 0, dnW = 0;
+    for (let i = start; i < n - 5; i++) {
+      // 只用「截至 i 日收盤」的指標（與線上 detectSignals(IND,i) 邏輯一致）
+      let comp;
+      try {
+        comp = compositeSignal(detectSignals(IND, i));
+      } catch (e) { continue; }
+      const score = comp ? comp.tech_score : 0;
+      const future = closes[i + 5];
+      if (future == null) continue;
+      if (score >= 0.2) { upN++; if (future > closes[i]) upW++; }
+      else if (score <= -0.2) { dnN++; if (future < closes[i]) dnW++; }
+    }
+    const upRate = upN ? upW / upN : null;
+    const dnRate = dnN ? dnW / dnN : null;
+    const up5 = upRate != null ? Math.round(upRate * 1000) / 10 : null;
+    const dn5 = dnRate != null ? Math.round(dnRate * 1000) / 10 : null;
+    const upLabel = up5 == null ? "資料不足"
+      : up5 >= 60 ? "訊號可信，偏多時 5 日內常漲"
+      : up5 >= 50 ? "偏多訊號有一定參考價值"
+      : "偏多訊號雜音大，別全倉追";
+    const downLabel = dn5 == null ? "資料不足"
+      : dn5 >= 60 ? "訊號可信，偏空時 5 日內常跌（該減碼就減）"
+      : dn5 >= 50 ? "偏空訊號有一定參考價值"
+      : "偏空訊號雜音大，減碼要配合止損";
+    const overall = (up5 == null && dn5 == null) ? "資料不足，無法估該股訊號準確度"
+      : ((up5 || 0) >= 60 || (dn5 || 0) >= 60)
+        ? "該股訊號準確度較好，可配合操作"
+        : "該股訊號雜音大，務必配合止損、勿全倉";
+    return { up_n: upN, up_win: upW, up_rate: up5,
+      down_n: dnN, down_win: dnW, down_rate: dn5,
+      up_label, down_label, overall_label: overall };
+  }
+
   // ─────────────────────────────────────────────────────────
   // 訊號引擎（白話名）
   // ─────────────────────────────────────────────────────────
@@ -872,9 +913,11 @@
     const final = fiveWayComposite(comp, ff, intra, taiex, news,
       { taiexSma20 });
 
+    const hist = hist5(stockRows, IND, 120);
+
     return {
       indicators: IND, signals, composite: comp, fund_flow: { ...ff, ...tf },
-      taiex, intraday: intra, news, final
+      taiex, intraday: intra, news, final, hist5: hist
     };
   }
 
@@ -945,7 +988,7 @@
     fetchFundFlow, fetchFundFlowMulti, fetchTradingDates, fetchFundFlowDate,
     tickerInFundFlow, fetchTaiexFromRows,
     intradayFromRows, newsSentiment, fetchNewsHeadlines,
-    relativeStrength, findBuySellPoints,
+    relativeStrength, findBuySellPoints, hist5,
     fiveWayComposite, computeAll, scoreHeadline, marketSession, actionForScore
   };
 })(typeof window !== "undefined" ? window : globalThis);
