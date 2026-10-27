@@ -229,7 +229,9 @@
       <div id="finalAction" style="display:none;margin-top:8px;font-size:13px;line-height:1.6;color:var(--text);background:var(--card2);border-left:3px solid var(--accent);padding:8px 10px;border-radius:6px"></div>
       <div style="margin-top:6px;font-size:11px;color:var(--muted)"><span id="sessionTag" style="display:none;background:var(--card2);border:1px solid var(--border);padding:2px 6px;border-radius:4px"></span></div>
       <!-- 五方分數白話一句話 -->
-      <div id="plainRead" style="font-size:13px;color:var(--text);line-height:1.55;margin:6px 0 8px;padding:8px 10px;background:rgba(56,189,248,.08);border:1px solid rgba(56,189,248,.25);border-radius:8px;display:none"></div>
+      <div id="plainRead" style="font-size:13px;color:var(--text);line-height:1.55;margin:6px 0 8px;padding:8px 10px;background:var(--card2);border:1px solid var(--border);border-radius:8px;display:none"></div>
+      <!-- 歷史 5 日勝率（白話，讓使用者知道訊號可信度）-->
+      <div id="hist5" style="display:none;margin:6px 0 8px;padding:8px 10px;font-size:12px;line-height:1.6;color:var(--muted);background:var(--card2);border:1px solid var(--border);border-radius:8px"></div>
       <!-- 技術面摘要（看多/看空理由數 + 籌碼/消息 note）-->
       <div id="adviceSummary" style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:10px"></div>
       <!-- 五方分數明細 -->
@@ -688,6 +690,24 @@ function render(A, rows, t){
       sumHtml += `<br><span style="color:var(--accent)">🏛 大盤：${A.taiex.advice}</span>`;
     }
     adviceSummaryEl.innerHTML = sumHtml;
+  }
+
+  // 歷史 5 日勝率（白話，讓使用者知道「該股訊號可信度」）
+  const histEl = document.getElementById('hist5');
+  if (histEl && A.hist5) {
+    const h5 = A.hist5;
+    const up = h5.up_rate != null ? h5.up_rate + '%' : '—';
+    const dn = h5.down_rate != null ? h5.down_rate + '%' : '—';
+    const upN = h5.up_n || 0, dnN = h5.down_n || 0;
+    histEl.innerHTML =
+      '<div style="font-weight:700;color:var(--text);margin-bottom:4px">📊 這檔股票歷史訊號準確度（回看近 120 日、偏多/偏空訊號觸發後 5 日是否照做）</div>' +
+      '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px">' +
+        '<span style="background:var(--bull);color:#0f1419;font-weight:700;padding:2px 8px;border-radius:10px;font-size:11px">偏多訊號 5 日漲 ' + up + '（' + upN + ' 次）</span>' +
+        '<span style="background:var(--bear);color:#0f1419;font-weight:700;padding:2px 8px;border-radius:10px;font-size:11px">偏空訊號 5 日跌 ' + dn + '（' + dnN + ' 次）</span>' +
+      '</div>' +
+      '<div style="color:var(--text)">' + h5.overall_label + '。</div>' +
+      '<div style="font-size:11px;color:var(--muted);margin-top:4px">白話：偏多訊號 5 日勝率越超過 50%，「看到偏多就買」贏面越大；反之亦然。訊號雜音大的股票，務必配合止損、別全倉。</div>';
+    histEl.style.display = 'block';
   }
 
   // 五方分數明細（progress bar 長條：紅多、綠空）
