@@ -206,8 +206,11 @@
   <!-- 自選股總覽表 -->
   <div id="watchOverview" style="display:none;margin:10px 0">
     <div class="card" style="margin:0">
-      <h3>⭐ 自選股總覽（近 20 日表現）</h3>
-      <div id="watchOvTable" style="overflow-x:auto"></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <h3 style="margin:0">⭐ 自選股總覽（近 20 日表現）</h3>
+        <button id="watchOvRefresh" onclick="refreshWatchOverview()" style="background:none;border:1px solid var(--accent);color:var(--accent);border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer">⟳ 更新自選股總覽</button>
+      </div>
+      <div id="watchOvTable" style="overflow-x:auto;color:var(--muted);font-size:12px">尚未更新 — 請點右上「⟳ 更新自選股總覽」抓取近 20 日報酬。</div>
     </div>
   </div>
 
@@ -1469,7 +1472,7 @@ function shareAnalysis(){
 window.addEventListener('load',()=>{
   initTheme();
   renderWatch(loadWatch());
-  refreshWatchOverview();
+  // 不自動抓自選總覽，等使用者按「⟳ 更新」再拉資料
   // 不再自動分析，等使用者輸入代號後再按「分析」或按 Enter
 });
 window.addEventListener('resize',()=>{ if(window._lastRows) { drawChart(window._lastRows, window._lastIND); drawMACD(window._lastRows, window._lastIND); drawRSI(window._lastRows, window._lastIND); drawVolChart(window._lastRows, window._lastIND); const [sr, tr, tt] = window._rsArgs||[]; if(sr && tr) drawRSChart(null, sr, tr, tt); } });
