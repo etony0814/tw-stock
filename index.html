@@ -125,7 +125,7 @@
     #chart{height:240px !important;}
     #macdChart{height:110px !important;}
     #rsiChart{height:110px !important;}
-    #rsChart{height:140px !important;}
+    #rsChart{display:none !important;}
     /* 關鍵指標快覽：2x2 網格 */
     #statGrid{grid-template-columns:repeat(2,1fr) !important;}
     .sm-val{font-size:16px;}
@@ -319,12 +319,6 @@
       <canvas id="chart" height="300"></canvas>
       <canvas id="macdChart" height="120" style="margin-top:8px"></canvas>
       <canvas id="rsiChart" height="120" style="margin-top:8px"></canvas>
-    </div>
-
-    <div class="card">
-      <h3>📐 個股 vs 大盤（相對強度）</h3>
-      <canvas id="rsChart" height="160"></canvas>
-      <div class="msg" id="rsInfo" style="margin-top:8px"></div>
     </div>
 
     <div class="card">
@@ -925,13 +919,12 @@ function render(A, rows, t){
     fFlowEl.innerHTML = html;
   } else { fFlowEl.style.display = 'none'; }
 
-  // 相對大盤強度
+  // 相對大盤強度（僅文字顯示，圖表已移除）
   const rs = A.relative;
-  document.getElementById('rsInfo').innerHTML = rs && rs.ok
-    ? `個股近20日 <b>${rs.stock_ret>0?'+':''}${rs.stock_ret}%</b>、大盤 <b>${rs.taiex_ret>0?'+':''}${rs.taiex_ret}%</b>，<b>${rs.label}</b>（差 ${rs.diff>0?'+':''}${rs.diff}%）。<br>${rs.advice}`
-    : `<span style="color:var(--muted)">相對強度暫無法計算。</span>`;
-  drawRSChart(rs, A._stockRows, A._taiexRows, t);
-  window._rsArgs = [A._stockRows, A._taiexRows, t];
+  if (rs && rs.ok) {
+    const rsEl = document.getElementById('rsInfo');
+    if (rsEl) rsEl.innerHTML = `個股近20日 <b>${rs.stock_ret>0?'+':''}${rs.stock_ret}%</b>、大盤 <b>${rs.taiex_ret>0?'+':''}${rs.taiex_ret}%</b>，<b>${rs.label}</b>（差 ${rs.diff>0?'+':''}${rs.diff}%）。<br>${rs.advice}`;
+  }
 
   // 消息
   const nw=A.news;
@@ -949,9 +942,17 @@ function render(A, rows, t){
     const dayLabel = nw ? nw.days : 7;
     newsListEl.innerHTML =
       `<div style="font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:700">近期相關新聞（近 ${dayLabel} 天、${newsItems.length} 則，新→舊）</div>` +
-      newsItems.slice(0, 10).map(title =>
-        `<div class="news-item"><div class="nt">${title}</div></div>`
-      ).join('');
+      newsItems.slice(0, 10).map(item => {
+        // 相容：純字串 或 {title, link}
+        const title = (typeof item === "string") ? item : (item.title || "");
+        const link = (typeof item === "string") ? "" : (item.link || "");
+        const esc = title.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+        if (link) {
+          const href = link.startsWith("http") ? link : "https://news.google.com" + link;
+          return `<div class="news-item"><a class="nt" href="${href.replace(/"/g,"&quot;")}" target="_blank" rel="noopener noreferrer" style="color:var(--text);text-decoration:none;display:block;cursor:pointer" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--text)'">${esc}</a></div>`;
+        }
+        return `<div class="news-item"><div class="nt">${esc}</div></div>`;
+      }).join('');
   } else { newsListEl.style.display = 'none'; }
 
   // 訊號：依「權重/重要性 + 新到舊」排列（偏多偏空在前、中性靠後）
@@ -1188,94 +1189,7 @@ function drawVolChart(rows, IND){
   }
 }
 
-// ── 個股 vs 大盤 相對強度圖（近 20 日收盤涨跌幅雙折線）──
-function drawRSChart(rs, stockRows, taiexRows, t){
-  const cv=document.getElementById('rsChart');
-  if(!cv) return;
-  const dpr=window.devicePixelRatio||1;
-  const W=cv.clientWidth||cv.parentElement.clientWidth||800, H=160;
-  if(W<=0) return;
-  cv.width=W*dpr; cv.height=H*dpr; cv.style.height=H+'px';
-  const ctx=cv.getContext('2d'); ctx.scale(dpr,dpr);
-  ctx.clearRect(0,0,W,H);
-  if(!stockRows || !stockRows.length){
-    ctx.textAlign='center'; ctx.fillStyle='#94a3b8'; ctx.fillText('暫無資料', W/2, H/2);
-    return;
-  }
-  const N = Math.min(20, stockRows.length);
-  const s = stockRows.slice(-N), base = s[0].close;
-  const sPct = s.map(r => (r.close - base) / base * 100);
-
-  // 大盤折線：優先用 taiexRows；若抓不到，用 rs.taiex_ret 重構一條等比例折線
-  let tPct;
-  const tRows = taiexRows && taiexRows.length >= N ? taiexRows.slice(-N) : null;
-  if (tRows) {
-    const tBase = tRows[0].close;
-    tPct = tRows.map(r => (r.close - tBase) / tBase * 100);
-  } else if (rs && rs.ok && rs.taiex_ret != null) {
-    // 重構：從 0% 等比例走到 rs.taiex_ret（假設線性）
-    const target = rs.taiex_ret;
-    tPct = sPct.map((_, i) => i === 0 ? 0 : target * i / (N - 1));
-    tPct[0] = 0;
-  } else {
-    tPct = sPct.map(() => 0);
-  }
-
-  let lo=-Infinity, hi=Infinity;
-  sPct.forEach(v=>{ if(Number.isFinite(v)){lo=Math.min(lo,v);hi=Math.max(hi,v);} });
-  tPct.forEach(v=>{ if(Number.isFinite(v)){lo=Math.min(lo,v);hi=Math.max(hi,v);} });
-  if(!Number.isFinite(lo)||!Number.isFinite(hi)){ lo=-1; hi=1; }
-  lo=Math.min(lo,-0.5); hi=Math.max(hi,0.5);
-  if(hi-lo<1){ const m=(hi+lo)/2; lo=m-0.5; hi=m+0.5; }
-  const pad = { l: 40, r: 12, t: 14, b: 22 };
-  const pw = W - pad.l - pad.r, ph = H - pad.t - pad.b;
-  const X = i => pad.l + (i / Math.max(1, N - 1)) * pw;
-  const Y = v => pad.t + (hi - v) / (hi - lo) * ph;
-  // 背景網格 + 水平參考線
-  ctx.font = '10px sans-serif'; ctx.textAlign = 'right';
-  [-4, -2, 0, 2, 4].forEach(v => {
-    if (v < lo || v > hi) return;
-    const y = Y(v);
-    ctx.strokeStyle = v === 0 ? '#3a4658' : '#1e2a3a';
-    ctx.lineWidth = v === 0 ? 1 : 0.5;
-    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(W - pad.r, y); ctx.stroke();
-    ctx.fillStyle = '#94a3b8'; ctx.fillText(v + '%', pad.l - 4, y + 3);
-  });
-  // X 軸日期標籤（首、中、尾）
-  ctx.textAlign='center'; ctx.fillStyle='#64748b';
-  [0, Math.floor(N/2), N-1].forEach(i => {
-    const d = s[i].date || '';
-    ctx.fillText(d.slice(5), X(i), H - 4);
-  });
-  // 大盤折線（灰，虛線）
-  ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 2; ctx.lineJoin='round'; ctx.lineCap='round';
-  ctx.setLineDash([5,3]);
-  ctx.beginPath();
-  tPct.forEach((v, i) => { if (i===0) ctx.moveTo(X(i), Y(v)); else ctx.lineTo(X(i), Y(v)); });
-  if (N>1) ctx.stroke();
-  ctx.setLineDash([]);
-  // 個股折線（藍，粗實線）
-  ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 3; ctx.lineJoin='round'; ctx.lineCap='round';
-  ctx.beginPath();
-  sPct.forEach((v, i) => { if (i===0) ctx.moveTo(X(i), Y(v)); else ctx.lineTo(X(i), Y(v)); });
-  if (N>1) ctx.stroke();
-  // 圓點標記
-  ctx.fillStyle='#38bdf8';
-  sPct.forEach((v,i)=>{ if(i%3===0||i===N-1){ ctx.beginPath(); ctx.arc(X(i),Y(v),4,0,Math.PI*2); ctx.fill(); }});
-  ctx.fillStyle='#94a3b8';
-  tPct.forEach((v,i)=>{ if(i%3===0||i===N-1){ ctx.beginPath(); ctx.arc(X(i),Y(v),3,0,Math.PI*2); ctx.fill(); }});
-  // 背景填充（個股折線下方微光）
-  ctx.fillStyle='rgba(56,189,248,0.06)';
-  ctx.beginPath();
-  sPct.forEach((v,i)=>{ if(i===0) ctx.moveTo(X(i),Y(v)); else ctx.lineTo(X(i),Y(v)); });
-  ctx.lineTo(X(N-1), pad.t+ph); ctx.lineTo(X(0), pad.t+ph); ctx.closePath(); ctx.fill();
-  // 圖例
-  ctx.textAlign='left'; ctx.font='11px sans-serif';
-  ctx.strokeStyle='#38bdf8'; ctx.lineWidth=2.5; ctx.beginPath(); ctx.moveTo(pad.l+4, pad.t+2); ctx.lineTo(pad.l+24, pad.t+2); ctx.stroke();
-  ctx.fillStyle='#38bdf8'; ctx.fillText(t, pad.l+28, pad.t+6);
-  ctx.strokeStyle='#94a3b8'; ctx.lineWidth=1.5; ctx.setLineDash([4,3]); ctx.beginPath(); ctx.moveTo(pad.l+72, pad.t+2); ctx.lineTo(pad.l+92, pad.t+2); ctx.stroke(); ctx.setLineDash([]);
-  ctx.fillStyle='#94a3b8'; ctx.fillText('加權', pad.l+96, pad.t+6);
-}
+// 相對強度圖已移除（drawRSChart 已刪除，僅保留 rsInfo 文字顯示）
 
 function setVal(id, v, c){
   const el=document.getElementById(id);
@@ -1573,7 +1487,7 @@ window.addEventListener('load',()=>{
   // 不自動抓自選總覽，等使用者按「⟳ 更新」再拉資料
   // 不再自動分析，等使用者輸入代號後再按「分析」或按 Enter
 });
-window.addEventListener('resize',()=>{ if(window._lastRows) { drawChart(window._lastRows, window._lastIND); drawMACD(window._lastRows, window._lastIND); drawRSI(window._lastRows, window._lastIND); drawVolChart(window._lastRows, window._lastIND); const [sr, tr, tt] = window._rsArgs||[]; if(sr && tr) drawRSChart(null, sr, tr, tt); } });
+window.addEventListener('resize',()=>{ if(window._lastRows) { drawChart(window._lastRows, window._lastIND); drawMACD(window._lastRows, window._lastIND); drawRSI(window._lastRows, window._lastIND); drawVolChart(window._lastRows, window._lastIND); } });
 
 </script>
 </body>
