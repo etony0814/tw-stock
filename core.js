@@ -595,11 +595,13 @@
   }
 
   function newsSentiment(headlines, days, ticker, stockName) {
-    // headlines: string[]；ticker/stockName 提供時做「相關度過濾」（雜音標題降權）
+    // headlines: 可為 string[] 或 {title,link}[]；ticker/stockName 提供時做「相關度過濾」（雜音標題降權）
     days = days || 7;
     let P = 0, N = 0, relevantCount = 0;
     const hasKey = ticker || stockName;
-    for (const h of headlines) {
+    for (const hRaw of headlines) {
+      // 相容：純字串 或 {title,link}
+      const h = (typeof hRaw === "string") ? hRaw : (hRaw.title || "");
       const s = scoreHeadline(h);
       // 相關度：標題含代號或名稱才算「相關」，否則降為 0.5 權重（雜音過濾）
       let w = 1;
@@ -624,6 +626,7 @@
     return { score: Math.round(score * 1000) / 1000, label, advice, days,
       pos: Math.round(P), neg: Math.round(N), count: headlines.length,
       relevant: relevantCount,
+      // 保留原始 headlines（物件或字串），讓前端畫成可點擊連結
       headlines: headlines.slice() };
   }
 
@@ -701,20 +704,23 @@
       const items = Array.from(doc.querySelectorAll("item")).map(it => {
         const tEl = it.querySelector("title");
         const title = tEl ? tEl.textContent.trim() : "";
+        const lEl = it.querySelector("link");
+        const link = lEl ? (lEl.textContent || "").trim() : "";
         const pEl = it.querySelector("pubDate");
         let ts = 0;
         if (pEl && pEl.textContent) ts = Date.parse(pEl.textContent);
         // pubDate 解析失敗（NaN）→ 視為「時間不明」，保留；
         // pubDate 有效 → 只保留近 days 天內的
         const keep = isNaN(ts) ? true : ts >= cutoff;
-        return { title, ts, keep };
+        return { title, link, ts, keep };
       }).filter(it => it.title && it.keep);
-      if (items.length) return items.map(it => it.title).slice(0, 30);
+      if (items.length) return items.map(it => ({ title: it.title, link: it.link })).slice(0, 30);
       // fallback：cutoff 太嚴時，全部收（不filter）
       return Array.from(doc.querySelectorAll("item")).map(it => {
         const t = it.querySelector("title");
-        return t ? t.textContent.trim() : "";
-      }).filter(Boolean).slice(0, 30);
+        const l = it.querySelector("link");
+        return { title: t ? t.textContent.trim() : "", link: l ? (l.textContent || "").trim() : "" };
+      }).filter(it => it.title).slice(0, 30);
     } catch (e) { return []; }
   }
 
