@@ -1177,15 +1177,29 @@ function drawRSChart(rs, stockRows, taiexRows, t){
   cv.width=W*dpr; cv.height=H*dpr; cv.style.height=H+'px';
   const ctx=cv.getContext('2d'); ctx.scale(dpr,dpr);
   ctx.clearRect(0,0,W,H);
-  if(!stockRows || !taiexRows || !stockRows.length || !taiexRows.length){
+  if(!stockRows || !stockRows.length){
     ctx.textAlign='center'; ctx.fillStyle='#94a3b8'; ctx.fillText('暫無資料', W/2, H/2);
     return;
   }
   const N = Math.min(20, stockRows.length);
   const s = stockRows.slice(-N), base = s[0].close;
-  const tRows = taiexRows.slice(-N), tBase = tRows[0].close;
   const sPct = s.map(r => (r.close - base) / base * 100);
-  const tPct = tRows.length === N ? tRows.map(r => (r.close - tBase) / tBase * 100) : sPct.map(x => 0);
+
+  // 大盤折線：優先用 taiexRows；若抓不到，用 rs.taiex_ret 重構一條等比例折線
+  let tPct;
+  const tRows = taiexRows && taiexRows.length >= N ? taiexRows.slice(-N) : null;
+  if (tRows) {
+    const tBase = tRows[0].close;
+    tPct = tRows.map(r => (r.close - tBase) / tBase * 100);
+  } else if (rs && rs.ok && rs.taiex_ret != null) {
+    // 重構：從 0% 等比例走到 rs.taiex_ret（假設線性）
+    const target = rs.taiex_ret;
+    tPct = sPct.map((_, i) => i === 0 ? 0 : target * i / (N - 1));
+    tPct[0] = 0;
+  } else {
+    tPct = sPct.map(() => 0);
+  }
+
   let lo=-Infinity, hi=Infinity;
   sPct.forEach(v=>{ if(Number.isFinite(v)){lo=Math.min(lo,v);hi=Math.max(hi,v);} });
   tPct.forEach(v=>{ if(Number.isFinite(v)){lo=Math.min(lo,v);hi=Math.max(hi,v);} });
@@ -1212,12 +1226,14 @@ function drawRSChart(rs, stockRows, taiexRows, t){
     const d = s[i].date || '';
     ctx.fillText(d.slice(5), X(i), H - 4);
   });
-  // 加權折線（灰）
+  // 大盤折線（灰，虛線）
   ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 2; ctx.lineJoin='round'; ctx.lineCap='round';
+  ctx.setLineDash([5,3]);
   ctx.beginPath();
   tPct.forEach((v, i) => { if (i===0) ctx.moveTo(X(i), Y(v)); else ctx.lineTo(X(i), Y(v)); });
   if (N>1) ctx.stroke();
-  // 個股折線（藍，粗）
+  ctx.setLineDash([]);
+  // 個股折線（藍，粗實線）
   ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 3; ctx.lineJoin='round'; ctx.lineCap='round';
   ctx.beginPath();
   sPct.forEach((v, i) => { if (i===0) ctx.moveTo(X(i), Y(v)); else ctx.lineTo(X(i), Y(v)); });
@@ -1236,7 +1252,7 @@ function drawRSChart(rs, stockRows, taiexRows, t){
   ctx.textAlign='left'; ctx.font='11px sans-serif';
   ctx.strokeStyle='#38bdf8'; ctx.lineWidth=2.5; ctx.beginPath(); ctx.moveTo(pad.l+4, pad.t+2); ctx.lineTo(pad.l+24, pad.t+2); ctx.stroke();
   ctx.fillStyle='#38bdf8'; ctx.fillText(t, pad.l+28, pad.t+6);
-  ctx.strokeStyle='#94a3b8'; ctx.lineWidth=1.5; ctx.beginPath(); ctx.moveTo(pad.l+72, pad.t+2); ctx.lineTo(pad.l+92, pad.t+2); ctx.stroke();
+  ctx.strokeStyle='#94a3b8'; ctx.lineWidth=1.5; ctx.setLineDash([4,3]); ctx.beginPath(); ctx.moveTo(pad.l+72, pad.t+2); ctx.lineTo(pad.l+92, pad.t+2); ctx.stroke(); ctx.setLineDash([]);
   ctx.fillStyle='#94a3b8'; ctx.fillText('加權', pad.l+96, pad.t+6);
 }
 
