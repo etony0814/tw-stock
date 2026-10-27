@@ -635,6 +635,60 @@
   }
 
   // ─────────────────────────────────────────────────────────
+  // 交易日時段判定（TWSE 09:30–11:30 / 13:30–15:30，UTC+8）
+  // ─────────────────────────────────────────────────────────
+  function marketSession() {
+    const now = new Date();
+    const pad = n => String(n).padStart(2, "0");
+    const t = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())} ` +
+              `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+    const dow = now.getDay();
+    // 簡化：只看 HH:MM 範圍；非交易日也能正常分析，僅標註「休市/未開盤」
+    if (dow === 0 || dow === 6) return { code: "closed", label: "休市", t };
+    if (t >= "09:00" && t < "09:30") return { code: "pre", label: "開盤前", t };
+    if (t >= "09:30" && t < "13:30") return { code: "am", label: "盤中上午", t };
+    if (t >= "13:30" && t < "15:30") return { code: "pm", label: "盤中下午", t };
+    if (t >= "15:30") return { code: "post", label: "盤後", t };
+    return { code: "pre", label: "未開盤", t };
+  }
+
+  // ─────────────────────────────────────────────────────────
+  // 依分數 + 時段（開盤前/盤中/盤後）給白話行動建議
+  // ─────────────────────────────────────────────────────────
+  function actionForScore(score, session) {
+    const s = Number(score);
+    const inDay = session === "am" || session === "pm";
+    if (s >= 0.4) {
+      if (session === "pre") return "📈 開盤前 · 五方偏多：今天建議開盤觀察 15–30 分鐘，量能与走勢確認後可小量佈局，止損設在 ATR 線下方。";
+      if (inDay)  return "📈 盤中 · 五方偏多：可逢低小量試買，注意量比 < 0.7 時先等等；已持股可續抱。";
+      if (session === "post") return "📈 盤後 · 五方偏多：今天偏多訊號確認，明日開盤若未大幅跳空可續買或持股觀望。";
+      return "📈 五方偏多：可考慮逢低佈局，止損設在 ATR 線下方。";
+    }
+    if (s >= 0.15) {
+      if (session === "pre") return "🙂 開盤前 · 略偏多：今天建議開盤先看，未突破均線前不追價；有持股可續抱。";
+      if (inDay)  return "🙂 盤中 · 略偏多：可小量試水，破 20 日均線或量比 < 0.5 先撤。";
+      if (session === "post") return "🙂 盤後 · 略偏多：今天偏多未確認，明日開盤再決策，先觀望。";
+      return "🙂 略偏多：可小量試買，注意破 20 日均線撤退。";
+    }
+    if (s > -0.15) {
+      if (session === "pre") return "⚖️ 開盤前 · 五方中性：今天無明確方向，建議不動作、等訊號。";
+      if (inDay)  return "⚖️ 盤中 · 中性：各面向拉鋸，不追不砍，持股續抱。";
+      if (session === "post") return "⚖️ 盤後 · 中性：今日無方向，明日等訊號再決策。";
+      return "⚖️ 五方中性：各方訊號拉鋸，建議先觀望、不動作。";
+    }
+    if (s > -0.4) {
+      if (session === "pre") return "🟡 開盤前 · 略偏空：今天建議降低部位、不追價；有持股可部分兌現。";
+      if (inDay)  return "🟡 盤中 · 略偏空：建議小量減碼或設止損，破關鍵均線先撤退。";
+      if (session === "post") return "🟡 盤後 · 略偏空：今天偏空，明日開盤若未翻多先降低部位。";
+      return "🟡 略偏空：建議謹慎、降低風險或減碼。";
+    }
+    if (session === "pre") return "🔴 開盤前 · 五方偏空：今天建議避險、不進場；有持股考慮減碼或避開開盤。";
+    if (inDay)  return "🔴 盤中 · 五方偏空：建議避險或降低部位，不接弱反彈。";
+    if (session === "post") return "🔴 盤後 · 五方偏空：今天偏空確認，明日開盤先看能否翻多再決策。";
+    return "🔴 五方偏空：建議避險或等待轉強訊號。";
+  }
+
+  // ─────────────────────────────────────────────────────────
   // 五方綜合
   // ─────────────────────────────────────────────────────────
   function fiveWayComposite(comp, ff, intra, taiex, news, ctx) {
@@ -707,8 +761,11 @@
     else if (combined > -0.15) final = "五方綜合中性：各方訊號互相拉鋸，今天建議先觀望、不動作。";
     else if (combined > -0.40) final = "五方綜合略偏空：整體稍偏空，今天建議謹慎、降低風險。";
     else final = "五方綜合偏空：技術、籌碼、消息、盤面、大盤多偏向賣方，今天建議避險或等待轉強訊號。";
+    const ms = marketSession();
     return {
       final_advice: final, combined_score: combined,
+      session: ms,
+      action: actionForScore(combined, ms.code),
       score_breakdown: { "技術面": tech, "籌碼面": fScore, "消息面": newsScore,
         "盤面": iScore, "大盤": tScore, "綜合": combined },
       weights: { "技術面": wT, "籌碼面": wF, "消息面": wN, "盤面": wI, "大盤": wTa },
@@ -829,6 +886,6 @@
     tickerInFundFlow, fetchTaiexFromRows,
     intradayFromRows, newsSentiment, fetchNewsHeadlines,
     relativeStrength, findBuySellPoints,
-    fiveWayComposite, computeAll, scoreHeadline
+    fiveWayComposite, computeAll, scoreHeadline, marketSession, actionForScore
   };
 })(typeof window !== "undefined" ? window : globalThis);
