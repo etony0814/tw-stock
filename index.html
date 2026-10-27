@@ -374,7 +374,14 @@ async function fetchRows(code, period){
     try { return buildRows(await fetchJsonOne(base + code + qs), code); }
     catch (e) { lastErr = e; }
   }
-  // 2) 走 Jina Reader 代理（瀏覽器跨域可直抓）
+  // 2) allorigins 代理
+  try {
+    const target = STOCK_URLS[0] + code + qs;
+    const r = await fetch("https://api.allorigins.win/raw?url=" + encodeURIComponent(target), { headers: { "Accept": "application/json" } });
+    if(!r.ok) throw new Error("allorigins HTTP " + r.status);
+    return buildRows(await r.json(), code);
+  } catch (e) { lastErr = e; }
+  // 3) Jina Reader 代理（瀏覽器跨域可直抓）
   for (const base of STOCK_URLS) {
     try {
       const target = base + code + qs;
@@ -384,7 +391,14 @@ async function fetchRows(code, period){
       return buildRows(jinaParse(text), code);
     } catch (e) { lastErr = e; }
   }
-  throw new Error("取不到 " + code + " 行情（直抓與 Jina 代理皆失敗：" + (lastErr ? lastErr.message : "無") + "）");
+  // 4) corsproxy.io 備援
+  try {
+    const target = STOCK_URLS[0] + code + qs;
+    const r = await fetch("https://corsproxy.io/?url=" + encodeURIComponent(target), { headers: { "Accept": "application/json" } });
+    if(!r.ok) throw new Error("corsproxy HTTP " + r.status);
+    return buildRows(await r.json(), code);
+  } catch (e) { lastErr = e; }
+  throw new Error("取不到 " + code + " 行情（所有端點與代理皆失敗：" + (lastErr ? lastErr.message : "無") + "）");
 }
 
 function buildRows(j, code){
@@ -1325,8 +1339,11 @@ const WNAMES = {"0050":"元大台灣50","0051":"元大中型100","0052":"富邦�
 function loadWatch(){
   let list;
   try{ list = JSON.parse(localStorage.getItem(WATCH_KEY)||"[]"); }catch(e){ list=[]; }
-  // 修正舊資料：name===code 的用 WNAMES 補正
-  list.forEach(o=>{ if(o.name===o.code) o.name=WNAMES[o.code]||''; });
+  // 統一格式：舊資料可能是純字串，轉成 {code,name} 物件；濾掉無效項
+  list = list.filter(x => typeof x === 'object' && x && /^\d{4}$/.test(x.code))
+              .map(o => ({ code: o.code, name: o.name || WNAMES[o.code] || '' }));
+  // name===code 的補正
+  list.forEach(o => { if(!o.name || o.name === o.code) o.name = WNAMES[o.code] || ''; });
   return list;
 }
 function saveWatch(list){
@@ -1359,21 +1376,22 @@ function watchToggle(){
   const t=document.getElementById('ticker').value.trim().toUpperCase();
   if(!/^\d{4}$/.test(t)) return;
   let list=loadWatch();
-  if(ck && !list.includes(t)) list.push(t);
-  else if(!ck && list.includes(t)) list=list.filter(x=>x!==t);
+  const exists = list.some(x => x.code === t);
+  if(ck && !exists) list.push({ code: t, name: WNAMES[t] || '' });
+  else if(!ck && exists) list = list.filter(x => x.code !== t);
   saveWatch(list);
 }
 
 // 自選股總覽表：並抓每只近 20 日收盤算報酬，顯示 代號/名稱/收盤/20日報酬
 async function refreshWatchOverview(){
-  const list = loadWatch().map(x => x.code || x);
+  const list = loadWatch().map(x => x.code || x).filter(c => /^\d{4}$/.test(c));
   const panel = document.getElementById('watchOverview');
   const table = document.getElementById('watchOvTable');
   if (!list.length || !panel || !table) { if(panel) panel.style.display='none'; return; }
   panel.style.display = 'block';
   table.innerHTML = '<div style="color:var(--muted);font-size:12px">載入中…</div>';
-  const rows = [];
-  for (const t of list.slice(0, 8)) { // 上限 8 只，避免太慢
+  // 並行抓取（上限 8 只）
+  const tasks = list.slice(0, 8).map(async (t) => {
     try {
       const stockRows = await fetchRows(toYahoo(t), '1mo');
       const tail = stockRows.slice(-21);
@@ -1382,11 +1400,12 @@ async function refreshWatchOverview(){
         ? (close - tail[0].close) / tail[0].close * 100
         : null;
       const nm = WNAMES[t] || '';
-      rows.push({ code:t, name:nm, close, r20 });
+      return { code:t, name:nm, close, r20 };
     } catch (e) {
-      rows.push({ code:t, name:WNAMES[t]||'', close:null, r20:null, err:true });
+      return { code:t, name:WNAMES[t]||'', close:null, r20:null, err:true };
     }
-  }
+  });
+  const rows = await Promise.all(tasks);
   table.innerHTML =
     '<table style="width:100%;border-collapse:collapse;font-size:12px">' +
     '<thead><tr style="color:var(--muted);border-bottom:1px solid var(--border)">' +
