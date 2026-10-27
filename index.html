@@ -232,19 +232,13 @@
       <div id="plainRead" style="font-size:13px;color:var(--text);line-height:1.55;margin:6px 0 8px;padding:8px 10px;background:var(--card2);border:1px solid var(--border);border-radius:8px;display:none"></div>
       <!-- 歷史 5 日勝率（白話，讓使用者知道訊號可信度）-->
       <div id="hist5" style="display:none;margin:6px 0 8px;padding:8px 10px;font-size:12px;line-height:1.6;color:var(--muted);background:var(--card2);border:1px solid var(--border);border-radius:8px"></div>
-      <!-- 技術面摘要（看多/看空理由數 + 籌碼/消息 note）-->
-      <div id="adviceSummary" style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:10px"></div>
-      <!-- 五方分數明細 -->
-      <div class="bd" id="finalBd"></div>
-      <!-- 綜合分數拆解（關連到下方各面向）-->
-      <div id="compBreak" style="display:none;margin-top:10px"></div>
       <!-- 止損 / 止盈參考價 -->
-      <div id="slTp" style="display:none;margin-top:10px;padding:8px 10px;background:var(--card2);border:1px solid var(--border);border-radius:8px;font-size:13px;color:var(--muted);line-height:1.6">
+      <div id="slTp" style="display:none;margin:10px 0 8px;padding:8px 10px;background:var(--card2);border:1px solid var(--border);border-radius:8px;font-size:13px;color:var(--muted);line-height:1.6">
         <div style="font-weight:700;color:var(--text);font-size:12px;margin-bottom:4px">📌 止損 / 止盈參考（依 ATR 波動估算，僅供參考）</div>
         <div id="slTpContent"></div>
       </div>
       <!-- 看多 / 看空理由（手風琴，預設 3 條可展開） -->
-      <div id="bullBox" style="display:none;margin-top:10px">
+      <div id="bullBox" style="display:none;margin-top:8px">
         <div style="display:flex;align-items:center;justify-content:space-between">
           <span style="font-size:13px;font-weight:700;color:var(--bull)">✅ 看多理由（<span id="bullCount">0</span>）</span>
           <span id="bullToggle" onclick="toggleAccordion('bull')" style="font-size:12px;color:var(--accent);cursor:pointer;user-select:none">展開全部 ▾</span>
@@ -258,6 +252,12 @@
         </div>
         <ul id="bearReasons" style="margin:4px 0 0;padding-left:18px;font-size:13px;line-height:1.7;color:var(--text)"></ul>
       </div>
+      <!-- 技術面摘要（看多/看空理由數 + 籌碼/消息 note）-->
+      <div id="adviceSummary" style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:10px"></div>
+      <!-- 五方分數明細 -->
+      <div class="bd" id="finalBd"></div>
+      <!-- 綜合分數拆解（關連到下方各面向）-->
+      <div id="compBreak" style="display:none;margin-top:10px"></div>
       <!-- 關鍵指標快覽 -->
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px" id="statGrid">
         <div class="stat-mini"><div class="sm-lbl">最新收盤</div><div class="sm-val" id="statClose">—</div></div>
