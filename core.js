@@ -464,18 +464,28 @@
 
   // 取最近 days 個交易日的 YYYYMMDD（用加權指數日K）
   async function fetchTradingDates(n) {
+    let rows = null;
+    // 優先用中繼抓 ^TWII（瀏覽器不噴 CORS 紅字）
     try {
-      const rows = await fetchJsonSmart(STOCK_URLS ? "https://query2.finance.yahoo.com/v8/finance/chart/%5ETWII?range=5d&interval=1d" : "https://query2.finance.yahoo.com/v8/finance/chart/%5ETWII?range=5d&interval=1d");
-      const res = rows.chart && rows.chart.result && rows.chart.result[0];
-      if (!res) return [];
-      return res.timestamp.slice(0, n).map(ts => {
-        const d = new Date(ts * 1000);
-        const y = d.getFullYear();
-        const m = String(d.getMonth() + 1).padStart(2, "0");
-        const dd = String(d.getDate()).padStart(2, "0");
-        return y + m + dd; // T86 要西元年 YYYYMMDD
-      });
-    } catch (e) { return []; }
+      const rj = await fetchQuoteViaRelay("%5ETWII", "5d");
+      if (rj && rj.chart) rows = rj;
+    } catch (e) { rows = null; }
+    // 中繼失敗才 fallback 直抓 / allorigins
+    if (!rows) {
+      try {
+        rows = await fetchJsonSmart("https://query2.finance.yahoo.com/v8/finance/chart/%5ETWII?range=5d&interval=1d");
+      } catch (e) { rows = null; }
+    }
+    if (!rows) return [];
+    const res = rows.chart && rows.chart.result && rows.chart.result[0];
+    if (!res) return [];
+    return res.timestamp.slice(0, n).map(ts => {
+      const d = new Date(ts * 1000);
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, "0");
+      const dd = String(d.getDate()).padStart(2, "0");
+      return y + m + dd; // T86 要西元年 YYYYMMDD
+    });
   }
 
   // 指定日期的 T86
@@ -639,6 +649,23 @@
   // 例：https://tw-news-relay.你的帳號.workers.dev/?q={encoded_query}&days=7
   // 留空則跳過此層（仍會走下方其他代理）
   const SELF_RELY_URL = "https://tw-news-relay.etonylin.workers.dev";
+  // 行情中繼：同一個 Worker 加 ticker 參數抓 Yahoo chart JSON（CORS 已開）
+  // 部署 deploy/cf-worker/relay.js 後，填同一個 URL 即可；留空則跳過
+  const QUOTE_RELAY_URL = "https://tw-news-relay.etonylin.workers.dev";
+
+  // 用行情中繼抓 Yahoo chart JSON（最穩、無瀏覽器 CORS 紅字）
+  async function fetchQuoteViaRelay(code, period) {
+    if (!QUOTE_RELAY_URL) return null;
+    try {
+      const r = await fetch(QUOTE_RELAY_URL + "?ticker=" + encodeURIComponent(code) +
+        "&range=" + encodeURIComponent(period) + "&interval=1d");
+      if (!r.ok) return null;
+      const j = await r.json();
+      if (j && j.ok === false) return null;
+      if (j && j.chart) return j;   // 成功：回傳原始 chart JSON
+      return null;
+    } catch (e) { return null; }
+  }
 
   // 代理抓 XML：成功回傳 XML 字串，失敗回傳 null（含重試）
   async function fetchViaProxy(prefix, target, retries) {
@@ -993,7 +1020,7 @@
     computeIndicators, detectSignals, compositeSignal, applyCorrelationDiscount,
     fetchFundFlow, fetchFundFlowMulti, fetchTradingDates, fetchFundFlowDate,
     tickerInFundFlow, fetchTaiexFromRows,
-    intradayFromRows, newsSentiment, fetchNewsHeadlines,
+    intradayFromRows, newsSentiment, fetchNewsHeadlines, fetchQuoteViaRelay,
     relativeStrength, findBuySellPoints, hist5,
     fiveWayComposite, computeAll, scoreHeadline, marketSession, actionForScore
   };
