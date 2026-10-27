@@ -175,24 +175,52 @@
       else add("均線交纏", "neutral", "短、中、長期均線沒有明確排列。", 0, s5);
     }
 
-    // MACD 交叉
+    // MACD 交叉（含「持續偏多/偏空」降權：連續 ≥5 日同方向時，權重 2→1，避免趨勢段過度放大）
     const ml = IND.MACD.line, ms = IND.MACD.signal;
     if (i > 0 && ml[i] != null && ms[i] != null && ml[i - 1] != null && ms[i - 1] != null) {
+      // 計算 MACD 同方向連續天數（看 ml 相對零軸）
+      const sameDir = ml[i] > 0 ? "up" : "down";
+      let consecDays = 0;
+      for (let k = i; k >= 0 && k > i - 10; k--) {
+        if (ml[k] == null) break;
+        const dir = ml[k] > 0 ? "up" : "down";
+        if (dir === sameDir) consecDays++;
+        else break;
+      }
       if (ms[i - 1] <= ml[i - 1] && ms[i] > ml[i]) add("MACD 金叉（買盤轉強）", "buy", "MACD 從下方翻上訊號線，動能轉強。", 2, ml[i]);
       else if (ms[i - 1] >= ml[i - 1] && ms[i] < ml[i]) add("MACD 死叉（賣壓轉重）", "sell", "MACD 從上方跌破訊號線，動能轉弱。", 2, ml[i]);
       else {
         const pos = ml[i] > 0;
-        add("MACD 偏" + (pos ? "多" : "空"), pos ? "buy" : "sell",
-          pos ? "MACD 在零軸上方，買盤稍強於賣盤。" : "MACD 在零軸下方，賣壓稍強於買盤。", 1, ml[i]);
+        const w = consecDays >= 5 ? 1 : 2; // 同方向 ≥5 日：視為「已反映在排列」，降權
+        add("MACD 偏" + (pos ? "多" : "空") + (consecDays >= 5 ? "（連續 " + consecDays + " 日）" : ""), pos ? "buy" : "sell",
+          pos ? "MACD 在零軸上方，買盤稍強於賣盤。" : "MACD 在零軸下方，賣壓稍強於買盤。",
+          w, ml[i]);
       }
     }
 
-    // RSI
+    // RSI（含中場訊號 + 斜率）
     const rsi = IND.RSI[i];
+    let rsiSlope = 0;
+    if (rsi != null && i >= 3) {
+      const rsi3 = IND.RSI[i-3];
+      if (rsi3 != null) rsiSlope = rsi - rsi3;
+    }
     if (rsi != null) {
-      if (rsi >= 70) add("短線偏熱（RSI " + rsi.toFixed(0) + "）", "sell", "漲太多，短線留意回檔。", 1, rsi);
-      else if (rsi <= 30) add("短線偏冷（RSI " + rsi.toFixed(0) + "）", "buy", "跌太多，短線留意反彈。", 1, rsi);
-      else add("短線不熱不冷（RSI " + rsi.toFixed(0) + "）", "neutral", "沒有明顯超買超賣。", 0, rsi);
+      if (rsi >= 70) {
+        add("短線偏熱（RSI " + rsi.toFixed(0) + "）", "sell", "漲太多，短線留意回檔。", 2, rsi);
+      } else if (rsi <= 30) {
+        add("短線偏冷（RSI " + rsi.toFixed(0) + "）", "buy", "跌太多，短線留意反彈。", 2, rsi);
+      } else if (rsi >= 50 && rsi < 70) {
+        // 中場偏多（RSI 50-70 是多頭區）
+        add("RSI 中場偏多（" + rsi.toFixed(0) + "）", "buy", "RSI 處於 50-70 多頭區，短線偏強。", 1, rsi);
+        if (rsiSlope > 5) add("RSI 近 3 日上升（+" + rsiSlope.toFixed(1) + "）", "buy", "RSI 持續上升，動能正在轉強。", 1, rsiSlope);
+      } else if (rsi <= 50 && rsi > 30) {
+        // 中場偏空（RSI 30-50 是空頭區）
+        add("RSI 中場偏空（" + rsi.toFixed(0) + "）", "sell", "RSI 處於 30-50 空頭區，短線偏弱。", 1, rsi);
+        if (rsiSlope < -5) add("RSI 近 3 日下降（" + rsiSlope.toFixed(1) + "）", "sell", "RSI 持續下降，動能正在轉弱。", 1, rsiSlope);
+      } else {
+        add("短線不熱不冷（RSI " + rsi.toFixed(0) + "）", "neutral", "沒有明顯超買超賣。", 0, rsi);
+      }
     }
 
     // KDJ
@@ -242,34 +270,49 @@
     return s;
   }
 
-  // #26 相關性降權：MACD 金叉/死叉 與 SMA 多頭/空頭排列同時出現時，
-  // 兩者高度相關，把 SMA 權重從 2 降為 1，避免 double-count 放大方向。
+  // #26 相關性降權：MACD 與 SMA 排列、KDJ 與 SMA5 翻上 高度相關，
+  // 同時出現時降權，避免 double-count 放大方向。
   function applyCorrelationDiscount(signals) {
-    const hasMacd = signals.some(x => x.name.indexOf("MACD") === 0 && (x.state === "buy" || x.state === "sell"));
-    const hasSma = signals.some(x => x.name.indexOf("均線") >= 0 && (x.state === "buy" || x.state === "sell"));
+    const dir = x => x.state === "buy" || x.state === "sell";
+    const hasMacd = signals.some(x => x.name.indexOf("MACD") === 0 && dir(x));
+    const hasSma = signals.some(x => x.name.indexOf("均線") >= 0 && dir(x));
+    const hasKdjCross = signals.some(x => /KDJ (金叉|死叉)/.test(x.name) && dir(x));
+    const hasSma5Flip = signals.some(x => x.name.indexOf("5日") >= 0 && dir(x));
     if (hasMacd && hasSma) {
       for (const x of signals) {
-        if (x.name.indexOf("均線") >= 0 && (x.state === "buy" || x.state === "sell")) x.weight = 1;
+        if (x.name.indexOf("均線") >= 0 && dir(x)) x.weight = Math.min(x.weight, 1);
+      }
+    }
+    if (hasKdjCross && hasSma5Flip) {
+      for (const x of signals) {
+        if (/KDJ (金叉|死叉)/.test(x.name) && dir(x)) x.weight = Math.max(0.5, x.weight * 0.5);
       }
     }
     return signals;
   }
 
+  // 技術面分數重設：訊號加「強度」，改 Σ(weight × dir) / Σ(weight)
+  // - 分數分布不再被壓扁（舊版 net/max(8,...) 範圍被壓縮）
+  // - 強度由 weight 直接表達（極端訊號 weight=2、中場 weight=1、中性 0）
   function compositeSignal(signals) {
     let buy = 0, sell = 0;
     for (const x of signals) {
       if (x.state === "buy") buy += x.weight;
       else if (x.state === "sell") sell += x.weight;
     }
+    const total = buy + sell;
     const net = buy - sell;
+    let tech_score;
+    if (total === 0) tech_score = 0;
+    else tech_score = Math.max(-1, Math.min(1, net / total));
     let advice;
-    if (net >= 4) advice = "目前偏多，適合逢低布局。";
-    else if (net >= 1) advice = "目前略偏多，可以小量試買。";
-    else if (net <= -4) advice = "目前偏空，建議降低風險。";
-    else if (net <= -1) advice = "目前略偏空，建議觀望或減碼。";
+    if (tech_score >= 0.5) advice = "目前偏多，適合逢低布局。";
+    else if (tech_score >= 0.15) advice = "目前略偏多，可以小量試買。";
+    else if (tech_score <= -0.5) advice = "目前偏空，建議降低風險。";
+    else if (tech_score <= -0.15) advice = "目前略偏空，建議觀望或減碼。";
     else advice = "方向不明確，建議先觀望。";
-    return { buy_score: buy, sell_score: sell, net, advice,
-      tech_score: net === 0 ? 0 : Math.max(-1, Math.min(1, net / Math.max(8, buy + sell))) };
+    return { buy_score: Math.round(buy*10)/10, sell_score: Math.round(sell*10)/10,
+      net: Math.round(net*10)/10, advice, tech_score: Math.round(tech_score*1000)/1000 };
   }
 
   // ─────────────────────────────────────────────────────────
@@ -705,9 +748,26 @@
     // 籌碼面：外資連續淨買/賣 3 日以上加分（折進 fScore）
     let adjFF = fScore;
     if (ff.ticker_consec >= 3) {
-      const boost = ff.ticker_consec >= 5 ? 0.25 : 0.15;
+      let boost = ff.ticker_consec >= 5 ? 0.25 : 0.15;
+      // #4 金額絕對值加權：看「連續同向」+「當日 vs 5 日均值」
+      const hist = (ff.history || []).filter(h => h.ticker_net != null);
+      if (hist.length >= 2 && ff.ticker_consec >= 2) {
+        const nets = hist.map(h => h.ticker_net);
+        const avg5 = nets.reduce((a, b) => a + b, 0) / nets.length;
+        const today = nets[nets.length - 1];
+        const dirSign = today > 0 ? 1 : -1;
+        if (avg5 !== 0 && Math.abs(today) > 0 && avg5 * dirSign > 0) {
+          if (Math.abs(today) > Math.abs(avg5)) {
+            boost = Math.min(0.4, boost + 0.1);
+            note += "籌碼面：外資 " + ff.ticker_consec + " 日同向且當日放量，加權升為 +" + boost.toFixed(2) + "；";
+          } else if (Math.abs(today) < Math.abs(avg5) * 0.5) {
+            boost = Math.max(0, boost - 0.15);
+            note += "籌碼面：外資 " + ff.ticker_consec + " 日同向但當日力道減弱，加權降為 +" + boost.toFixed(2) + "；";
+          }
+        }
+      }
       adjFF = Math.max(1, fScore + boost);
-      note += "籌碼面加權：外資連續 " + ff.ticker_consec + " 日同向，分數 +" + boost + "；";
+      if (boost > 0) note += "籌碼面加權：分數 +" + boost.toFixed(2) + "；";
     }
 
     // 消息面：相關度過濾後（news.relevant 少）再降權
