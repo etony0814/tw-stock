@@ -377,16 +377,21 @@ async function fetchRows(code, period){
   const qs = "?range=" + period + "&interval=1d";
   let lastErr = null;
   // 0) Cloudflare Worker 行情中繼（最穩：CORS 已開、瀏覽器不噴 CORS 紅字）
+  //    同時試 .TW 和 .TWO 兩個版本，任一個成功就用（上市/上櫃字頭混用問題）
   if (QUOTE_RELAY) {
-    try {
-      const r = await fetch(QUOTE_RELAY + "?ticker=" + encodeURIComponent(code) +
-        "&range=" + encodeURIComponent(period) + "&interval=1d");
-      if (r.ok) {
-        const j = await r.json();
-        if (j && j.chart) return buildRows(j, code);
-        if (j && j.ok === false) lastErr = new Error("relay " + j.error);
-      }
-    } catch (e) { lastErr = e; }
+    const c = code.toUpperCase().replace(/\.TW$/,'').replace(/\.TWO$/,'');
+    const variants = [c, c + ".TW", c + ".TWO"];
+    for (const v of variants) {
+      try {
+        const r = await fetch(QUOTE_RELAY + "?ticker=" + encodeURIComponent(v) +
+          "&range=" + encodeURIComponent(period) + "&interval=1d");
+        if (r.ok) {
+          const j = await r.json();
+          if (j && j.chart) return buildRows(j, code);
+          if (j && j.ok === false) lastErr = new Error("relay " + j.error);
+        }
+      } catch (e) { lastErr = e; }
+    }
   }
   // 1) 直抓 Yahoo（本地 / 允許 CORS 的環境；GitHub Pages 會噴瀏覽器 CORS 紅字，故優先走中繼）
   for (const base of STOCK_URLS) {
