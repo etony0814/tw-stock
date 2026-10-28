@@ -265,12 +265,31 @@
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px" id="statGrid">
         <div class="stat-mini"><div class="sm-lbl">最新收盤</div><div class="sm-val" id="statClose">—</div></div>
         <div class="stat-mini"><div class="sm-lbl">分析日期</div><div class="sm-val sm-sm" id="statDate">—</div></div>
-        <div class="stat-mini"><div class="sm-lbl">RSI（30冷/70熱）</div><div class="sm-val" id="statRsi">—</div></div>
-        <div class="stat-mini"><div class="sm-lbl">MACD（正多/負空）</div><div class="sm-val" id="statMacd">—</div></div>
-        <div class="stat-mini"><div class="sm-lbl">日平均擺動（ATR）</div><div class="sm-val sm-sm" id="statAtr">—</div></div>
-        <div class="stat-mini"><div class="sm-lbl">5日報酬</div><div class="sm-val sm-sm" id="statRet5">—</div></div>
-        <div class="stat-mini"><div class="sm-lbl">20日報酬</div><div class="sm-val sm-sm" id="statRet20">—</div></div>
-        <div class="stat-mini"><div class="sm-lbl">量比（vs 20日前）</div><div class="sm-val sm-sm" id="statVol">—</div></div>
+        <div class="stat-mini"><div class="sm-lbl" title="RSI 相對強弱指標：0-100，30 以下偏冷（可能反彈）、70 以上偏熱（可能回檔）">RSI 冷熱（30冷/70熱）</div><div class="sm-val" id="statRsi">—</div></div>
+        <div class="stat-mini"><div class="sm-lbl" title="MACD 指數平滑移動平均線：反映價格動能方向，正值偏多、負值偏空">MACD 動能（正多/負空）</div><div class="sm-val" id="statMacd">—</div></div>
+        <div class="stat-mini"><div class="sm-lbl" title="ATR 真實波幅均值：衡量股價每天平均波動多大，波動越大代表風險越高">日平均擺動 ATR</div><div class="sm-val sm-sm" id="statAtr">—</div></div>
+        <div class="stat-mini"><div class="sm-lbl" title="近 5 個交易日的漲跌幅">5日報酬</div><div class="sm-val sm-sm" id="statRet5">—</div></div>
+        <div class="stat-mini"><div class="sm-lbl" title="近 20 個交易日的漲跌幅">20日報酬</div><div class="sm-val sm-sm" id="statRet20">—</div></div>
+        <div class="stat-mini"><div class="sm-lbl" title="當日成交量 vs 20 日平均成交量：>1 是放量、<1 是縮量">量比（vs 20日平均）</div><div class="sm-val sm-sm" id="statVol">—</div></div>
+      </div>
+      <!-- 術語小辭典（收折，給一般使用者看白話解釋）-->
+      <div class="card" id="glossary" style="margin-top:14px;border:1px solid var(--border);border-radius:8px">
+        <h3 style="cursor:pointer;user-select:none;font-size:13px;margin:0;padding:10px 12px" onclick="togglePanel('glossary')"><span>📖 看不懂的英文術語？点这里看白話解釋</span> <span class="pArrow" style="float:right;color:var(--muted)">▸</span></h3>
+        <div class="pBody" id="glossaryBody" style="display:none;padding:0 12px 12px;font-size:12px;line-height:1.7;color:var(--muted)">
+          <dl style="margin:0">
+            <dt style="color:var(--text);font-weight:700;margin-top:8px">RSI（相對強弱指標）</dt><dd style="margin-left:0">衡量股價「多空力道」，0~100。低於 30 偏冷（跌太多可能反彈）、高於 70 偏熱（漲太多可能回檔）。</dd>
+            <dt style="color:var(--text);font-weight:700">MACD（指數平滑移動平均線）</dt><dd style="margin-left:0">反映價格「動能方向」。數值正→偏多、負→偏空；MACD 線翻上訊號線＝金叉（轉強）、翻下＝死叉（轉弱）。</dd>
+            <dt style="color:var(--text);font-weight:700">KDJ（冷熱震盪指標）</dt><dd style="margin-left:0">短線快訊號。J 值 &lt;0 極冷可能反彈、&gt;100 極熱可能回調；K 翻上 D＝金叉、翻下＝死叉。</dd>
+            <dt style="color:var(--text);font-weight:700">布林通道 BOLL</dt><dd style="margin-left:0">均線上下兩條通道（20日均價±2倍標準差）。價格碰下軌＝偏超賣、碰上軌＝偏超買，中軌就是20日均價。</dd>
+            <dt style="color:var(--text);font-weight:700">BIAS（乖離率）</dt><dd style="margin-left:0">股價離均線有多遠。正太大＝偏超買（可能回調）、負太大＝偏超賣（可能反彈）。</dd>
+            <dt style="color:var(--text);font-weight:700">ATR（真實波幅均值）</dt><dd style="margin-left:0">股價「每天平均波動多大」。波動越大風險越高；止損/止盈就是用它來算（收盤−1.5×ATR＝止損）。</dd>
+            <dt style="color:var(--text);font-weight:700">OBV（成交量能量）</dt><dd style="margin-left:0">用成交量累積看「錢進出場」。OBV 上升＝主力在進、下降＝主力在退。</dd>
+            <dt style="color:var(--text);font-weight:700">量比 VROC</dt><dd style="margin-left:0">當日成交量 ÷ 前20日均量。&gt;1 是放量（多空活躍）、&lt;1 是縮量（觀望）。</dd>
+            <dt style="color:var(--text);font-weight:700">均線 SMA</dt><dd style="margin-left:0">過去 N 日收盤價平均。5日＝短線、20日＝中線、60日＝長線。短線翻上長線＝多頭排列（偏強）。</dd>
+            <dt style="color:var(--text);font-weight:700">外資 / 法人</dt><dd style="margin-left:0">「外資」＝境外機構資金、「三大法人」＝外資＋投信＋自營商。連續淨買＝偏多、淨賣＝偏空。</dd>
+            <dt style="color:var(--text);font-weight:700">加權 / TAIEX</dt><dd style="margin-left:0">加權指數＝代表台灣整體股市的大盤。個股漲但大盤跌＝相對強度強，反之弱。</dd>
+          </dl>
+        </div>
       </div>
     </div>
 
@@ -1598,7 +1617,7 @@ function toggleMode(){
   applyMode();
 }
 // 綜合卡內：哪些元素只在專業模式顯示
-const PRO_ONLY=[['plainRead','block'],['hist5','block'],['adviceSummary','block'],['finalBd','block'],['compBreak','block'],['statGrid','grid'],['dataFreshness','inline-block']];
+const PRO_ONLY=[['plainRead','block'],['hist5','block'],['adviceSummary','block'],['finalBd','block'],['compBreak','block'],['statGrid','grid'],['dataFreshness','inline-block'],['glossary','block']];
 function applyMode(){
   const pro=isPro();
   // 開關按鈕文字
