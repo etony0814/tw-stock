@@ -224,7 +224,10 @@
 
     <!-- 綜合評論卡（五方結論 + 分數明細 + 看多/看空理由 + 收盤價/RSI/MACD + 止損止盈）-->
     <div class="card final" id="finalCard">
-      <h2>🎯 綜合評論（今天要不要買賣）</h2>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
+        <h2 style="margin:0">🎯 綜合評論（今天要不要買賣）</h2>
+        <button id="modeToggle" onclick="toggleMode()" style="background:var(--card2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:5px 10px;font-size:12px;cursor:pointer;white-space:nowrap">⚙️ 專業模式</button>
+      </div>
       <div class="final-text" id="finalText">—</div>
       <div id="finalAction" style="display:none;margin-top:8px;font-size:13px;line-height:1.6;color:var(--text);background:var(--card2);border-left:3px solid var(--accent);padding:8px 10px;border-radius:6px"></div>
       <div style="margin-top:6px;font-size:11px;color:var(--muted)"><span id="sessionTag" style="display:none;background:var(--card2);border:1px solid var(--border);padding:2px 6px;border-radius:4px"></span> <span id="dataFreshness" style="display:none;margin-left:4px;background:var(--card2);border:1px solid var(--border);padding:2px 6px;border-radius:4px"></span></div>
@@ -273,60 +276,72 @@
 
     <div class="grid">
       <div class="card" id="secIntra">
-        <h3>⏰ 即時盤面（當天）</h3>
+        <h3 style="cursor:pointer;user-select:none" onclick="togglePanel('secIntra')"><span>⏰ 即時盤面（當天）</span> <span class="pArrow" style="float:right;color:var(--muted)">▾</span></h3>
+        <div class="pBody" id="secIntraBody">
         <div class="score-row">
           <div class="score-box"><div class="lbl">盤面分數</div><div class="val" id="iScore">—</div></div>
           <div class="msg" id="iInfo" style="flex:1"></div>
         </div>
+        </div>
       </div>
       <div class="card" id="secTaiex">
-        <h3>🏛 大盤環境（加權）</h3>
+        <h3 style="cursor:pointer;user-select:none" onclick="togglePanel('secTaiex')"><span>🏛 大盤環境（加權）</span> <span class="pArrow" style="float:right;color:var(--muted)">▾</span></h3>
+        <div class="pBody" id="secTaiexBody">
         <div class="score-row">
           <div class="score-box"><div class="lbl">大盤分數</div><div class="val" id="tScore">—</div></div>
           <div class="msg" id="tInfo" style="flex:1"></div>
         </div>
+        </div>
       </div>
       <div class="card" id="secFund">
-        <h3>💰 籌碼面（外資／三大法人）</h3>
+        <h3 style="cursor:pointer;user-select:none" onclick="togglePanel('secFund')"><span>💰 籌碼面（外資／三大法人）</span> <span class="pArrow" style="float:right;color:var(--muted)">▾</span></h3>
+        <div class="pBody" id="secFundBody">
         <div class="score-row">
           <div class="score-box"><div class="lbl">法人分數</div><div class="val" id="fScore">—</div></div>
           <div class="msg" id="fInfo" style="flex:1"></div>
         </div>
         <div class="msg" id="fMulti" style="margin-top:10px"></div>
         <div id="fFlowList" style="margin-top:10px;display:none"></div>
+        </div>
       </div>
       <div class="card" id="secNews">
-        <h3>📰 消息面（新聞情緒）</h3>
+        <h3 style="cursor:pointer;user-select:none" onclick="togglePanel('secNews')"><span>📰 消息面（新聞情緒）</span> <span class="pArrow" style="float:right;color:var(--muted)">▾</span></h3>
+        <div class="pBody" id="secNewsBody">
         <div class="score-row">
           <div class="score-box"><div class="lbl">情緒分數</div><div class="val" id="nScore">—</div></div>
           <div class="msg" id="nInfo" style="flex:1"></div>
         </div>
         <div id="newsList" style="margin-top:10px;display:none"></div>
+        </div>
       </div>
     </div>
 
     <div class="two">
       <div class="card" id="secTech">
-        <h3>🎯 技術面訊號</h3>
-        <div id="sigList"></div>
+        <h3 style="cursor:pointer;user-select:none" onclick="togglePanel('secTech')"><span>🎯 技術面訊號</span> <span class="pArrow" style="float:right;color:var(--muted)">▾</span></h3>
+        <div class="pBody" id="secTechBody"><div id="sigList"></div></div>
       </div>
-      <div class="card">
-        <h3>📍 近期買賣時機（新→舊）</h3>
-        <div id="evList" class="msg"></div>
+      <div class="card" id="secEvents">
+        <h3 style="cursor:pointer;user-select:none" onclick="togglePanel('secEvents')"><span>📍 近期買賣時機（新→舊）</span> <span class="pArrow" style="float:right;color:var(--muted)">▾</span></h3>
+        <div class="pBody" id="secEventsBody"><div id="evList" class="msg"></div></div>
       </div>
     </div>
 
-    <div class="card">
-      <h3>📊 K 線（技術面圖表）</h3>
+    <div class="card" id="secCharts">
+      <h3 style="cursor:pointer;user-select:none" onclick="togglePanel('secCharts')"><span>📊 K 線與圖表</span> <span class="pArrow" style="float:right;color:var(--muted)">▾</span></h3>
+      <div class="pBody" id="secChartsBody">
       <canvas id="chart" height="300"></canvas>
       <canvas id="macdChart" height="120" style="margin-top:8px"></canvas>
       <canvas id="rsiChart" height="120" style="margin-top:8px"></canvas>
+      </div>
     </div>
 
-    <div class="card">
-      <h3>📊 量比 vs 60 日（量能配速）</h3>
+    <div class="card" id="secVol">
+      <h3 style="cursor:pointer;user-select:none" onclick="togglePanel('secVol')"><span>📊 量比 vs 60 日（量能配速）</span> <span class="pArrow" style="float:right;color:var(--muted)">▾</span></h3>
+      <div class="pBody" id="secVolBody">
       <canvas id="volChart" height="160"></canvas>
       <div class="msg" id="volInfo" style="margin-top:8px"></div>
+      </div>
     </div>
 
   </div>
@@ -615,6 +630,7 @@ async function run(){
     await new Promise(r=>requestAnimationFrame(r)); // 等版面展開再畫圖
     render(all, stockRows, t);
     showResultTitle(t, nmAuto);
+    applyMode();  // 依「簡易/專業」模式切換顯示
   }catch(e){
     // 真實行情都抓不到（如 Yahoo 限流），改用示範資料把整頁跑通
     document.getElementById('demoBanner').style.display='block';
@@ -631,6 +647,7 @@ async function run(){
     showResultTitle(t, WNAMES[t]||'');
     document.getElementById('results').style.display='block';
     document.getElementById('err').style.display='block';
+    applyMode();  // 依「簡易/專業」模式切換顯示
     document.getElementById('err').textContent =
       "⚠️ 真實行情暫時取不到（Yahoo 跨域受限），下方為「示範資料」僅展示介面。稍後重試，或改用電腦版（python server.py）拿真實資料。";
   }finally{
@@ -1569,6 +1586,51 @@ function initTheme(){
   if(btn) btn.textContent = saved==='light' ? '☀️ 淺色' : '🌙 深色';
 }
 
+// ── 簡易／專業 雙模式 ─────────────────────────────
+// 簡易（預設）：只保留結論＋該做的事＋止損止盈＋看多/看空理由（收折）
+// 專業：顯示五方分數長條、拆解、5日勝率、關鍵指標、各面板完整
+const MODE_KEY='tony_mode';
+function getMode(){ return localStorage.getItem(MODE_KEY) || 'simple'; }
+function isPro(){ return getMode()==='pro'; }
+function toggleMode(){
+  const cur = getMode();
+  localStorage.setItem(MODE_KEY, cur==='pro' ? 'simple' : 'pro');
+  applyMode();
+}
+// 綜合卡內：哪些元素只在專業模式顯示
+const PRO_ONLY=[['plainRead','block'],['hist5','block'],['adviceSummary','block'],['finalBd','block'],['compBreak','block'],['statGrid','grid'],['dataFreshness','inline-block']];
+function applyMode(){
+  const pro=isPro();
+  // 開關按鈕文字
+  const btn=document.getElementById('modeToggle');
+  if(btn) btn.textContent = pro ? '⚙️ 專業模式（點回簡易）' : '⚙️ 專業模式';
+  // 綜合卡內細節
+  PRO_ONLY.forEach(([id,dis])=>{
+    const el=document.getElementById(id);
+    if(el) el.style.display = pro ? dis : 'none';
+  });
+  // 各指標面板：專業=全展開、簡易=全收折
+  ['secIntra','secTaiex','secFund','secNews','secTech','secEvents','secCharts','secVol'].forEach(id=>{
+    const body=document.getElementById(id+'Body');
+    if(!body) return;
+    const open = pro;
+    body.style.display = open ? 'block' : 'none';
+    const arrow=document.querySelector('#'+id+' .pArrow');
+    if(arrow) arrow.textContent = open ? '▾' : '▸';
+  });
+  // 圖表收折時要再展開才畫得出來，切模式後重畫一次
+  if(window._lastRows){ drawChart(window._lastRows, window._lastIND); drawMACD(window._lastRows, window._lastIND); drawRSI(window._lastRows, window._lastIND); drawVolChart(window._lastRows, window._lastIND); }
+}
+// 手動點擊單個面板標題切換收折
+function togglePanel(id){
+  const body=document.getElementById(id+'Body');
+  if(!body) return;
+  const open = body.style.display==='none';
+  body.style.display = open ? 'block' : 'none';
+  const arrow=document.querySelector('#'+id+' .pArrow');
+  if(arrow) arrow.textContent = open ? '▾' : '▸';
+}
+
 // #9 分享按鈕（複製綜合結論＋五方分數到剪貼簿）
 function shareAnalysis(){
   if(!window._shareData) return;
@@ -1587,6 +1649,7 @@ function shareAnalysis(){
 window.addEventListener('load',()=>{
   initTheme();
   renderWatch(loadWatch());
+  applyMode();  // 開頁時先依預設「簡易模式」收折各面板
   // 不自動抓自選總覽，等使用者按「⟳ 更新」再拉資料
   // 不再自動分析，等使用者輸入代號後再按「分析」或按 Enter
 });
