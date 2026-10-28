@@ -527,19 +527,33 @@
   // 大盤環境（加權指數）
   // ─────────────────────────────────────────────────────────
   function fetchTaiexFromRows(rows) {
-    // rows 為加權指數日K，最後一根=當日
     if (!rows || rows.length < 2) return { ok: false, score: 0, direction: "無資料" };
     const today = rows[rows.length - 1].close;
     const prev = rows[rows.length - 2].close;
     const chg = (today - prev) / prev * 100;
+    // 近 20 日日收益標準差 → 年化波動度（√252）
+    let vol20 = null;
+    if (rows.length >= 21) {
+      const rets = [];
+      for (let k = rows.length - 20; k < rows.length; k++) {
+        rets.push((rows[k].close - rows[k - 1].close) / rows[k - 1].close);
+      }
+      const mean = rets.reduce((a, b) => a + b, 0) / rets.length;
+      const varr = rets.reduce((a, b) => a + (b - mean) ** 2, 0) / rets.length;
+      vol20 = Math.sqrt(varr * 252) * 100;
+    }
     let direction, score, advice;
     if (chg > 0.5) { direction = "大盤偏多"; score = 0.6; advice = "大盤當日明顯上漲，個股訊號較有效，可配合多單。"; }
     else if (chg < -0.5) { direction = "大盤偏空"; score = -0.6; advice = "大盤當日明顯下跌，個股難獨善其身，建議偏保守。"; }
     else if (chg > 0) { direction = "大盤略多"; score = 0.3; advice = "大盤小漲，環境溫和，可維持中性偏多。"; }
     else if (chg < 0) { direction = "大盤略空"; score = -0.3; advice = "大盤小跌，環境稍弱，注意回檔。"; }
     else { direction = "大盤盤整"; score = 0; advice = "大盤大致持平，環境中性，以個股訊號為主。"; }
+    // 高波動日：技術面訊號噪音大，建議保守（降多單、加止損）
+    if (vol20 != null && vol20 >= 30) advice += " 大盤近 20 日年化波動 " + vol20.toFixed(1) + "%，屬高波動區，訊號噪音較大，建議降低部位、以止損優先。";
+    else if (vol20 != null && vol20 < 15) advice += " 大盤近 20 日年化波動 " + vol20.toFixed(1) + "%，屬低波動區，趨勢較明確，可較積極配合訊號。";
     return { ok: true, point: today, chg_pct: Math.round(chg * 100) / 100,
-      date: rows[rows.length - 1].date, direction, advice, score };
+      date: rows[rows.length - 1].date, direction, advice, score,
+      vol20: vol20 != null ? Math.round(vol20 * 10) / 10 : null };
   }
 
   // ─────────────────────────────────────────────────────────
