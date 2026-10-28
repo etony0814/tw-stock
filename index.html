@@ -227,7 +227,7 @@
       <h2>🎯 綜合評論（今天要不要買賣）</h2>
       <div class="final-text" id="finalText">—</div>
       <div id="finalAction" style="display:none;margin-top:8px;font-size:13px;line-height:1.6;color:var(--text);background:var(--card2);border-left:3px solid var(--accent);padding:8px 10px;border-radius:6px"></div>
-      <div style="margin-top:6px;font-size:11px;color:var(--muted)"><span id="sessionTag" style="display:none;background:var(--card2);border:1px solid var(--border);padding:2px 6px;border-radius:4px"></span></div>
+      <div style="margin-top:6px;font-size:11px;color:var(--muted)"><span id="sessionTag" style="display:none;background:var(--card2);border:1px solid var(--border);padding:2px 6px;border-radius:4px"></span> <span id="dataFreshness" style="display:none;margin-left:4px;background:var(--card2);border:1px solid var(--border);padding:2px 6px;border-radius:4px"></span></div>
       <!-- 五方分數白話一句話 -->
       <div id="plainRead" style="font-size:13px;color:var(--text);line-height:1.55;margin:6px 0 8px;padding:8px 10px;background:var(--card2);border:1px solid var(--border);border-radius:8px;display:none"></div>
       <!-- 歷史 5 日勝率（白話，讓使用者知道訊號可信度）-->
@@ -657,11 +657,26 @@ function render(A, rows, t){
     act.style.display = 'block';
   }
   // 時段標記（顯示在綜合評語旁）
+  const ms = (typeof marketSession !== 'undefined') ? marketSession() : StockCore.marketSession();
   const ss=document.getElementById('sessionTag');
   if(ss){
-    const ms = (typeof marketSession !== 'undefined') ? marketSession() : StockCore.marketSession();
     ss.textContent = ms.label + ' · ' + ms.t;
     ss.style.display = 'inline-block';
+  }
+  // 資料時效提示（#2：盤中使用時提醒收盤靜態資料）
+  const df = document.getElementById('dataFreshness');
+  if (df && ms) {
+    const lastDate = rows[rows.length-1] ? rows[rows.length-1].date : '';
+    if (ms.code === 'am' || ms.code === 'pm') {
+      df.textContent = '📅 盤中：數據依收盤（' + lastDate + '）估算，非即時';
+    } else if (ms.code === 'post') {
+      df.textContent = '📅 盤後：收盤定案資料（' + lastDate + '）';
+    } else if (ms.code === 'pre') {
+      df.textContent = '📅 開盤前：昨日收盤（' + lastDate + '）';
+    } else {
+      df.textContent = '📅 休市：最近收盤（' + lastDate + '）';
+    }
+    df.style.display = 'inline-block';
   }
 
   // #9 分享資料（供「分享結果」按鈕複製）
@@ -934,7 +949,7 @@ function render(A, rows, t){
   const tx=A.taiex;
   setVal('tScore', tx.score, cls(tx.score));
   document.getElementById('tInfo').innerHTML = tx.ok
-    ? `加權 <b>${tx.point.toLocaleString()}</b>、${tx.chg_pct>0?'+':''}${tx.chg_pct}%、${tx.direction}。<br><span style="font-size:12px;color:var(--muted)">${tx.advice}</span>`
+    ? `加權 <b>${tx.point.toLocaleString()}</b>、${tx.chg_pct>0?'+':''}${tx.chg_pct}%、${tx.direction}${tx.vol20!=null?'、近20日年化波動 '+tx.vol20+'%':''}。<br><span style="font-size:12px;color:var(--muted)">${tx.advice}</span>`
     : `<span style="color:var(--muted)">大盤資料未取得。</span>`;
 
   // 籌碼
@@ -1448,7 +1463,7 @@ function watchToggle(){
   saveWatch(list);
 }
 
-// 自選股總覽表：並抓每只近 20 日收盤算報酬，顯示 代號/名稱/收盤/20日報酬
+// 自選股總覽表：並抓每只近 20 日收盤算報酬 + 綜合分數（五方），顯示 代號/名稱/收盤/20日報酬/綜合
 async function refreshWatchOverview(){
   const list = loadWatch().map(x => x.code || x).filter(c => /^\d{4}$/.test(c));
   const panel = document.getElementById('watchOverview');
@@ -1457,24 +1472,44 @@ async function refreshWatchOverview(){
   if (!list.length || !panel || !table) { if(panel) panel.style.display='none'; return; }
   panel.style.display = 'block';
   if(btn){ btn.disabled=true; btn.textContent='載入中…'; btn.style.opacity='0.6'; btn.style.cursor='not-allowed'; }
-  table.innerHTML = '<div style="color:var(--muted);font-size:12px">載入中…</div>';
+  table.innerHTML = '<div style="color:var(--muted);font-size:12px">載入中（抓行情＋五方綜合分數）…</div>';
+  // 大盤行（所有自選股共用同一份）
+  let taiexRows = [];
+  try { taiexRows = await fetchRows('^TWII','3mo'); } catch(e){}
+  const txBase = StockCore.fetchTaiexFromRows(taiexRows);
   // 並行抓取（上限 8 只）
   const tasks = list.slice(0, 8).map(async (t) => {
     try {
-      const stockRows = await fetchRows(toYahoo(t), '1mo');
-      const tail = stockRows.slice(-21);
-      const close = stockRows[stockRows.length-1].close;
+      const rows = await fetchRows(toYahoo(t), '3mo');
+      const tail = rows.slice(-21);
+      const close = rows[rows.length-1].close;
       const r20 = tail.length >= 2
         ? (close - tail[0].close) / tail[0].close * 100
         : null;
       const nm = WNAMES[t] || '';
-      return { code:t, name:nm, close, r20 };
+      // 算技術分數（用 core.js 的訊號）
+      const IND = StockCore.computeIndicators(rows);
+      let tech = 0;
+      try { tech = StockCore.compositeSignal(StockCore.detectSignals(IND, rows.length-1)).tech_score; } catch(e){ tech = 0; }
+      // 盤面分數
+      let intra = 0;
+      try { intra = StockCore.intradayFromRows(rows, IND, rows.length-1).score; } catch(e){ intra = 0; }
+      // 大盤分數（共用）
+      const tx = txBase;
+      // 五方綜合（簡化：技術 40% + 盤面 10% + 大盤 15%，籌碼/消息未抓 → 中性 0）
+      const wT=0.40, wF=0.25, wN=0.10, wI=0.10, wTa=0.15;
+      const ff = 0, nw = 0;   // 未抓籌碼/消息 → 中性
+      let combined = wT*tech + wF*ff + wN*nw + wI*intra + wTa*(tx.score||0);
+      combined = Math.round(Math.max(-1,Math.min(1,combined))*100)/100;
+      const label = combined >= 0.4 ? '偏多' : combined >= 0.15 ? '略多' : combined > -0.15 ? '中性' : combined > -0.4 ? '略空' : '偏空';
+      const lcls = combined >= 0.15 ? 'pos' : combined <= -0.15 ? 'neg' : 'neu';
+      return { code:t, name:nm, close, r20, combined, label, lcls };
     } catch (e) {
       return { code:t, name:WNAMES[t]||'', close:null, r20:null, err:true };
     }
   });
-  const rows = await Promise.all(tasks);
-  const okCount = rows.filter(r=>!r.err).length;
+  const rowsOut = await Promise.all(tasks);
+  const okCount = rowsOut.filter(r=>!r.err).length;
   table.innerHTML =
     '<table style="width:100%;border-collapse:collapse;font-size:12px">' +
     '<thead><tr style="color:var(--muted);border-bottom:1px solid var(--border)">' +
@@ -1482,27 +1517,31 @@ async function refreshWatchOverview(){
     '<th style="text-align:left;padding:6px 8px">名稱</th>' +
     '<th style="text-align:right;padding:6px 8px">收盤</th>' +
     '<th style="text-align:right;padding:6px 8px">20 日報酬</th>' +
+    '<th style="text-align:right;padding:6px 8px">綜合分數</th>' +
     '<th style="text-align:right;padding:6px 8px"></th></tr></thead>' +
     '<tbody>' +
-    rows.map(r => {
+    rowsOut.map(r => {
       const chgCls = r.r20 == null ? '' : r.r20 > 0 ? 'pos' : r.r20 < 0 ? 'neg' : '';
       const chgTxt = r.r20 == null ? '—' : (r.r20 >= 0 ? '+' : '') + r.r20.toFixed(1) + '%';
+      const combTxt = r.err ? '—' : r.combined.toFixed(2) + ' ' + r.label;
       return `<tr style="border-bottom:1px solid var(--border)">` +
         `<td style="padding:6px 8px"><b>${r.code}</b></td>` +
         `<td style="padding:6px 8px">${r.name || '—'}</td>` +
         `<td style="padding:6px 8px;text-align:right">${r.close != null ? r.close.toFixed(2) : '—'}</td>` +
         `<td style="padding:6px 8px;text-align:right" class="${chgCls}">${chgTxt}</td>` +
+        `<td style="padding:6px 8px;text-align:right" class="${r.lcls||''}">${combTxt}</td>` +
         `<td style="padding:6px 8px;text-align:right"><button onclick="pickWatch('${r.code}')" style="background:none;border:1px solid var(--accent);color:var(--accent);border-radius:6px;padding:2px 8px;font-size:11px;cursor:pointer">分析</button></td>` +
         `</tr>`;
     }).join('') +
     '</tbody></table>' +
+    '<div style="font-size:10px;color:var(--muted);margin-top:4px">綜合分數＝技術 40%＋盤面 10%＋大盤 15%（籌碼/消息未抓、暫計中性）；點「分析」看完整五方。</div>' +
     (() => {
       const ts = new Date().toLocaleString('zh-TW', {hour12:false, year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', second:'2-digit'});
-      const msg = okCount === rows.length
-        ? `✅ 更新成功 — ${okCount}/${rows.length} 只，${ts}`
+      const msg = okCount === rowsOut.length
+        ? `✅ 更新成功 — ${okCount}/${rowsOut.length} 只，${ts}`
         : (okCount === 0
             ? `❌ 全部失敗 — 行情端點皆抓不到，${ts}。請稍後重試或改用電腦版。`
-            : `⚠️ 部分成功 — ${okCount}/${rows.length} 只更新成功，${rows.length-okCount} 只抓不到，${ts}。`);
+            : `⚠️ 部分成功 — ${okCount}/${rowsOut.length} 只更新成功，${rowsOut.length-okCount} 只抓不到，${ts}。`);
       return '<div style="margin-top:6px;font-size:12px;color:var(--muted)">' + msg + '</div>';
     })();
   if(btn){ btn.disabled=false; btn.textContent='⟳ 更新自選股總覽'; btn.style.opacity=''; btn.style.cursor=''; }
