@@ -242,6 +242,7 @@
           <div>
             <div style="font-size:11px;color:var(--muted)">今日漲跌</div>
             <div id="tkChg" style="font-size:18px;font-weight:800;line-height:1.1">—</div>
+            <div id="tkChgAmt" style="font-size:12px;font-weight:600;line-height:1.1;margin-top:2px;color:var(--muted)">—</div>
           </div>
           <div id="tkDir" style="font-size:12px;font-weight:700;padding:2px 8px;border-radius:8px;display:none"></div>
         </div>
@@ -1000,31 +1001,36 @@ function render(A, rows, t){
     `漲跌 ${it.chg_pct!=null?(it.chg_pct>0?'+':'')+it.chg_pct+'%':'—'}、量比 ${it.vol_ratio!=null?it.vol_ratio:'—'}；<br>`+
     `<span style="font-size:12px;color:var(--muted)">${it.price_state}；20日均線${it.vs_sma20}、60日${it.vs_sma60}。${it.advice}</span>`;
 
-  // 當日行情醒目橫條（現價、開盤、漲跌幅）
+  // 當日行情醒目橫條（現價、開盤、漲跌幅、漲跌價差）
   const tk = document.getElementById('todayTicker');
   if (tk && it) {
     tk.style.display = 'block';
     const nowEl = document.getElementById('tkNow');
     const openEl = document.getElementById('tkOpen');
     const chgEl = document.getElementById('tkChg');
+    const chgAmtEl = document.getElementById('tkChgAmt');
     const dirEl = document.getElementById('tkDir');
     const noteEl = document.getElementById('tkNote');
     // 顏色：漲紅、跌綠、平灰（台股慣例）
-    let chgColor = 'var(--muted)', chgTxt = '—', dirTxt = '', dirBg = 'var(--card2)';
+    let chgColor = 'var(--muted)', chgTxt = '—', chgAmtTxt = '', dirTxt = '', dirBg = 'var(--card2)';
+    // 漲跌價差：現價 − 前收（intradayFromRows 提供 prev_close）
+    if (it.last != null && isFinite(it.last) && it.prev_close != null && isFinite(it.prev_close)) {
+      const diff = it.last - it.prev_close;
+      chgAmtTxt = (diff > 0 ? '+' : diff < 0 ? '' : '') + diff.toFixed(2);
+      chgColor = diff > 0 ? 'var(--bull)' : diff < 0 ? 'var(--bear)' : 'var(--muted)';
+    }
     if (it.chg_pct != null && isFinite(it.chg_pct)) {
       const c = it.chg_pct;
-      chgColor = c > 0 ? 'var(--bull)' : c < 0 ? 'var(--bear)' : 'var(--muted)';
+      if (chgColor === 'var(--muted)') chgColor = c > 0 ? 'var(--bull)' : c < 0 ? 'var(--bear)' : 'var(--muted)';
       chgTxt = (c > 0 ? '+' : '') + c.toFixed(2) + '%';
       if (c > 0) { dirTxt = '▲ 上漲'; dirBg = 'rgba(239,68,68,.15)'; }
       else if (c < 0) { dirTxt = '▼ 下跌'; dirBg = 'rgba(34,197,94,.15)'; }
       else { dirTxt = '◆ 盤整'; }
-    } else {
-      // 無漲跌資料時，至少顯示現價+開盤，並提示
-      dirTxt = '';
     }
     if (nowEl) nowEl.textContent = (it.last != null && isFinite(it.last)) ? Number(it.last).toLocaleString() : '—';
     if (openEl) openEl.textContent = (it.open != null && isFinite(it.open)) ? Number(it.open).toLocaleString() : '—';
     if (chgEl) { chgEl.textContent = chgTxt; chgEl.style.color = chgColor; }
+    if (chgAmtEl) { chgAmtEl.textContent = chgAmtTxt ? '（' + chgAmtTxt + ' 元）' : ''; chgAmtEl.style.color = chgColor; }
     if (dirEl) {
       if (dirTxt) { dirEl.textContent = dirTxt; dirEl.style.display = 'inline-block'; dirEl.style.background = dirBg; dirEl.style.color = chgColor; }
       else dirEl.style.display = 'none';
