@@ -40,6 +40,11 @@
   .final{border:1px solid var(--accent);background:var(--card);}
   :root[data-theme="light"] .final{background:linear-gradient(135deg,#f0f7ff,#f8fafc);}
   .final h2{font-size:15px;color:var(--accent);margin-bottom:8px;}
+  /* 区块隔絕：讓每個分類有獨立框、標題與間距 */
+  .sec-divider{border:none;border-top:1px solid var(--border);margin:14px 0;}
+  .sec-title{font-size:11px;font-weight:700;color:var(--accent);letter-spacing:.5px;margin:2px 0 8px;text-transform:uppercase;}
+  .box{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:8px;}
+  .box .box-title{font-size:12px;font-weight:700;color:var(--text);margin-bottom:6px;}
   .final-text{font-size:19px;font-weight:700;line-height:1.5;}
   .final-text.pos{color:var(--green);} .final-text.neg{color:var(--red);} .final-text.neu{color:var(--yellow);}
   .bd{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}
@@ -249,48 +254,88 @@
         <div id="tkNote" style="font-size:11px;color:var(--muted);margin-top:6px"></div>
       </div>
       <div class="final-text" id="finalText">—</div>
-      <div id="finalAction" style="display:none;margin-top:8px;font-size:13px;line-height:1.6;color:var(--text);background:var(--card2);border-left:3px solid var(--accent);padding:8px 10px;border-radius:6px"></div>
-      <div style="margin-top:6px;font-size:11px;color:var(--muted)"><span id="sessionTag" style="display:none;background:var(--card2);border:1px solid var(--border);padding:2px 6px;border-radius:4px"></span> <span id="dataFreshness" style="display:none;margin-left:4px;background:var(--card2);border:1px solid var(--border);padding:2px 6px;border-radius:4px"></span></div>
-      <!-- 五方分數白話一句話 -->
-      <div id="plainRead" style="font-size:13px;color:var(--text);line-height:1.55;margin:6px 0 8px;padding:8px 10px;background:var(--card2);border:1px solid var(--border);border-radius:8px;display:none"></div>
-      <!-- 歷史 5 日勝率（白話，讓使用者知道訊號可信度）-->
-      <div id="hist5" style="display:none;margin:6px 0 8px;padding:8px 10px;font-size:12px;line-height:1.6;color:var(--muted);background:var(--card2);border:1px solid var(--border);border-radius:8px"></div>
-      <!-- 止損 / 止盈參考價 -->
-      <div id="slTp" style="display:none;margin:10px 0 8px;padding:8px 10px;background:var(--card2);border:1px solid var(--border);border-radius:8px;font-size:13px;color:var(--muted);line-height:1.6">
-        <div style="font-weight:700;color:var(--text);font-size:12px;margin-bottom:4px">📌 止損 / 止盈參考（依 ATR 波動估算，僅供參考）</div>
-        <div id="slTpContent"></div>
+
+      <!-- ① 結論區 -->
+      <div style="margin-top:10px">
+        <div class="sec-title">結論與行動</div>
+        <div id="finalAction" style="display:none;margin-top:4px;font-size:13px;line-height:1.6;color:var(--text);background:var(--card2);border-left:3px solid var(--accent);padding:8px 10px;border-radius:6px"></div>
+        <div style="margin-top:6px;font-size:11px;color:var(--muted)"><span id="sessionTag" style="display:none;background:var(--card2);border:1px solid var(--border);padding:2px 6px;border-radius:4px"></span> <span id="dataFreshness" style="display:none;margin-left:4px;background:var(--card2);border:1px solid var(--border);padding:2px 6px;border-radius:4px"></span></div>
+        <!-- 五方分數白話一句話 -->
+        <div id="plainRead" style="font-size:13px;color:var(--text);line-height:1.55;margin:8px 0 0;padding:8px 10px;background:var(--card2);border:1px solid var(--border);border-radius:8px;display:none"></div>
       </div>
-      <!-- 看多 / 看空理由（手風琴，預設 3 條可展開） -->
-      <div id="bullBox" style="display:none;margin-top:8px">
-        <div style="display:flex;align-items:center;justify-content:space-between">
-          <span style="font-size:13px;font-weight:700;color:var(--bull)">✅ 看多理由（<span id="bullCount">0</span>）</span>
-          <span id="bullToggle" onclick="toggleAccordion('bull')" style="font-size:12px;color:var(--accent);cursor:pointer;user-select:none">展開全部 ▾</span>
+
+      <hr class="sec-divider">
+
+      <!-- ② 風險管理（止損/止盈） -->
+      <div id="riskSec" style="display:none">
+        <div class="sec-title">風險管理</div>
+        <!-- 止損 / 止盈參考價 -->
+        <div id="slTp" style="margin:0 0 8px;padding:8px 10px;background:var(--card2);border:1px solid var(--border);border-radius:8px;font-size:13px;color:var(--muted);line-height:1.6">
+          <div style="font-weight:700;color:var(--text);font-size:12px;margin-bottom:4px">📌 止損 / 止盈參考（依 ATR 波動估算，僅供參考）</div>
+          <div id="slTpContent"></div>
         </div>
-        <ul id="bullReasons" style="margin:4px 0 0;padding-left:18px;font-size:13px;line-height:1.7;color:var(--text)"></ul>
       </div>
-      <div id="bearBox" style="display:none;margin-top:8px">
-        <div style="display:flex;align-items:center;justify-content:space-between">
-          <span style="font-size:13px;font-weight:700;color:var(--bear)">⚠️ 看空理由（<span id="bearCount">0</span>）</span>
-          <span id="bearToggle" onclick="toggleAccordion('bear')" style="font-size:12px;color:var(--accent);cursor:pointer;user-select:none">展開全部 ▾</span>
+
+      <hr class="sec-divider">
+
+      <!-- ③ 理由區 -->
+      <div id="reasonSec" style="display:none">
+        <div class="sec-title">看多 / 看空理由</div>
+        <!-- 看多 / 看空理由（手風琴，預設 3 條可展開） -->
+        <div id="bullBox" style="margin-bottom:8px">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <span style="font-size:13px;font-weight:700;color:var(--bull)">✅ 看多理由（<span id="bullCount">0</span>）</span>
+            <span id="bullToggle" onclick="toggleAccordion('bull')" style="font-size:12px;color:var(--accent);cursor:pointer;user-select:none">展開全部 ▾</span>
+          </div>
+          <ul id="bullReasons" style="margin:4px 0 0;padding-left:18px;font-size:13px;line-height:1.7;color:var(--text)"></ul>
         </div>
-        <ul id="bearReasons" style="margin:4px 0 0;padding-left:18px;font-size:13px;line-height:1.7;color:var(--text)"></ul>
+        <div id="bearBox" style="margin-bottom:0">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <span style="font-size:13px;font-weight:700;color:var(--bear)">⚠️ 看空理由（<span id="bearCount">0</span>）</span>
+            <span id="bearToggle" onclick="toggleAccordion('bear')" style="font-size:12px;color:var(--accent);cursor:pointer;user-select:none">展開全部 ▾</span>
+          </div>
+          <ul id="bearReasons" style="margin:4px 0 0;padding-left:18px;font-size:13px;line-height:1.7;color:var(--text)"></ul>
+        </div>
       </div>
-      <!-- 技術面摘要（看多/看空理由數 + 籌碼/消息 note）-->
-      <div id="adviceSummary" style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:10px"></div>
-      <!-- 五方分數明細 -->
-      <div class="bd" id="finalBd"></div>
-      <!-- 綜合分數拆解（關連到下方各面向）-->
-      <div id="compBreak" style="display:none;margin-top:10px"></div>
-      <!-- 關鍵指標快覽 -->
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px" id="statGrid">
-        <div class="stat-mini"><div class="sm-lbl">最新收盤</div><div class="sm-val" id="statClose">—</div></div>
-        <div class="stat-mini"><div class="sm-lbl">分析日期</div><div class="sm-val sm-sm" id="statDate">—</div></div>
-        <div class="stat-mini"><div class="sm-lbl" title="RSI 相對強弱指標：0-100，30 以下偏冷（可能反彈）、70 以上偏熱（可能回檔）">RSI 冷熱（30冷/70熱）</div><div class="sm-val" id="statRsi">—</div></div>
-        <div class="stat-mini"><div class="sm-lbl" title="MACD 指數平滑移動平均線：反映價格動能方向，正值偏多、負值偏空">MACD 動能（正多/負空）</div><div class="sm-val" id="statMacd">—</div></div>
-        <div class="stat-mini"><div class="sm-lbl" title="ATR 真實波幅均值：衡量股價每天平均波動多大，波動越大代表風險越高">日平均擺動 ATR</div><div class="sm-val sm-sm" id="statAtr">—</div></div>
-        <div class="stat-mini"><div class="sm-lbl" title="近 5 個交易日的漲跌幅">5日報酬</div><div class="sm-val sm-sm" id="statRet5">—</div></div>
-        <div class="stat-mini"><div class="sm-lbl" title="近 20 個交易日的漲跌幅">20日報酬</div><div class="sm-val sm-sm" id="statRet20">—</div></div>
-        <div class="stat-mini"><div class="sm-lbl" title="當日成交量 vs 20 日平均成交量：>1 是放量、<1 是縮量">量比（vs 20日平均）</div><div class="sm-val sm-sm" id="statVol">—</div></div>
+
+      <hr class="sec-divider">
+
+      <!-- ④ 分數與拆解 -->
+      <div id="scoreSec">
+        <div class="sec-title">五方分數與拆解</div>
+        <!-- 技術面摘要（看多/看空理由數 + 籌碼/消息 note）-->
+        <div id="adviceSummary" style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:10px"></div>
+        <!-- 五方分數明細 -->
+        <div class="bd" id="finalBd"></div>
+        <!-- 綜合分數拆解（關連到下方各面向）-->
+        <div id="compBreak" style="display:none;margin-top:10px"></div>
+      </div>
+
+      <hr class="sec-divider">
+
+      <!-- ⑤ 指標快覽 -->
+      <div id="statSec">
+        <div class="sec-title">關鍵指標快覽</div>
+        <!-- 關鍵指標快覽 -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:2px" id="statGrid">
+          <div class="stat-mini"><div class="sm-lbl">最新收盤</div><div class="sm-val" id="statClose">—</div></div>
+          <div class="stat-mini"><div class="sm-lbl">分析日期</div><div class="sm-val sm-sm" id="statDate">—</div></div>
+          <div class="stat-mini"><div class="sm-lbl" title="RSI 相對強弱指標：0-100，30 以下偏冷（可能反彈）、70 以上偏熱（可能回檔）">RSI 冷熱（30冷/70熱）</div><div class="sm-val" id="statRsi">—</div></div>
+          <div class="stat-mini"><div class="sm-lbl" title="MACD 指數平滑移動平均線：反映價格動能方向，正值偏多、負值偏空">MACD 動能（正多/負空）</div><div class="sm-val" id="statMacd">—</div></div>
+          <div class="stat-mini"><div class="sm-lbl" title="ATR 真實波幅均值：衡量股價每天平均波動多大，波動越大代表風險越高">日平均擺動 ATR</div><div class="sm-val sm-sm" id="statAtr">—</div></div>
+          <div class="stat-mini"><div class="sm-lbl" title="近 5 個交易日的漲跌幅">5日報酬</div><div class="sm-val sm-sm" id="statRet5">—</div></div>
+          <div class="stat-mini"><div class="sm-lbl" title="近 20 個交易日的漲跌幅">20日報酬</div><div class="sm-val sm-sm" id="statRet20">—</div></div>
+          <div class="stat-mini"><div class="sm-lbl" title="當日成交量 vs 20 日平均成交量：>1 是放量、<1 是縮量">量比（vs 20日平均）</div><div class="sm-val sm-sm" id="statVol">—</div></div>
+        </div>
+      </div>
+
+      <hr class="sec-divider">
+
+      <!-- ⑥ 訊號可信度（歷史 5 日勝率）-->
+      <div id="histSec" style="display:none">
+        <div class="sec-title">訊號可信度（歷史 5 日勝率）</div>
+        <!-- 歷史 5 日勝率（白話，讓使用者知道訊號可信度）-->
+        <div id="hist5" style="margin:0;padding:8px 10px;font-size:12px;line-height:1.6;color:var(--muted);background:var(--card2);border:1px solid var(--border);border-radius:8px"></div>
       </div>
       <!-- 術語小辭典（收折，給一般使用者看白話解釋）-->
       <div class="card" id="glossary" style="margin-top:14px;border:1px solid var(--border);border-radius:8px">
@@ -795,6 +840,7 @@ function render(A, rows, t){
       '<div style="color:var(--text)">' + h5.overall_label + '。</div>' +
       '<div style="font-size:11px;color:var(--muted);margin-top:4px">白話：偏多訊號 5 日勝率越超過 50%，「看到偏多就買」贏面越大；反之亦然。訊號雜音大的股票，務必配合止損、別全倉。</div>';
     histEl.style.display = 'block';
+    document.getElementById('histSec').style.display = 'block';
   }
 
   // 五方分數明細（progress bar 長條：紅多、綠空）
@@ -914,6 +960,7 @@ function render(A, rows, t){
   // 止損 / 止盈參考價（ATR 估算）
   const slTpEl = document.getElementById('slTp');
   const slTpContent = document.getElementById('slTpContent');
+  const riskSec = document.getElementById('riskSec');
   const slTpLastRow = rows[rows.length-1];
   if (slTpEl && slTpContent && slTpLastRow && atrVal != null && atrVal > 0) {
     const close = slTpLastRow.close;
@@ -922,10 +969,11 @@ function render(A, rows, t){
     const tp2 = close + 2 * atrVal;
     const fmt = x => x.toLocaleString(undefined, {maximumFractionDigits:2});
     slTpEl.style.display = 'block';
+    if (riskSec) riskSec.style.display = 'block';
     slTpContent.innerHTML =
       `建議止損 <b style="color:var(--bear)">${fmt(sl)}</b>（收盤 − 1.5×ATR，跌破即減碼）<br>` +
       `第一止盈 <b style="color:var(--bull)">${fmt(tp1)}</b>（＋1×ATR）、第二止盈 <b style="color:var(--bull)">${fmt(tp2)}</b>（＋2×ATR）`;
-  } else if (slTpEl) { slTpEl.style.display = 'none'; }
+  } else if (slTpEl) { slTpEl.style.display = 'none'; if (riskSec) riskSec.style.display = 'none'; }
 
   // 五方分數白話一句話（plainRead）
   const plainEl = document.getElementById('plainRead');
@@ -970,6 +1018,8 @@ function render(A, rows, t){
   else if (A.taiex && A.taiex.score <= -0.3) bearList.push('【大盤】' + A.taiex.advice);
   if (!bullList.length && !bearList.length) bullList.push('【綜合】各方訊號中性，無明確看多或看空偏斜。');
   bullBox.style.display = bullList.length ? 'block' : 'none';
+  const reasonSec = document.getElementById('reasonSec');
+  if (reasonSec) reasonSec.style.display = (bullList.length || bearList.length) ? 'block' : 'none';
   bullEl.innerHTML = bullList.map(r => `<li>${r}</li>`).join('');
   // 手風琴：收折時標題數字顯示「目前可見條數」，展開時顯示總數，讓數字與顯示的 li 一致
   const bullCountEl = document.getElementById('bullCount');
@@ -1674,7 +1724,7 @@ function toggleMode(){
   applyMode();
 }
 // 綜合卡內：哪些元素只在專業模式顯示
-const PRO_ONLY=[['plainRead','block'],['hist5','block'],['adviceSummary','block'],['finalBd','block'],['compBreak','block'],['statGrid','grid'],['dataFreshness','inline-block'],['glossary','block']];
+const PRO_ONLY=[['plainRead','block'],['histSec','block'],['adviceSummary','block'],['finalBd','block'],['compBreak','block'],['statGrid','grid'],['dataFreshness','inline-block'],['glossary','block']];
 function applyMode(){
   const pro=isPro();
   // 開關按鈕文字
