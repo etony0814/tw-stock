@@ -199,6 +199,145 @@
   }
 
   // ─────────────────────────────────────────────────────────
+  // 中期訊號引擎（2–3 個月持有期專用）
+  // 與短線 detectSignals 同用 8 訊號，但加三層中期強化：
+  //   1) SMA60 趨勢濾網：站上 60 日均線才認偏多有效、跌破才認偏空有效
+  //   2) 偏空訊號降權：KDJ 死叉 / RSI 超買 / MACD 死叉 等「賣出訊號」權重 ×0.6
+  //   3) 量價配合：偏多訊號要「5 日均量 > 20 日均量」才算有效放量突破
+  // 回傳同 compositeSignal 形狀的 { tech_score, advice, mid_score(含濾網) }
+  // ─────────────────────────────────────────────────────────
+  // 5 日成交量均量 vs 20 日成交量均量（量價配合）
+  function volConfirm(IND, i) {
+    const rows = IND.rows;
+    if (i < 20) return null;
+    let v5 = 0, v20 = 0;
+    for (let k = i - 4; k <= i; k++) v5 += rows[k].volume;
+    for (let k = i - 19; k <= i; k++) v20 += rows[k].volume;
+    v5 /= 5; v20 /= 20;
+    if (v20 <= 0) return null;
+    return v5 / v20; // >1 代表近期量能放大
+  }
+
+  function detectMidSignals(IND, i) {
+    // 基礎 8 訊號（同短線），但偏空訊號降權
+    const base = detectSignals(IND, i);
+    const s60 = IND.SMA60[i];
+    const c = IND.rows[i].close;
+    const vcf = volConfirm(IND, i);
+    // 偏空賣出訊號權重 ×0.6（中期不要被假賣出洗掉）
+    for (const x of base) {
+      if (x.state === "sell") x.weight = Math.round(x.weight * 0.6 * 10) / 10;
+    }
+    let mid = compositeSignal(base);
+    // SMA60 趨勢濾網 + 量價配合：把中期「有效訊號」標出來
+    let filter = null, eff = mid.tech_score;
+    if (s60 != null) {
+      if (c >= s60) {
+        // 站上 60 日：偏多訊號要量價配合才保留滿分
+        if (mid.tech_score > 0 && vcf != null && vcf < 0.8) {
+          // 偏多但量能不足 → 降級
+          eff = Math.round(eff * 0.6 * 1000) / 1000;
+          filter = "偏多訊號但量能未放大，中期效力打折";
+        } else if (mid.tech_score > 0) {
+          filter = "站上 60 日均線" + (vcf != null && vcf >= 1 ? "、量能配合，中期偏多有效" : "，中期偏多有效");
+        } else {
+          filter = "雖站上 60 日但訊號未偏多";
+        }
+      } else {
+        // 跌破 60 日：偏空訊號有效，偏多訊號打折
+        if (mid.tech_score < 0) {
+          filter = "跌破 60 日均線，中期偏空有效";
+        } else if (mid.tech_score > 0) {
+          eff = Math.round(eff * 0.6 * 1000) / 1000;
+          filter = "跌破 60 日卻偏多訊號，中期效力打折";
+        } else {
+          filter = "跌破 60 日，中期偏空";
+        }
+      }
+    }
+    return {
+      signals: base,
+      tech_score: mid.tech_score,
+      mid_score: eff,
+      mid_filter: filter,
+      sma60: s60,
+      vol_ratio5_20: vcf != null ? Math.round(vcf * 100) / 100 : null,
+      above_sma60: s60 != null ? (c >= s60) : null,
+      advice: mid.advice
+    };
+  }
+
+  // 中期雙窗勝率：回看 lookback 日，偏多/偏空訊號觸發後 winDays(40 或 60) 日內是否照做
+  // 走「中期訊號引擎」(含 SMA60 濾網 + 偏空降權 + 量價配合)，跟線上 detectMidSignals 一致
+  function histMid(rows, IND, lookback, winDays) {
+    lookback = lookback || 180;
+    winDays = winDays || 40;
+    const closes = rows.map(r => r.close);
+    const n = closes.length;
+    const start = Math.max(60, n - lookback);
+    let upN = 0, upW = 0, dnN = 0, dnW = 0;
+    for (let i = start; i < n - winDays; i++) {
+      let mid;
+      try { mid = detectMidSignals(IND, i); } catch (e) { continue; }
+      const score = mid ? mid.mid_score : 0;
+      const future = closes[i + winDays];
+      if (future == null) continue;
+      if (score >= 0.2) { upN++; if (future > closes[i]) upW++; }
+      else if (score <= -0.2) { dnN++; if (future < closes[i]) dnW++; }
+    }
+    const upRate = upN ? upW / upN : null;
+    const dnRate = dnN ? dnW / dnN : null;
+    const upPct = upRate != null ? Math.round(upRate * 1000) / 10 : null;
+    const dnPct = dnRate != null ? Math.round(dnRate * 1000) / 10 : null;
+    const good = (upPct || 0) >= 55 || (dnPct || 0) >= 55;
+    return {
+      win_days: winDays, up_n: upN, up_win: upW, up_rate: upPct,
+      down_n: dnN, down_win: dnW, down_rate: dnPct,
+      ok: good
+    };
+  }
+
+  // 持有期連動止損止盈：短線(5 日)用 1.5×ATR、中期(40/60 日)放寬到 4×ATR
+  // 回傳 { sl, tp1, tp2, sl_mult, horizon_label }
+  function slTpForHorizon(close, atr, horizon) {
+    // horizon: "short" | "mid40" | "mid60"
+    let mult, label;
+    if (horizon === "mid40") { mult = 4; label = "中期(40日)"; }
+    else if (horizon === "mid60") { mult = 5; label = "中期(60日)"; }
+    else { mult = 1.5; label = "短線(5日)"; }
+    if (close == null || atr == null || atr <= 0) return null;
+    return {
+      horizon: horizon, horizon_label: label, sl_mult: mult,
+      sl: close - mult * atr,
+      tp1: close + mult * atr,
+      tp2: close + mult * 2 * atr
+    };
+  }
+
+  // 中期行動建議（2–3 個月持有期口語，跟短線 actionForScore 並陳）
+  function midActionForScore(midScore, aboveSma60, session) {
+    const s = Number(midScore);
+    const up = aboveSma60 === true, dn = aboveSma60 === false;
+    if (s >= 0.4) {
+      return up ? "📈 中期偏多且站上 60 日均線：趨勢未壞，建議持有至 60 日均線（量縮再評估），短線震盪不必動。"
+        : "📈 中期偏多：趨勢偏多，逢低佈局後持有 2–3 個月，跌破 60 日均線再考慮減碼。";
+    }
+    if (s >= 0.15) {
+      return up ? "🙂 中期略偏多、站上 60 日：可小量佈局，持有至 60 日均線上方續抱。"
+        : "🙂 中期略偏多：可觀望或輕量佈局，跌破 60 日均線先退場。";
+    }
+    if (s > -0.15) {
+      return "⚖️ 中期中性：無明確趨勢，建議觀望、不重倉，等 60 日均線方向再定。";
+    }
+    if (s > -0.4) {
+      return dn ? "🟡 中期略偏空、已跌破 60 日：建議減碼或避開，跌破支撐不再追。"
+        : "🟡 中期略偏空：建議降低部位，持有者設好止損再觀望。";
+    }
+    return dn ? "🔴 中期偏空且跌破 60 日均線：中期趨勢壞，建議減碼避險，勿全倉接弱。"
+      : "🔴 中期偏空：建議避險或降低部位，等翻上 60 日均線再考慮。";
+  }
+
+  // ─────────────────────────────────────────────────────────
   // 訊號引擎（白話名）
   // ─────────────────────────────────────────────────────────
   function detectSignals(IND, i) {
@@ -962,9 +1101,25 @@
 
     const hist = hist5(stockRows, IND, 120);
 
+    // 中期訊號引擎（2–3 個月持有期）：SMA60 濾網 + 偏空降權 + 量價配合
+    const mid = detectMidSignals(IND, i);
+    const mid40 = histMid(stockRows, IND, 180, 40);
+    const mid60 = histMid(stockRows, IND, 180, 60);
+    const msess = marketSession();
+    const midAction = midActionForScore(mid.mid_score, mid.above_sma60, msess.code);
+    // 持有期連動止損止盈（短線 1.5×ATR / 中期 4×、5×ATR）
+    const atrV = IND.ATR14[i];
+    const closeV = stockRows[i].close;
+    const slTp = {
+      short: slTpForHorizon(closeV, atrV, "short"),
+      mid40: slTpForHorizon(closeV, atrV, "mid40"),
+      mid60: slTpForHorizon(closeV, atrV, "mid60")
+    };
+
     return {
       indicators: IND, signals, composite: comp, fund_flow: { ...ff, ...tf },
-      taiex, intraday: intra, news, final, hist5: hist
+      taiex, intraday: intra, news, final, hist5: hist,
+      mid, hist_mid40: mid40, hist_mid60: mid60, mid_action: midAction, slTp
     };
   }
 
@@ -1036,6 +1191,7 @@
     tickerInFundFlow, fetchTaiexFromRows,
     intradayFromRows, newsSentiment, fetchNewsHeadlines, fetchQuoteViaRelay,
     relativeStrength, findBuySellPoints, hist5,
+    detectMidSignals, histMid, slTpForHorizon, midActionForScore,
     fiveWayComposite, computeAll, scoreHeadline, marketSession, actionForScore
   };
 })(typeof window !== "undefined" ? window : globalThis);
