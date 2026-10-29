@@ -255,11 +255,29 @@
         }
       }
     }
+    // 中期止損警報（獨立於短線賣出訊號）：
+    //  - 跌破 60 日均線 + 偏空訊號  → 強警報（中期趨勢壞，該減碼）
+    //  - 站上 60 日均線 + 偏多訊號但量能未放大 → 弱警報（偏多不可靠，勿全倉追）
+    let mid_bear_alert = null;
+    if (s60 != null) {
+      if (c < s60 && mid.tech_score <= -0.2) {
+        mid_bear_alert = {
+          level: "strong",
+          text: "⚠️ 中期止損警報：已跌破 60 日均線且訊號偏空（" + mid.tech_score.toFixed(2) + "），中期趨勢轉壞，建議減碼避險，勿全倉持有。"
+        };
+      } else if (c >= s60 && mid.tech_score >= 0.2 && vcf != null && vcf < 0.8) {
+        mid_bear_alert = {
+          level: "weak",
+          text: "🟡 中期注意：偏多訊號但量能未放大（5 日量比 " + vcf.toFixed(2) + "），中期效力打折，勿全倉追價。"
+        };
+      }
+    }
     return {
       signals: base,
       tech_score: mid.tech_score,
       mid_score: eff,
       mid_filter: filter,
+      mid_bear_alert: mid_bear_alert,
       sma60: s60,
       vol_ratio5_20: vcf != null ? Math.round(vcf * 100) / 100 : null,
       above_sma60: s60 != null ? (c >= s60) : null,
