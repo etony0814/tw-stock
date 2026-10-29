@@ -869,6 +869,7 @@ function render(A, rows, t){
         '<span style="background:var(--card2);color:var(--text);font-weight:700;padding:2px 8px;border-radius:10px;font-size:11px;border:1px solid var(--border)">60 日 漲' + mUp60 + ' 跌' + mDn60 + '</span>' +
       '</div>' +
       (filterNote ? '<div style="font-size:11px;color:var(--muted);margin-bottom:4px">🔍 趨勢濾網：' + filterNote + '</div>' : '') +
+      (midSig && midSig.mid_bear_alert ? '<div style="font-size:12px;line-height:1.6;margin-bottom:6px;padding:8px 10px;border-radius:8px;background:' + (midSig.mid_bear_alert.level === 'strong' ? 'rgba(239,68,68,.12)' : 'rgba(245,158,11,.12)') + ';border:1px solid ' + (midSig.mid_bear_alert.level === 'strong' ? 'var(--bear)' : 'var(--yellow)') + ';color:var(--text)">' + midSig.mid_bear_alert.text + '</div>' : '') +
       '<div style="color:var(--text)">' + h5.overall_label + '。</div>' +
       '<div style="font-size:11px;color:var(--muted);margin-top:4px">白話：偏多訊號勝率越超過 50%、「看到偏多就買」贏面越大；中期視角是給拿 2–3 個月的，40/60 日勝率越高、持有越可放心。</div>';
     histEl.style.display = 'block';
@@ -1690,7 +1691,15 @@ async function refreshWatchOverview(){
       combined = Math.round(Math.max(-1,Math.min(1,combined))*100)/100;
       const label = combined >= 0.4 ? '偏多' : combined >= 0.15 ? '略多' : combined > -0.15 ? '中性' : combined > -0.4 ? '略空' : '偏空';
       const lcls = combined >= 0.15 ? 'pos' : combined <= -0.15 ? 'neg' : 'neu';
-      return { code:t, name:nm, close, r20, combined, label, lcls };
+              // 中期 40/60 日勝率（給 2–3 個月持有者看）
+        let m40u = null, m60u = null;
+        try {
+          const h40 = StockCore.histMid(rows, IND, 180, 40);
+          const h60 = StockCore.histMid(rows, IND, 180, 60);
+          m40u = h40 && h40.up_rate != null ? h40.up_rate : null;
+          m60u = h60 && h60.up_rate != null ? h60.up_rate : null;
+        } catch (e) {}
+        return { code:t, name:nm, close, r20, combined, label, lcls, m40u, m60u };
     } catch (e) {
       return { code:t, name:WNAMES[t]||'', close:null, r20:null, err:true };
     }
@@ -1705,6 +1714,8 @@ async function refreshWatchOverview(){
     '<th style="text-align:right;padding:6px 8px">收盤</th>' +
     '<th style="text-align:right;padding:6px 8px">20 日報酬</th>' +
     '<th style="text-align:right;padding:6px 8px">綜合分數</th>' +
+    '<th style="text-align:right;padding:6px 8px">中期40日</th>' +
+    '<th style="text-align:right;padding:6px 8px">中期60日</th>' +
     '<th style="text-align:right;padding:6px 8px"></th></tr></thead>' +
     '<tbody>' +
     rowsOut.map(r => {
@@ -1717,6 +1728,8 @@ async function refreshWatchOverview(){
         `<td style="padding:6px 8px;text-align:right">${r.close != null ? r.close.toFixed(2) : '—'}</td>` +
         `<td style="padding:6px 8px;text-align:right" class="${chgCls}">${chgTxt}</td>` +
         `<td style="padding:6px 8px;text-align:right" class="${r.lcls||''}">${combTxt}</td>` +
+          `<td style="padding:6px 8px;text-align:right">${r.m40u != null ? r.m40u.toFixed(1)+'%' : '—'}</td>` +
+          `<td style="padding:6px 8px;text-align:right">${r.m60u != null ? r.m60u.toFixed(1)+'%' : '—'}</td>` +
         `<td style="padding:6px 8px;text-align:right"><button onclick="pickWatch('${r.code}')" style="background:none;border:1px solid var(--accent);color:var(--accent);border-radius:6px;padding:2px 8px;font-size:11px;cursor:pointer">分析</button></td>` +
         `</tr>`;
     }).join('') +
