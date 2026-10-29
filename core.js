@@ -272,17 +272,41 @@
         };
       }
     }
+    // 五類中期情境分類（給 2–3 個月持有者看）
+    const cls = midClassify(mid.tech_score, c, s60, vcf);
     return {
       signals: base,
       tech_score: mid.tech_score,
       mid_score: eff,
       mid_filter: filter,
+      mid_class: cls,
       mid_bear_alert: mid_bear_alert,
       sma60: s60,
       vol_ratio5_20: vcf != null ? Math.round(vcf * 100) / 100 : null,
       above_sma60: s60 != null ? (c >= s60) : null,
       advice: mid.advice
     };
+  }
+
+  // 五類中期情境：依 60 日趨勢 + 偏多/偏空 + 量價配合 細分
+  // multi=中期多頭 / weak=中期轉弱(⚠️) / dip=多頭回調(觀望) / bear_rebound=空頭反彈(不接) / neutral=中期中性
+  function midClassify(techScore, close, sma60, vcf) {
+    if (sma60 == null) return { key: 'unknown', label: '資料不足', short: '未知' };
+    const above = close >= sma60;
+    const bull = techScore >= 0.2, bear = techScore <= -0.2;
+    const volOk = vcf == null || vcf >= 0.8;
+    if (above && bull) {
+      return volOk
+        ? { key: 'multi', label: '中期多頭', short: '多頭', detail: '站上 60 日且偏多、量價配合，趨勢健康，可持有。' }
+        : { key: 'dip', label: '多頭回調', short: '回調', detail: '站上 60 日偏多但量能未放大，暫觀望、勿追價。' };
+    }
+    if (!above && bear) {
+      return { key: 'weak', label: '中期轉弱', short: '轉弱', detail: '跌破 60 日且偏空，中期趨勢壞，該減碼避險。' };
+    }
+    if (!above && bull) {
+      return { key: 'bear_rebound', label: '空頭反彈', short: '反彈', detail: '跌破 60 日卻偏多，屬弱反彈，不接。' };
+    }
+    return { key: 'neutral', label: '中期中性', short: '中性', detail: above ? '站上 60 日但訊號拉鋸，等方向再定。' : '跌破 60 日但訊號未偏空，先看支撐。' };
   }
 
   // 中期雙窗勝率：回看 lookback 日，偏多/偏空訊號觸發後 winDays(40 或 60) 日內是否照做
@@ -1053,6 +1077,37 @@
     return _finishComposite(tech, adjFF, newsScore, adjI, adjT, wT, wF, wN, wI, wTa, news, note);
   }
 
+
+  // 中期五方分數（並陳不取代短線）：大盤/籌碼面改用「連續 N 日方向」而非單日，
+  // 讓綜合分數對 2–3 個月持有期更有參考性。回傳 { score, label, note }
+  function midFiveWayComposite(comp, ff, intra, taiex, news, ctx) {
+    ctx = ctx || {};
+    const tech = comp.tech_score;
+    // 籌碼面：外資連續同向天數（已有 ticker_consec）→ 偏多偏空
+    const fScore = ff.ticker_consec != null ? Math.max(-1, Math.min(1, ff.ticker_consec / 5)) : (ff.score || 0);
+    // 大盤：連續 5 日漲跌方向（taiex 收盤序列）取代單日
+    let tScore = taiex.score || 0;
+    if (ctx.taiexRows && ctx.taiexRows.length >= 6) {
+      const closes = ctx.taiexRows.map(r => r.close);
+      let upDays = 0;
+      for (let k = closes.length - 5; k < closes.length; k++) { if (closes[k] > closes[k - 1]) upDays++; }
+      tScore = (upDays - 2.5) / 2.5; // 5 日內漲天數 → -1..+1
+    }
+    const newsScore = news ? news.score : 0;
+    const iScore = intra.score || 0;
+    // 中期權重：技術 40 / 籌碼 25 / 大盤 20 / 消息 10 / 盤面 5（盤面對中期較弱）
+    const wT = 0.40, wF = 0.25, wTa = 0.20, wN = 0.10, wI = 0.05;
+    const combined = Math.max(-1, Math.min(1, tech * wT + fScore * wF + tScore * wTa + newsScore * wN + iScore * wI));
+    const sc = Math.round(combined * 1000) / 1000;
+    let label;
+    if (sc >= 0.3) label = '中期偏多（2–3 個月持有有利多）';
+    else if (sc >= 0.1) label = '中期略偏多';
+    else if (sc > -0.1) label = '中期中性';
+    else if (sc > -0.3) label = '中期略偏空';
+    else label = '中期偏空（2–3 個月持有偏空方）';
+    return { score: sc, label, note: '中期五方：技術 40/籌碼 25/大盤 20/消息 10/盤面 5，大盤與籌碼用連續日方向' };
+  }
+
   function _finishComposite(tech, fScore, newsScore, iScore, tScore, wT, wF, wN, wI, wTa, news, notes) {
     // 權重正規化（若 news.failed 移轉後總和可能超過 1）
     const wSum = wT + wF + wN + wI + wTa;
@@ -1134,10 +1189,11 @@
       mid60: slTpForHorizon(closeV, atrV, "mid60")
     };
 
+    const midFive = midFiveWayComposite(comp, ff, intra, taiex, news, { taiexRows: opts.taiexRows });
     return {
       indicators: IND, signals, composite: comp, fund_flow: { ...ff, ...tf },
       taiex, intraday: intra, news, final, hist5: hist,
-      mid, hist_mid40: mid40, hist_mid60: mid60, mid_action: midAction, slTp
+      mid, hist_mid40: mid40, hist_mid60: mid60, mid_action: midAction, slTp, mid_five_way: midFive
     };
   }
 
@@ -1209,7 +1265,7 @@
     tickerInFundFlow, fetchTaiexFromRows,
     intradayFromRows, newsSentiment, fetchNewsHeadlines, fetchQuoteViaRelay,
     relativeStrength, findBuySellPoints, hist5,
-    detectMidSignals, histMid, slTpForHorizon, midActionForScore,
+    detectMidSignals, midClassify, midFiveWayComposite, histMid, slTpForHorizon, midActionForScore,
     fiveWayComposite, computeAll, scoreHeadline, marketSession, actionForScore
   };
 })(typeof window !== "undefined" ? window : globalThis);
