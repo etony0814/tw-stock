@@ -756,6 +756,18 @@ function render(A, rows, t){
     const af = (typeof actionForScore !== 'undefined') ? actionForScore(c, ms.code) : StockCore.actionForScore(c, ms.code);
     act.textContent = af;
     act.style.display = 'block';
+    // 中期行動建議（2–3 個月持有期）並陳在短線之下
+    if (A && A.mid_action) {
+      let ma = document.getElementById('midAction');
+      if (!ma) {
+        ma = document.createElement('div');
+        ma.id = 'midAction';
+        ma.style.cssText = 'margin-top:6px;font-size:13px;line-height:1.6;color:var(--text);background:var(--card2);border-left:3px solid #f59e0b;padding:8px 10px;border-radius:6px';
+        act.parentNode.insertBefore(ma, act.nextSibling);
+      }
+      ma.innerHTML = '<div style="font-size:11px;color:var(--muted);margin-bottom:3px">📅 中期行動（2–3 個月持有期）：</div>' + A.mid_action;
+      ma.style.display = 'block';
+    }
   }
   // 時段標記（顯示在綜合評語旁）
   const ms = (typeof marketSession !== 'undefined') ? marketSession() : StockCore.marketSession();
@@ -831,14 +843,34 @@ function render(A, rows, t){
     const up = h5.up_rate != null ? h5.up_rate + '%' : '—';
     const dn = h5.down_rate != null ? h5.down_rate + '%' : '—';
     const upN = h5.up_n || 0, dnN = h5.down_n || 0;
+    const m40 = A.hist_mid40, m60 = A.hist_mid60;
+    const mUp40 = m40 && m40.up_rate != null ? m40.up_rate + '%' : '—';
+    const mDn40 = m40 && m40.down_rate != null ? m40.down_rate + '%' : '—';
+    const mUp60 = m60 && m60.up_rate != null ? m60.up_rate + '%' : '—';
+    const mDn60 = m60 && m60.down_rate != null ? m60.down_rate + '%' : '—';
+    const midSig = A.mid;
+    const midScore = midSig ? midSig.mid_score : null;
+    const filterNote = midSig && midSig.mid_filter ? midSig.mid_filter : '';
+    const midChip = midScore == null ? '' :
+      (midScore >= 0.2 ? '<span style="background:var(--bull);color:#0f1419;font-weight:700;padding:2px 8px;border-radius:10px;font-size:11px">中期偏多 ' + Math.round(midScore*100) + '</span>'
+      : midScore <= -0.2 ? '<span style="background:var(--bear);color:#0f1419;font-weight:700;padding:2px 8px;border-radius:10px;font-size:11px">中期偏空 ' + Math.round(Math.abs(midScore)*100) + '</span>'
+      : '<span style="background:var(--card2);color:var(--muted);font-weight:700;padding:2px 8px;border-radius:10px;font-size:11px;border:1px solid var(--border)">中期中性</span>');
     histEl.innerHTML =
-      '<div style="font-weight:700;color:var(--text);margin-bottom:4px">📊 這檔股票歷史訊號準確度（回看近 120 日、偏多/偏空訊號觸發後 5 日是否照做）</div>' +
-      '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px">' +
-        '<span style="background:var(--bull);color:#0f1419;font-weight:700;padding:2px 8px;border-radius:10px;font-size:11px">偏多訊號 5 日漲 ' + up + '（' + upN + ' 次）</span>' +
-        '<span style="background:var(--bear);color:#0f1419;font-weight:700;padding:2px 8px;border-radius:10px;font-size:11px">偏空訊號 5 日跌 ' + dn + '（' + dnN + ' 次）</span>' +
+      '<div style="font-weight:700;color:var(--text);margin-bottom:4px">📊 歷史訊號準確度（訊號觸發後是否照做）</div>' +
+      '<div style="font-size:11px;color:var(--muted);margin-bottom:3px">短線視角（5 日）：</div>' +
+      '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">' +
+        '<span style="background:var(--bull);color:#0f1419;font-weight:700;padding:2px 8px;border-radius:10px;font-size:11px">偏多 5 日漲 ' + up + '（' + upN + ' 次）</span>' +
+        '<span style="background:var(--bear);color:#0f1419;font-weight:700;padding:2px 8px;border-radius:10px;font-size:11px">偏空 5 日跌 ' + dn + '（' + dnN + ' 次）</span>' +
       '</div>' +
+      '<div style="font-size:11px;color:var(--muted);margin-bottom:3px">中期視角（2–3 個月持有）：</div>' +
+      '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">' +
+        midChip +
+        '<span style="background:var(--card2);color:var(--text);font-weight:700;padding:2px 8px;border-radius:10px;font-size:11px;border:1px solid var(--border)">40 日 漲' + mUp40 + ' 跌' + mDn40 + '</span>' +
+        '<span style="background:var(--card2);color:var(--text);font-weight:700;padding:2px 8px;border-radius:10px;font-size:11px;border:1px solid var(--border)">60 日 漲' + mUp60 + ' 跌' + mDn60 + '</span>' +
+      '</div>' +
+      (filterNote ? '<div style="font-size:11px;color:var(--muted);margin-bottom:4px">🔍 趨勢濾網：' + filterNote + '</div>' : '') +
       '<div style="color:var(--text)">' + h5.overall_label + '。</div>' +
-      '<div style="font-size:11px;color:var(--muted);margin-top:4px">白話：偏多訊號 5 日勝率越超過 50%，「看到偏多就買」贏面越大；反之亦然。訊號雜音大的股票，務必配合止損、別全倉。</div>';
+      '<div style="font-size:11px;color:var(--muted);margin-top:4px">白話：偏多訊號勝率越超過 50%、「看到偏多就買」贏面越大；中期視角是給拿 2–3 個月的，40/60 日勝率越高、持有越可放心。</div>';
     histEl.style.display = 'block';
     document.getElementById('histSec').style.display = 'block';
   }
@@ -964,15 +996,19 @@ function render(A, rows, t){
   const slTpLastRow = rows[rows.length-1];
   if (slTpEl && slTpContent && slTpLastRow && atrVal != null && atrVal > 0) {
     const close = slTpLastRow.close;
-    const sl = close - 1.5 * atrVal;
-    const tp1 = close + 1 * atrVal;
-    const tp2 = close + 2 * atrVal;
     const fmt = x => x.toLocaleString(undefined, {maximumFractionDigits:2});
+    // 持有期連動止損：短線 1.5×ATR、中期(40日) 4×ATR、中期(60日) 5×ATR
+    const S = StockCore.slTpForHorizon(close, atrVal, "short");
+    const M40 = StockCore.slTpForHorizon(close, atrVal, "mid40");
+    const M60 = StockCore.slTpForHorizon(close, atrVal, "mid60");
     slTpEl.style.display = 'block';
     if (riskSec) riskSec.style.display = 'block';
     slTpContent.innerHTML =
-      `建議止損 <b style="color:var(--bear)">${fmt(sl)}</b>（收盤 − 1.5×ATR，跌破即減碼）<br>` +
-      `第一止盈 <b style="color:var(--bull)">${fmt(tp1)}</b>（＋1×ATR）、第二止盈 <b style="color:var(--bull)">${fmt(tp2)}</b>（＋2×ATR）`;
+      '<div style="font-weight:700;color:var(--text);margin-bottom:4px">持有期連動止損 / 止盈</div>' +
+      '<div style="margin-bottom:4px">短線(5日)：止損 <b style="color:var(--bear)">' + fmt(S.sl) + '</b>（−1.5×ATR）｜止盈 <b style="color:var(--bull)">' + fmt(S.tp1) + '</b>／' + fmt(S.tp2) + '</div>' +
+      '<div style="margin-bottom:4px">中期(2個月)：止損 <b style="color:var(--bear)">' + fmt(M40.sl) + '</b>（−4×ATR）｜止盈 <b style="color:var(--bull)">' + fmt(M40.tp1) + '</b>／' + fmt(M40.tp2) + '</div>' +
+      '<div>中期(3個月)：止損 <b style="color:var(--bear)">' + fmt(M60.sl) + '</b>（−5×ATR）｜止盈 <b style="color:var(--bull)">' + fmt(M60.tp1) + '</b>／' + fmt(M60.tp2) + '</div>' +
+      '<div style="font-size:11px;color:var(--muted);margin-top:6px">白話：持有期越長、止損放寬（ATR 倍數變大），避免被短線震盪洗出場；跌破對應止損才減碼。</div>';
   } else if (slTpEl) { slTpEl.style.display = 'none'; if (riskSec) riskSec.style.display = 'none'; }
 
   // 五方分數白話一句話（plainRead）
@@ -1225,7 +1261,8 @@ function render(A, rows, t){
   const lastRow = rows[rows.length-1];
   const ATR = A.indicators.ATR14 ? A.indicators.ATR14[A.indicators.ATR14.length-1] : null;
   if (lastRow && ATR != null) {
-    window._slTp = { sl: lastRow.close - 1.5*ATR, tp1: lastRow.close + ATR, tp2: lastRow.close + 2*ATR };
+    const m40 = A.slTp ? A.slTp.mid40 : null;
+    window._slTp = { sl: lastRow.close - 1.5*ATR, tp1: lastRow.close + ATR, tp2: lastRow.close + 2*ATR, slMid: m40 ? m40.sl : null };
   } else { window._slTp = null; }
   drawChart(rows, A.indicators);
   drawMACD(rows, A.indicators);
@@ -1440,7 +1477,7 @@ function drawChart(rows, IND){
   showRows.forEach(r=>{hi=Math.max(hi,r.high);lo=Math.min(lo,r.low);});
   // #6 止損止盈納入 Y 軸範圍
   const slTp = window._slTp || null;
-  if (slTp && slTp.sl != null) { lo = Math.min(lo, slTp.sl); hi = Math.max(hi, slTp.tp1 || 0, slTp.sl); }
+  if (slTp && slTp.sl != null) { lo = Math.min(lo, slTp.sl); hi = Math.max(hi, slTp.tp1 || 0, slTp.sl); if (slTp.slMid != null) lo = Math.min(lo, slTp.slMid); }
   const y=v=>pad.t+(hi-v)/(hi-lo)*plotH;
   const x=i=>pad.l+i*(plotW/n);
 
@@ -1497,19 +1534,26 @@ function drawChart(rows, IND){
   ctx.fillText('BOLL', lx+14, pad.t+11);
   lx += 52;
 
-  // #6 止損/止盈水平線（止損綠虛線、止盈紅實線）
+  // #6 止損/止盈水平線（短線止損綠虛線、止盈紅實線；中期止損用橘色點線區分）
   if (slTp) {
     if (slTp.sl != null) {
       ctx.strokeStyle='rgba(34,197,94,0.8)';ctx.setLineDash([4,4]);ctx.lineWidth=1;
       ctx.beginPath();ctx.moveTo(pad.l,y(slTp.sl));ctx.lineTo(W-pad.r,y(slTp.sl));ctx.stroke();ctx.setLineDash([]);
       ctx.fillStyle='#22c55e';ctx.font='10px sans-serif';ctx.textAlign='right';
-      ctx.fillText('止損 '+slTp.sl.toFixed(0),W-pad.r-4,y(slTp.sl)-3);
+      ctx.fillText('短線止損 '+slTp.sl.toFixed(0),W-pad.r-4,y(slTp.sl)-3);
     }
     if (slTp.tp1 != null) {
       ctx.strokeStyle='rgba(239,68,68,0.8)';ctx.lineWidth=1;
       ctx.beginPath();ctx.moveTo(pad.l,y(slTp.tp1));ctx.lineTo(W-pad.r,y(slTp.tp1));ctx.stroke();
       ctx.fillStyle='#ef4444';ctx.font='10px sans-serif';ctx.textAlign='right';
       ctx.fillText('止盈 '+slTp.tp1.toFixed(0),W-pad.r-4,y(slTp.tp1)-3);
+    }
+    // 中期止損（4×ATR，橘色點線，跟短線區分）
+    if (slTp.slMid != null) {
+      ctx.strokeStyle='rgba(245,158,11,0.9)';ctx.setLineDash([2,3]);ctx.lineWidth=1.2;
+      ctx.beginPath();ctx.moveTo(pad.l,y(slTp.slMid));ctx.lineTo(W-pad.r,y(slTp.slMid));ctx.stroke();ctx.setLineDash([]);
+      ctx.fillStyle='#f59e0b';ctx.font='10px sans-serif';ctx.textAlign='right';
+      ctx.fillText('中期止損 '+slTp.slMid.toFixed(0),W-pad.r-4,y(slTp.slMid)+12);
     }
   }
 
