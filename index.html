@@ -1697,14 +1697,16 @@ async function refreshWatchOverview(){
       const label = combined >= 0.4 ? '偏多' : combined >= 0.15 ? '略多' : combined > -0.15 ? '中性' : combined > -0.4 ? '略空' : '偏空';
       const lcls = combined >= 0.15 ? 'pos' : combined <= -0.15 ? 'neg' : 'neu';
               // 中期 40/60 日勝率（給 2–3 個月持有者看）
-        let m40u = null, m60u = null;
+        let m40u = null, m60u = null, mAlert = null;
         try {
           const h40 = StockCore.histMid(rows, IND, 180, 40);
           const h60 = StockCore.histMid(rows, IND, 180, 60);
           m40u = h40 && h40.up_rate != null ? h40.up_rate : null;
           m60u = h60 && h60.up_rate != null ? h60.up_rate : null;
+          const mSig = StockCore.detectMidSignals(IND, rows.length - 1);
+          mAlert = mSig && mSig.mid_bear_alert ? mSig.mid_bear_alert : null;
         } catch (e) {}
-        return { code:t, name:nm, close, r20, combined, label, lcls, m40u, m60u };
+        return { code:t, name:nm, close, r20, combined, label, lcls, m40u, m60u, mAlert };
     } catch (e) {
       return { code:t, name:WNAMES[t]||'', close:null, r20:null, err:true };
     }
@@ -1728,7 +1730,7 @@ async function refreshWatchOverview(){
       const chgTxt = r.r20 == null ? '—' : (r.r20 >= 0 ? '+' : '') + r.r20.toFixed(1) + '%';
       const combTxt = r.err ? '—' : r.combined.toFixed(2) + ' ' + r.label;
       return `<tr style="border-bottom:1px solid var(--border)">` +
-        `<td style="padding:6px 8px"><b>${r.code}</b></td>` +
+        `<td style="padding:6px 8px"><b>${r.code}</b>${r.mAlert ? (r.mAlert.level === 'strong' ? ' <span title="' + r.mAlert.text + '" style="cursor:help">⚠️</span>' : ' <span title="' + r.mAlert.text + '" style="cursor:help">🟡</span>') : ''}</td>` +
         `<td style="padding:6px 8px">${r.name || '—'}</td>` +
         `<td style="padding:6px 8px;text-align:right">${r.close != null ? r.close.toFixed(2) : '—'}</td>` +
         `<td style="padding:6px 8px;text-align:right" class="${chgCls}">${chgTxt}</td>` +
@@ -1739,7 +1741,7 @@ async function refreshWatchOverview(){
         `</tr>`;
     }).join('') +
     '</tbody></table>' +
-    '<div style="font-size:10px;color:var(--muted);margin-top:4px">綜合分數＝技術 40%＋盤面 10%＋大盤 15%（籌碼/消息未抓、暫計中性）；點「分析」看完整五方。</div>' +
+    '<div style="font-size:10px;color:var(--muted);margin-top:4px">綜合分數＝技術 40%＋盤面 10%＋大盤 15%（籌碼/消息未抓、暫計中性）；中期40/60日＝偏多訊號照做勝率；⚠️＝跌破60日且偏空（中期止損警報）、🟡＝量能不足；點「分析」看完整五方。</div>' +
     (() => {
       const ts = new Date().toLocaleString('zh-TW', {hour12:false, year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', second:'2-digit'});
       const msg = okCount === rowsOut.length
