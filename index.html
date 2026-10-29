@@ -257,9 +257,20 @@
 
       <!-- ① 結論區 -->
       <div style="margin-top:10px">
-        <div class="sec-title">結論與行動</div>
-        <div id="finalAction" style="display:none;margin-top:4px;font-size:13px;line-height:1.6;color:var(--text);background:var(--card2);border-left:3px solid var(--accent);padding:8px 10px;border-radius:6px"></div>
-        <div style="margin-top:6px;font-size:11px;color:var(--muted)"><span id="sessionTag" style="display:none;background:var(--card2);border:1px solid var(--border);padding:2px 6px;border-radius:4px"></span> <span id="dataFreshness" style="display:none;margin-left:4px;background:var(--card2);border:1px solid var(--border);padding:2px 6px;border-radius:4px"></span></div>
+        <div class="sec-title">結論與行動（短線 vs 中期 分開看）</div>
+        <!-- 短線框(藍) -->
+        <div style="margin-top:4px;padding:8px 10px;background:var(--card2);border:1px solid var(--border);border-left:4px solid var(--accent);border-radius:8px">
+          <div style="font-size:12px;font-weight:700;color:var(--accent);margin-bottom:4px">📉 短線（5 日）行動</div>
+          <div id="finalAction" style="display:none;font-size:13px;line-height:1.6;color:var(--text)"></div>
+          <div style="margin-top:6px;font-size:11px;color:var(--muted)"><span id="sessionTag" style="display:none;background:var(--card2);border:1px solid var(--border);padding:2px 6px;border-radius:4px"></span> <span id="dataFreshness" style="display:none;margin-left:4px;background:var(--card2);border:1px solid var(--border);padding:2px 6px;border-radius:4px"></span></div>
+        </div>
+        <!-- 中期框(橘),與短線明顯區隔 -->
+        <div style="margin-top:8px;padding:8px 10px;background:var(--card2);border:1px solid var(--border);border-left:4px solid var(--yellow);border-radius:8px">
+          <div style="font-size:12px;font-weight:700;color:var(--yellow);margin-bottom:4px">📈 中期（2–3 個月）行動</div>
+          <div id="midAction" style="display:none;font-size:13px;line-height:1.6;color:var(--text);margin-bottom:6px"></div>
+          <div id="midFiveWay" style="display:none;font-size:12px;line-height:1.6;color:var(--text);margin-bottom:4px"></div>
+          <div id="midAlert" style="display:none;font-size:12px;line-height:1.6;margin-top:4px;padding:6px 8px;border-radius:6px"></div>
+        </div>
         <!-- 五方分數白話一句話 -->
         <div id="plainRead" style="font-size:13px;color:var(--text);line-height:1.55;margin:8px 0 0;padding:8px 10px;background:var(--card2);border:1px solid var(--border);border-radius:8px;display:none"></div>
       </div>
@@ -756,32 +767,35 @@ function render(A, rows, t){
     const af = (typeof actionForScore !== 'undefined') ? actionForScore(c, ms.code) : StockCore.actionForScore(c, ms.code);
     act.textContent = af;
     act.style.display = 'block';
-    // 中期行動建議（2–3 個月持有期）並陳在短線之下
-    if (A && A.mid_action) {
-      let ma = document.getElementById('midAction');
-      if (!ma) {
-        ma = document.createElement('div');
-        ma.id = 'midAction';
-        ma.style.cssText = 'margin-top:6px;font-size:13px;line-height:1.6;color:var(--text);background:var(--card2);border-left:3px solid #f59e0b;padding:8px 10px;border-radius:6px';
-        act.parentNode.insertBefore(ma, act.nextSibling);
-      }
-      ma.innerHTML = '<div style="font-size:11px;color:var(--muted);margin-bottom:3px">📅 中期行動（2–3 個月持有期）：</div>' + A.mid_action;
-      ma.style.display = 'block';
+    // 填入「中期框」的三個固定容器:行動 / 五方分數 / 止損警報
+    const maEl = document.getElementById('midAction');
+    const mfEl = document.getElementById('midFiveWay');
+    const maAlertEl = document.getElementById('midAlert');
+    // 中期行動
+    if (maEl) {
+      if (A && A.mid_action) { maEl.innerHTML = A.mid_action; maEl.style.display = 'block'; }
+      else { maEl.innerHTML = '<span style="color:var(--muted)">無特別中期動作</span>'; maEl.style.display = 'block'; }
     }
-    // 中期五方分數(並陳在短線五方之下)
-    if (A && A.mid_five_way) {
-      let mf = document.getElementById('midFiveWay');
-      if (!mf) {
-        mf = document.createElement('div');
-        mf.id = 'midFiveWay';
-        mf.style.cssText = 'margin-top:6px;font-size:13px;line-height:1.6;color:var(--text);background:var(--card2);border-left:3px solid #38bdf8;padding:8px 10px;border-radius:6px';
-        act.parentNode.insertBefore(mf, act.nextSibling);
-      }
-      const mv = A.mid_five_way;
-      const mcls = mv.score >= 0.15 ? 'var(--bull)' : mv.score <= -0.15 ? 'var(--bear)' : 'var(--muted)';
-      mf.innerHTML = '<div style="font-size:11px;color:var(--muted);margin-bottom:3px">📅 中期五方分數（2–3 個月持有,大盤/籌碼用連續方向）：</div>' +
-        '<span style="color:' + mcls + ';font-weight:700">' + mv.label + '（' + (mv.score >= 0 ? '+' : '') + mv.score.toFixed(2) + '）</span>';
-      mf.style.display = 'block';
+    // 中期五方分數
+    if (mfEl) {
+      if (A && A.mid_five_way) {
+        const mv = A.mid_five_way;
+        const mcls = mv.score >= 0.15 ? 'var(--bull)' : mv.score <= -0.15 ? 'var(--bear)' : 'var(--muted)';
+        mfEl.innerHTML = '<span style="font-size:11px;color:var(--muted)">中期五方分數： </span><b style="color:' + mcls + '">' + mv.label + '（' + (mv.score >= 0 ? '+' : '') + mv.score.toFixed(2) + '）</b>';
+        mfEl.style.display = 'block';
+      } else { mfEl.style.display = 'none'; }
+    }
+    // 中期止損警報
+    if (maAlertEl) {
+      const alert = A && A.mid && A.mid.mid_bear_alert;
+      if (alert) {
+        const strong = alert.level === 'strong';
+        maAlertEl.style.background = strong ? 'rgba(239,68,68,.12)' : 'rgba(245,158,11,.12)';
+        maAlertEl.style.border = '1px solid ' + (strong ? 'var(--bear)' : 'var(--yellow)');
+        maAlertEl.style.color = 'var(--text)';
+        maAlertEl.innerHTML = alert.text;
+        maAlertEl.style.display = 'block';
+      } else { maAlertEl.style.display = 'none'; }
     }
   }
   // 時段標記（顯示在綜合評語旁）
@@ -1688,7 +1702,7 @@ async function refreshWatchOverview(){
   // 並行抓取（上限 8 只）
   const tasks = list.slice(0, 8).map(async (t) => {
     try {
-      const rows = await fetchRows(toYahoo(t), '3mo');
+      const rows = await fetchRows(toYahoo(t), '6mo');
       const tail = rows.slice(-21);
       const close = rows[rows.length-1].close;
       const r20 = tail.length >= 2
@@ -1761,8 +1775,8 @@ async function refreshWatchOverview(){
         `<td style="padding:6px 8px;text-align:right">${r.close != null ? r.close.toFixed(2) : '—'}</td>` +
         `<td style="padding:6px 8px;text-align:right" class="${chgCls}">${chgTxt}</td>` +
         `<td style="padding:6px 8px;text-align:right" class="${r.lcls||''}">${combTxt}</td>` +
-          `<td style="padding:6px 8px;text-align:right">${r.m40u != null ? r.m40u.toFixed(1)+'%' : '—'}</td>` +
-          `<td style="padding:6px 8px;text-align:right">${r.m60u != null ? r.m60u.toFixed(1)+'%' : '—'}</td>` +
+          `<td style="padding:6px 8px;text-align:right">${r.m40u != null ? r.m40u.toFixed(1)+'%' : '資料不足'}</td>` +
+          `<td style="padding:6px 8px;text-align:right">${r.m60u != null ? r.m60u.toFixed(1)+'%' : '資料不足'}</td>` +
         `<td style="padding:6px 8px;text-align:right"><button onclick="pickWatch('${r.code}')" style="background:none;border:1px solid var(--accent);color:var(--accent);border-radius:6px;padding:2px 8px;font-size:11px;cursor:pointer">分析</button></td>` +
         `</tr>`;
     }).join('') +
