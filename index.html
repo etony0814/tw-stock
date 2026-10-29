@@ -807,8 +807,13 @@ function render(A, rows, t){
     intra: f.score_breakdown['盤面']!=null?f.score_breakdown['盤面'].toFixed(2):'—',
     taiex: f.score_breakdown['大盤']!=null?f.score_breakdown['大盤'].toFixed(2):'—',
     combined: c.toFixed(2),
-    sl: slVal!=null?slVal.toFixed(0):'—', tp: tpVal!=null?tpVal.toFixed(0):'—',
-  };
+          sl: slVal!=null?slVal.toFixed(0):'—', tp: tpVal!=null?tpVal.toFixed(0):'—',
+      // 中期：止損警報 + 40/60 日偏多勝率 + 中期行動
+      midAlert: (A && A.mid && A.mid.mid_bear_alert) ? A.mid.mid_bear_alert : null,
+      mid40: (A && A.hist_mid40 && A.hist_mid40.up_rate!=null) ? A.hist_mid40.up_rate : null,
+      mid60: (A && A.hist_mid60 && A.hist_mid60.up_rate!=null) ? A.hist_mid60.up_rate : null,
+      midAction: (A && A.mid_action) ? A.mid_action : null,
+    };
   const shareBtn=document.getElementById('shareBtn');
   if(shareBtn) shareBtn.style.display='';
   document.getElementById('resultTitle').style.display='block';
@@ -1816,18 +1821,24 @@ function togglePanel(id){
 
 // #9 分享按鈕（複製綜合結論＋五方分數到剪貼簿）
 function shareAnalysis(){
-  if(!window._shareData) return;
-  const d=window._shareData;
-  const txt = `📈 ${d.ticker} ${d.name||''} 五方綜合：${d.advice}\n` +
-    `五方分數（權重）：技術 ${d.tech}（40%）、籌碼 ${d.fund}（25%）、消息 ${d.news}（10%）、盤面 ${d.intra}（10%）、大盤 ${d.taiex}（15%）\n` +
-    `綜合分數 ${d.combined}。止損 ${d.sl}／止盈 ${d.tp}。`;
-  if(navigator.clipboard && navigator.clipboard.writeText){
-    navigator.clipboard.writeText(txt).then(()=>{
-      const btn=document.getElementById('shareBtn');
-      if(btn){ const old=btn.textContent; btn.textContent='✅ 已複製'; setTimeout(()=>btn.textContent=old,1500); }
-    }).catch(()=>prompt('複製以下內容：',txt));
-  } else { prompt('複製以下內容：',txt); }
-}
+    if(!window._shareData) return;
+    const d=window._shareData;
+    let txt = `📊 ${d.ticker} ${d.name||''} 五方綜合：${d.advice}\n` +
+      `五方分數（權重）：技術 ${d.tech}（40%）、籌碼 ${d.fund}（25%）、消息 ${d.news}（10%）、盤面 ${d.intra}（10%）、大盤 ${d.taiex}（15%）\n` +
+      `綜合分數 ${d.combined}。止損 ${d.sl}／止盈 ${d.tp}。`;
+    if (d.midAlert) txt += `\n⚠️ 中期止損警報：${d.midAlert.text}`;
+    const mparts = [];
+    if (d.mid40 != null) mparts.push('偏多訊號 40 日內照做 ' + d.mid40 + '%');
+    if (d.mid60 != null) mparts.push('60 日內照做 ' + d.mid60 + '%');
+    if (mparts.length) txt += `\n📅 中期持有參考：` + mparts.join('、') + '。';
+    if (d.midAction) txt += `\n📅 中期行動：${d.midAction}`;
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(txt).then(()=>{
+        const btn=document.getElementById('shareBtn');
+        if(btn){ const old=btn.textContent; btn.textContent='✔ 已複製'; setTimeout(()=>btn.textContent=old,1500); }
+      }).catch(()=>prompt('複製以下內容：',txt));
+    } else { prompt('複製以下內容：',txt); }
+  }
 
 window.addEventListener('load',()=>{
   initTheme();
