@@ -644,11 +644,21 @@ function shareSell(){
       }
     } catch (e) {}
   }
-  // 支援 ?ticker=2330 從綜合卡跳轉
-  const qs = new URLSearchParams(location.search).get("ticker");
-  if (qs && /^\d{4}$/.test(qs)) {
-    document.getElementById("ticker").value = qs.toUpperCase();
-    runSell();
+  // 支援 ?ticker=2330&shares=100&cost=750 從綜合卡跳轉
+  // query 的 shares/cost 優於 localStorage（跨 origin 跳轉時均價帶不過來，故用 query 帶）
+  const qs = new URLSearchParams(location.search);
+  const qTicker = qs.get("ticker");
+  const qShares = qs.get("shares");
+  const qCost = qs.get("cost");
+  if (qTicker && /^\d{4}$/.test(qTicker)) {
+    document.getElementById("ticker").value = qTicker.toUpperCase();
+    // 若 query 帶了 shares/cost，直接採用並覆蓋 localStorage
+    if (qShares) document.getElementById("shares").value = qShares;
+    if (qCost) document.getElementById("cost").value = qCost;
+    // 自動執行評估（若均價/持股已齊）
+    const s0 = parseInt(document.getElementById("shares").value, 10);
+    const c0 = parseFloat(document.getElementById("cost").value);
+    if (s0 >= 1 && c0 > 0) runSell();
   }
 })();
 
