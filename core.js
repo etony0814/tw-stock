@@ -688,7 +688,15 @@
     const mult = { short: 1.5, mid40: 4, mid60: 5 };
     const m = mult[horizon] != null ? mult[horizon] : 1.5;
     if (close == null || atr == null) return null;
-    return { horizon: horizon, mult: m, stop: +(close - m * atr).toFixed(2), target: +(close + m * atr).toFixed(2) };
+    // sl=止損、tp1/tp2=兩檔止盈;保留 stop/target 供 server 端相容
+return {
+  horizon: horizon, mult: m,
+  sl: +(close - m * atr).toFixed(2),
+  tp1: +(close + m * atr).toFixed(2),
+  tp2: +(close + 2 * m * atr).toFixed(2),
+  stop: +(close - m * atr).toFixed(2),
+  target: +(close + m * atr).toFixed(2)
+};
   }
 
   function hist5(rows, IND, lookback) {
