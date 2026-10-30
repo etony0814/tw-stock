@@ -889,7 +889,40 @@ function render(A, rows, t){
       (midScore >= 0.2 ? '<span style="background:var(--bull);color:#0f1419;font-weight:700;padding:2px 8px;border-radius:10px;font-size:11px">中期偏多 ' + Math.round(midScore*100) + '</span>'
       : midScore <= -0.2 ? '<span style="background:var(--bear);color:#0f1419;font-weight:700;padding:2px 8px;border-radius:10px;font-size:11px">中期偏空 ' + Math.round(Math.abs(midScore)*100) + '</span>'
       : '<span style="background:var(--card2);color:var(--muted);font-weight:700;padding:2px 8px;border-radius:10px;font-size:11px;border:1px solid var(--border)">中期中性</span>');
+    // 中期 40/60 日勝率長條視覺化
+    const midWinBar = function(label, upRate, dnRate){
+      const any = upRate != null || dnRate != null;
+      const upW = upRate != null ? Math.min(100, Math.max(0, upRate)) : null;
+      const dnW = dnRate != null ? Math.min(100, Math.max(0, dnRate)) : null;
+      let html = '<div style="margin-bottom:10px">' +
+        '<div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px">' +
+        '<span style="color:var(--text);font-weight:700">' + label + '</span>' +
+        '<span style="color:var(--muted);font-size:10px">' + (any ? ('看多 ' + (upRate != null ? upRate + '%' : '—') + ' / 看空 ' + (dnRate != null ? dnRate + '%' : '—')) : '資料不足') + '</span>' +
+        '</div>';
+      if (!any) {
+        html += '<div style="height:12px;background:var(--card2);border:1px dashed var(--border);border-radius:5px"></div>';
+      } else {
+        html += '<div style="height:14px;background:var(--card2);border:1px solid var(--border);border-radius:5px;position:relative;overflow:hidden">' +
+        '<div style="position:absolute;left:0;top:0;bottom:0;width:' + (dnW != null ? dnW : 0) + '%;background:var(--bear);opacity:.85"></div>' +
+        '<div style="position:absolute;right:0;top:0;bottom:0;width:' + (upW != null ? upW : 0) + '%;background:var(--bull);opacity:.85"></div>' +
+        '<div style="position:absolute;left:50%;top:0;bottom:0;width:1px;background:var(--border);z-index:2"></div>' +
+        (upRate != null ? '<div style="position:absolute;right:4px;top:50%;transform:translateY(-50%);font-size:9px;font-weight:700;color:#0f1419;z-index:3">' + upRate + '%↑</div>' : '') +
+        (dnRate != null ? '<div style="position:absolute;left:4px;top:50%;transform:translateY(-50%);font-size:9px;font-weight:700;color:#0f1419;z-index:3">' + dnRate + '%↓</div>' : '') +
+        '</div>';
+      }
+      html += '</div>';
+      return html;
+    };
+    const m40w = A.hist_mid40, m60w = A.hist_mid60;
+    const midWinHtml =
     histEl.innerHTML =
+
+
+      '<div style="font-weight:700;color:var(--text);margin:6px 0 4px;font-size:12px">📊 中期勝率長條（訊號觸發後是否照做）</div>' +
+      midWinBar('持有 40 日', m40w ? m40w.up_rate : null, m40w ? m40w.down_rate : null) +
+      midWinBar('持有 60 日', m60w ? m60w.up_rate : null, m60w ? m60w.down_rate : null) +
+      '<div style="font-size:10px;color:var(--muted);margin-top:4px">右側紅＝看多勝率、左側綠＝看空勝率，中線 50%。勝率越高該方向越可信。</div>';
+
       '<div style="font-weight:700;color:var(--text);margin-bottom:4px">📊 歷史訊號準確度（訊號觸發後是否照做）</div>' +
       '<div style="font-size:11px;color:var(--muted);margin-bottom:3px">短線視角（5 日）：</div>' +
       '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">' +
@@ -902,7 +935,8 @@ function render(A, rows, t){
         '<span style="background:var(--card2);color:var(--text);font-weight:700;padding:2px 8px;border-radius:10px;font-size:11px;border:1px solid var(--border)">40 日 漲' + mUp40 + ' 跌' + mDn40 + '</span>' +
         '<span style="background:var(--card2);color:var(--text);font-weight:700;padding:2px 8px;border-radius:10px;font-size:11px;border:1px solid var(--border)">60 日 漲' + mUp60 + ' 跌' + mDn60 + '</span>' +
       '</div>' +
-      (filterNote ? '<div style="font-size:11px;color:var(--muted);margin-bottom:4px">🔍 趨勢濾網：' + filterNote + '</div>' : '') +
+             midWinHtml +
+(filterNote ? '<div style="font-size:11px;color:var(--muted);margin-bottom:4px">🔍 趨勢濾網：' + filterNote + '</div>' : '') +
       (midSig && midSig.mid_bear_alert ? '<div style="font-size:12px;line-height:1.6;margin-bottom:6px;padding:8px 10px;border-radius:8px;background:' + (midSig.mid_bear_alert.level === 'strong' ? 'rgba(239,68,68,.12)' : 'rgba(245,158,11,.12)') + ';border:1px solid ' + (midSig.mid_bear_alert.level === 'strong' ? 'var(--bear)' : 'var(--yellow)') + ';color:var(--text)">' + midSig.mid_bear_alert.text + '</div>' : '') +
       '<div style="color:var(--text)">' + h5.overall_label + '。</div>' +
       '<div style="font-size:11px;color:var(--muted);margin-top:4px">白話：偏多訊號勝率越超過 50%、「看到偏多就買」贏面越大；中期視角是給拿 2–3 個月的，40/60 日勝率越高、持有越可放心。</div>';
