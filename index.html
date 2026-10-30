@@ -201,6 +201,7 @@
       <button id="rtWatch" onclick="rtWatchToggle()"
         style="background:var(--card2);color:var(--accent);border:1px solid var(--accent);border-radius:8px;padding:6px 12px;font-size:13px;cursor:pointer">＋ 加入自選</button>
       <button class="share-btn" id="shareBtn" onclick="shareAnalysis()" style="display:none;width:auto;margin-top:0">📤 分享結果</button>
+      <button id="portBtn" onclick="openPortfolio()" style="display:none;width:auto;margin-top:0;background:var(--card2);color:var(--text);border:1px solid var(--yellow);border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer">💼 我的部位決策</button>
     </div>
   </div>
 
@@ -845,6 +846,8 @@ function render(A, rows, t){
     };
   const shareBtn=document.getElementById('shareBtn');
   if(shareBtn) shareBtn.style.display='';
+  const portBtn=document.getElementById('portBtn');
+  if(portBtn) portBtn.style.display='';
   document.getElementById('resultTitle').style.display='block';
 
   // 技術面摘要（看多/看空理由數 + 各面 note）
@@ -1893,6 +1896,13 @@ function togglePanel(id){
   body.style.display = open ? 'block' : 'none';
   const arrow=document.querySelector('#'+id+' .pArrow');
   if(arrow) arrow.textContent = open ? '▾' : '▸';
+}
+
+// 💼 我的部位決策：跳 sell.html 並帶代碼（均價由 sell.html 讀 localStorage 自動帶出）
+function openPortfolio(){
+  const t = document.getElementById('ticker').value.trim().toUpperCase();
+  if (!/^\d{4}$/.test(t)) { alert("請先輸入 4 位代號再評估部位。"); return; }
+  location.href = "sell.html?ticker=" + encodeURIComponent(t);
 }
 
 // #9 分享按鈕（複製綜合結論＋五方分數到剪貼簿）
