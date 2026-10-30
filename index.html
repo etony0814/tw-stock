@@ -735,13 +735,14 @@ async function run(){
     // 新聞情緒:等名稱抓完再搜(名稱+代號 搜更準),但仍與「個股 K 線」並行,不阻塞主流程
     const prec_news_p = with_news ? fetchStockName(t).then(nm2 => StockCore.fetchNewsHeadlines(t, nm2 || '', news_days)).then(heads => (heads && heads.length ? StockCore.newsSentiment(heads) : null)).catch(() => null) : Promise.resolve(undefined);
 
-    const [stockRows, taiexRows, nmAuto, prec_fund, prec_news] = await Promise.all([
+    const [stockRows, _taiexRows, nmAuto, prec_fund, prec_news] = await Promise.all([
       fetchRows(toYahoo(t), period),
-      fetchRows("^TWII", "1mo"),
+      fetchRows("^TWII", "1mo").catch(() => null), // 大盤抓不到降級 null,不連帶個股
       fetchStockName(t).catch(() => WNAMES[t] || ''),
       prec_fund_p,
       prec_news_p
     ]);
+    const taiexRows = _taiexRows; // null 時 computeAll 自動跳大盤分數(傳 null 不報錯)
 
     _setLoading('正在算訊號與五方分數…');
     // computeAll 拿到已並行抓好的 prec_fund/prec_news,不再串列重抓
