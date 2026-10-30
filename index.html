@@ -1031,7 +1031,7 @@ function render(A, rows, t){
   const slTpLastRow = rows[rows.length-1];
   if (slTpEl && slTpContent && slTpLastRow && atrVal != null && atrVal > 0) {
     const close = slTpLastRow.close;
-    const fmt = x => x.toLocaleString(undefined, {maximumFractionDigits:2});
+    const fmt = x => (x == null ? '—' : Number(x).toLocaleString(undefined, {maximumFractionDigits:2}));
     // 持有期連動止損：短線 1.5×ATR、中期(40日) 4×ATR、中期(60日) 5×ATR
     const S = StockCore.slTpForHorizon(close, atrVal, "short");
     const M40 = StockCore.slTpForHorizon(close, atrVal, "mid40");
