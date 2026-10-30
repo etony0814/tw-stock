@@ -25,12 +25,12 @@
   .header .sub{font-size:13px;color:var(--muted);margin-bottom:12px;}
   .back{font-size:12px;color:var(--accent);text-decoration:none;display:inline-block;margin-bottom:8px;cursor:pointer;}
   .controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;background:var(--card);
-    padding:14px;border-radius:12px;border:1px solid var(--border);margin-bottom:16px;}
-  .controls label{font-size:12px;color:var(--muted);}
+    padding:14px;border-radius:12px;border:1px solid var(--border);margin:16px 0;}
+  .controls label{font-size:13px;color:var(--muted);}
   .controls input,.controls select{background:var(--card2);color:var(--text);
     border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:14px;}
-  .controls input{width:88px;}
-  .controls .num{width:100px;}
+  .controls input{width:90px;}
+  .controls .num{width:110px;}
   .controls button{background:var(--accent);color:#0f1419;border:none;border-radius:8px;
     padding:9px 20px;font-size:14px;font-weight:700;cursor:pointer;}
   .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:14px;}
@@ -113,7 +113,6 @@
     <input id="cost" class="num" type="number" min="0" step="0.01" placeholder="750" inputmode="decimal">
     <button id="btn" onclick="runSell()">開始評估</button>
     <button class="share-btn" id="shareBtn" onclick="shareSell()" style="display:none;width:auto;margin-top:0">📤 分享決策</button>
-    <button class="theme-toggle" id="modeToggle" onclick="toggleMode()" style="display:none;margin-top:0">⚙️ 專業模式</button>
     <div style="width:100%;display:flex;align-items:center;gap:6px;margin-top:4px">
       <label style="font-size:11px;color:var(--muted)">我持有的部位</label>
       <select id="posSel" style="flex:1;background:var(--card2);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:6px 8px;font-size:12px" onchange="loadPosSel()"></select>
@@ -133,7 +132,10 @@
   <div id="results" style="display:none">
     <!-- 結論 -->
     <div class="card final">
-      <h2>📌 結論與建議</h2>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
+        <h2 style="margin:0">📌 結論與建議</h2>
+        <button id="modeToggle" onclick="toggleMode()" style="background:var(--card2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:5px 10px;font-size:12px;cursor:pointer;white-space:nowrap;display:none">⚙️ 專業模式</button>
+      </div>
       <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
         <div id="finalText" class="final-text">—</div>
         <span id="verdictTag" class="verdict-tag vt-hold" style="display:none">—</span>
@@ -167,7 +169,7 @@
     <div class="card" id="chartCard">
       <h3>📈 K 線與部位參考線</h3>
       <canvas id="chart" width="800" height="300"></canvas>
-      <div style="font-size:11px;color:var(--muted);margin-top:6px">黑色實線＝均價、綠色虛線＝短線止損、紅色實線＝止盈、橘色點線＝中期止損、紫色點線＝保本止損（僅「持股」情境顯示）</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:6px">黑色實線＝均價、綠色虛線＝短線止損、紅色實線＝止盈、橘色點線＝中期止損(40日)、深橘點線＝中期止損(60日)、紫色點線＝保本止損(僅「持股」)、綠色虛線＝加碼保本(僅「可加碼」)</div>
     </div>
   </div>
 
@@ -222,7 +224,11 @@ const PRO_ONLY = ["shortBox", "midBox", "reasonList", "matrixCard"];
 function applyMode(){
   const pro = isPro();
   const btn = document.getElementById("modeToggle");
-  if (btn) { btn.textContent = pro ? "⚙️ 專業模式（點回簡易）" : "⚙️ 專業模式"; }
+  if (btn) {
+    btn.textContent = pro ? "⚙️ 專業模式（點回簡易）" : "⚙️ 專業模式";
+    const results = document.getElementById("results");
+    if (results && results.style.display === "block") btn.style.display = "block";
+  }
   // 僅在「結果已展開」時才套用細節顯隱,避免載入即顯示空框
   const results = document.getElementById("results");
   if (results && results.style.display === "block") {
@@ -637,7 +643,6 @@ async function runSell(){
     document.getElementById("demoBanner").style.display = demo ? "block" : "none";
     // 依專業/簡易模式,決定細節區塊顯不顯示(決策矩陣/短中期分數/理由)
     applyMode();
-    const mt = document.getElementById("modeToggle"); if (mt) mt.style.display = "inline-block";
     const ft = document.getElementById("finalText");
     ft.className = "final-text";
     const shortVerdictColor = dShort.verdict === "sell" ? "var(--bear)" : dShort.verdict === "reduce" ? "var(--yellow)" : dShort.verdict === "hold" ? "var(--bull)" : "var(--muted)";
@@ -723,6 +728,11 @@ function markDirty(){
   return dirty;
 }
 function markDirtyLabel(){ return markDirty() ? "重新評估" : "開始評估"; }
+// 與分析頁一致:輸入框按 Enter 觸發評估(操作習慣相同)
+["ticker","shares","cost"].forEach(function(id){
+  const el = document.getElementById(id);
+  if (el) el.addEventListener("keydown", function(e){ if (e.key === "Enter") runSell(); });
+});
 
 // ── K 線（簡化：K 線 + 均價 + 止損 + 止盈 + 中期止損）────────────────────
 function drawChart(rows, IND, lines){
