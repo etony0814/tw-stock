@@ -112,13 +112,13 @@
     <div id="noCostHint" style="display:none;width:100%;font-size:11px;color:var(--accent)">💡 此檔尚未存均價，請先填「持股數」與「均價」再評估。</div>
   </div>
 
-  <div id="demoBanner" style="display:none;background:rgba(245,158,11,.12);border:1px solid var(--yellow);border-radius:8px;padding:8px 12px;font-size:12px;margin-bottom:12px">⚠️ 真實行情暫時取不到（Yahoo 跨域受限），下方為「示意資料」僅展示介面。</div>
+  <div id="demoBanner" style="display:none;background:rgba(245,158,11,.12);border:1px solid var(--yellow);border-radius:8px;padding:8px 12px;font-size:12px;margin-bottom:12px">⚠️ 所有行情端點暫時取不到，下方為「示意資料」僅展示介面；稍後重試或換用電腦版（python server.py）取真實資料。</div>
 
   <div id="loading" style="display:none;text-align:center;padding:40px;color:var(--muted)">
     <div style="width:30px;height:30px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;margin:0 auto 10px;animation:sp .8s linear infinite"></div>
     評估中…
   </div>
-  <div id="err" style="display:none;text-align:center;padding:40px;color:var(--muted);font-size:13px"></div>
+  <div id="err" style="display:none;text-align:center;padding:40px;color:var(--muted);font-size:13px"><div id="errMsg"></div><button id="retryBtn" style="display:none;margin-top:10px;background:var(--accent);color:#0f1419;border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer">↻ 重試一次</button></div>
 
   <div id="results" style="display:none">
     <!-- 結論 -->
@@ -148,10 +148,9 @@
 
     <!-- 決策矩陣 -->
     <div class="card">
-      <h3>🎯 決策矩陣（短線視角，你目前落在哪一格）</h3>
-      <div style="overflow-x:auto">
-        <table class="matrix" id="matrixTable"></table>
-      </div>
+      <h3>🎯 決策矩陣（短線 + 中期 各 7 格對照）</h3>
+      <div id="matrixShort" style="overflow-x:auto;margin-bottom:12px"><div style="font-size:12px;font-weight:700;color:var(--accent);margin-bottom:6px">📉 短線（5 日）</div><table class="matrix" id="matrixTableShort"></table></div>
+      <div id="matrixMid" style="overflow-x:auto"><div style="font-size:12px;font-weight:700;color:var(--yellow);margin-bottom:6px">📈 中期（2–3 月持有）</div><table class="matrix" id="matrixTableMid"></table></div>
     </div>
 
     <!-- K 線 + 均價/止損/止盈 -->
@@ -307,13 +306,21 @@ function buildRows(j, code){
   return rows;
 }
 function demoRows(code){
-  const days = 126; let p = code === "2303" ? 120 : 2400;
+  // 依代號給合理基準價(避免 0050/0056 這種 ETF 跟 2330 差不多價、失真);固定 seed、不抖動,演示穩定
+  const base = { "2330": 2370, "2303": 65, "0050": 165, "0056": 22, "3037": 110 }[code] || 100;
+  const days = 126;
+  // 固定 seed 的偽隨機(不用 Math.random),每次評估都同一段演示 K 線
+  let seed = 0x9e3779b9;
+  for (let i = 0; i < code.length; i++) seed = (seed * 31 + code.charCodeAt(i)) | 0;
+  const rnd = () => { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff; };
   const rows = [];
   const end = new Date();
+  let p = base * 0.95;
   for (let k = 0; k < days; k++) {
     const d = new Date(end.getTime() - (days - 1 - k) * 86400000);
-    const open = p, close = p * (1 + (Math.random() - 0.5) * 0.02);
-    rows.push({ date: d.toISOString().slice(0, 10), open: +open.toFixed(2), high: +(Math.max(open, close) * 1.003).toFixed(2), low: +(Math.min(open, close) * 0.997).toFixed(2), close: +close.toFixed(2), volume: 1e6 });
+    const drift = Math.sin(k / 8) * base * 0.004 + (rnd() - 0.48) * base * 0.008;
+    const open = p, close = p + drift;
+    rows.push({ date: d.toISOString().slice(0, 10), open: +open.toFixed(2), high: +(Math.max(open, close) * 1.002).toFixed(2), low: +(Math.min(open, close) * 0.998).toFixed(2), close: +close.toFixed(2), volume: Math.round(base * 200000) });
     p = close;
   }
   return rows;
@@ -411,7 +418,7 @@ function sellDecision(A, IND, cost, shares, horizon){
     reasons.push("距止損 " + (distSL != null ? distSL.toFixed(1) : "?") + "%、距第一檔止盈 " + (distTP1 != null ? distTP1.toFixed(1) : "?") + "%");
   }
 
-  return { verdict, tag, advice, sellPct, reasons, slTp, pnl, horizonLabel, close, atr, shortScore, midScore, midClass, bearAlert, belowSma60, breachedSL, hitTP1, hitTP2, distSL, distTP1 };
+  return { verdict, tag, advice, sellPct, reasons, slTp, pnl, horizonLabel, close, atr, shortScore, midScore, midClass, bearAlert, belowSma60, breachedSL, hitTP1, hitTP2, distSL, distTP1, midSig };
 }
 
 // ── 損益面板 + 決策矩陣 + 渲染 ──
@@ -430,8 +437,8 @@ function renderPnl(p){
     '<div class="stat-mini"><div class="sm-lbl">浮動損益</div><div class="sm-val ' + cls + '">' + (p.float >= 0 ? "+" : "") + fmt2(p.float) + "（" + fmtPct(p.floatPct) + '）</div></div>';
 }
 
-function renderMatrix(d){
-  const wrap = document.getElementById("matrixTable");
+function renderMatrix(d, tableId){
+  const wrap = document.getElementById(tableId || "matrixTableShort");
   const rows = [
     { key: "sl",   cond: "跌破止損",           hit: d.breachedSL,                        action: "強減碼 / 全賣" },
     { key: "tp2",  cond: "達第二檔止盈",       hit: d.hitTP2,                            action: "減碼 60%、trailing stop" },
@@ -585,14 +592,16 @@ async function runSell(){
     // 理由清單
     const rl = document.getElementById("reasonList");
     rl.style.display = "block";
-    rl.innerHTML = "<div style='font-weight:700;margin-bottom:4px'>📝 決策依據（白話）：</div><ul>" +
-      primary.reasons.map(r => "<li>" + r + "</li>").join("") +
-      "</ul>";
+    const midReasons = (dMid40 && dMid40.reasons && dMid40.reasons.length) ? dMid40.reasons : ["（中期視角無額外減碼理由,依短線視角為准）"];
+    rl.innerHTML = "<div style='font-weight:700;margin-bottom:4px'>📝 決策依據（白話）：</div>" +
+      "<div style='font-size:12px;font-weight:700;color:var(--accent)'>📉 短線</div><ul>" + primary.reasons.map(r => "<li>" + r + "</li>").join("") + "</ul>" +
+      "<div style='margin-top:6px;font-size:12px;font-weight:700;color:var(--yellow)'>📈 中期</div><ul>" + midReasons.map(r => "<li>" + r + "</li>").join("") + "</ul>";
 
     // 損益
     renderPnl(primary.pnl);
     // 決策矩陣
-    renderMatrix(primary);
+    renderMatrix(primary, "matrixTableShort");
+    renderMatrix(dMid40, "matrixTableMid");
     // K 線
     const dMid40forChart = dMid40 ? dMid40.slTp.sl : null;
     // 保本止損線：只在「持股」(浮動賺+多頭) 情境才畫,= max(均價, 現價−2%)
@@ -600,13 +609,15 @@ async function runSell(){
     if (primary.verdict === "hold") {
       breakevenLine = Math.max(cost, +(A.close * 0.98).toFixed(2));
     }
-    drawChart(rows, IND, { cost: cost, sl: primary.slTp.sl, tp1: primary.slTp.tp1, slMid: dMid40forChart, breakeven: breakevenLine });
+    const dMid60sl = dMid60 ? dMid60.slTp.sl : null;
+    drawChart(rows, IND, { cost: cost, sl: primary.slTp.sl, tp1: primary.slTp.tp1, slMid: dMid40forChart, slMid60: dMid60sl, breakeven: breakevenLine });
 
     // 分享
-    window._sellShare = { ticker: t, name: WNAMES[t] || "", cost: cost, shares: shares, close: A.close, verdict: primary.verdict, tag: primary.tag, advice: primary.advice, reasons: primary.reasons, pnl: primary.pnl, sl: primary.slTp.sl, tp1: primary.slTp.tp1, breakeven: (primary.verdict === "hold") ? Math.max(cost, +(A.close * 0.98).toFixed(2)) : null, mid40: A.hist_mid40, mid60: A.hist_mid60 };
+    window._sellShare = { ticker: t, name: WNAMES[t] || "", cost: cost, shares: shares, close: A.close, verdict: primary.verdict, tag: primary.tag, advice: primary.advice, reasons: primary.reasons, pnl: primary.pnl, sl: primary.slTp.sl, tp1: primary.slTp.tp1, breakeven: (primary.verdict === "hold") ? Math.max(cost, +(A.close * 0.98).toFixed(2)) : null, mid40: A.hist_mid40, mid60: A.hist_mid60, midTag: dMid40 ? dMid40.tag : "—", midAdvice: dMid40 ? dMid40.advice : "—", midReasons: (dMid40 && dMid40.reasons) ? dMid40.reasons : [] };
     document.getElementById("shareBtn").style.display = "";
   } catch (e) {
-    document.getElementById("err").textContent = "評估失敗：" + e.message;
+    document.getElementById("errMsg").textContent = "評估失敗：" + e.message;
+    const rb=document.getElementById("retryBtn"); if(rb){ rb.style.display="inline-block"; rb.onclick=function(){ rb.style.display="none"; runSell(); }; }
     document.getElementById("err").style.display = "block";
   } finally {
     document.getElementById("loading").style.display = "none";
@@ -648,7 +659,7 @@ function drawChart(rows, IND, lines){
   const plotW = W - pad.l - pad.r, plotH = H - pad.t - pad.b;
   let hi = -Infinity, lo = Infinity;
   showRows.forEach(r => { hi = Math.max(hi, r.high); lo = Math.min(lo, r.low); });
-  [lines.cost, lines.sl, lines.tp1, lines.slMid, lines.breakeven].forEach(v => { if (v != null) { hi = Math.max(hi, v); lo = Math.min(lo, v); } });
+  [lines.cost, lines.sl, lines.tp1, lines.slMid, lines.slMid60, lines.breakeven].forEach(v => { if (v != null) { hi = Math.max(hi, v); lo = Math.min(lo, v); } });
   const y = v => pad.t + (hi - v) / (hi - lo) * plotH;
   const x = i => pad.l + i * (plotW / n);
 
@@ -704,6 +715,12 @@ function drawChart(rows, IND, lines){
     ctx.fillStyle = "#f59e0b"; ctx.font = "10px sans-serif"; ctx.textAlign = "right";
     ctx.fillText("中期止損 " + lines.slMid.toFixed(0), W - pad.r - 4, y(lines.slMid) + 12);
   }
+  if (lines.slMid60 != null) {
+    ctx.strokeStyle = "rgba(217,119,6,.95)"; ctx.setLineDash([3,3]); ctx.lineWidth = 1.2;
+    ctx.beginPath(); ctx.moveTo(pad.l, y(lines.slMid60)); ctx.lineTo(W - pad.r, y(lines.slMid60)); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = "#d97706"; ctx.font = "10px sans-serif"; ctx.textAlign = "right";
+    ctx.fillText("中期止損(60日) " + lines.slMid60.toFixed(0), W - pad.r - 4, y(lines.slMid60) + 12);
+  }
   if (lines.breakeven != null) {
     ctx.strokeStyle = "rgba(168,85,247,0.95)"; ctx.setLineDash([6,3]); ctx.lineWidth = 1.2;
     ctx.beginPath(); ctx.moveTo(pad.l, y(lines.breakeven)); ctx.lineTo(W - pad.r, y(lines.breakeven)); ctx.stroke(); ctx.setLineDash([]);
@@ -752,7 +769,9 @@ function shareSell(){
     "【我的部位決策】" + d.ticker + " " + d.name + "\n" +
     "持股 " + d.shares + " 股、均價 " + d.cost + "、現價 " + (d.close != null ? d.close.toFixed(2) : "—") + "\n" +
     "浮動損益：" + (d.pnl.float >= 0 ? "+" : "") + d.pnl.float.toFixed(0) + "（" + fmtPct(d.pnl.floatPct) + "）\n" +
-    "結論：" + d.tag + "\n" + d.advice + "\n" +
+    "結論（短線）：" + d.tag + "；結論（中期）：" + (d.midTag || "—") + "\n" +
+    "短線建議：" + d.advice + "\n" +
+    "中期建議：" + (d.midAdvice || "依短線為准") + "\n" +
     "短線止損 " + d.sl + "、止盈 " + d.tp1 + "；40日勝率 " + m40 + "、60日勝率 " + m60 + "\n" +
     (d.breakeven != null ? "保本止損 " + d.breakeven.toFixed(0) + "（持股情境止損上移線）\n" : "") +
     "決策依據：" + d.reasons.join("、") + "\n" +
