@@ -171,6 +171,15 @@
     <div class="sub">輸入股票代號，一次看 技術＋籌碼＋消息＋盤面＋大盤 五個面向（僅供學習，不構成投資建議）</div>
   </div>
 
+  <div id="guideCard" class="card" style="margin-bottom:14px;border-left:4px solid var(--accent)">
+    <div style="font-size:12px;font-weight:700;color:var(--accent);margin-bottom:4px">🧭 這兩頁差在哪？</div>
+    <div style="font-size:12px;line-height:1.6;color:var(--text)">
+      <div style="margin-bottom:6px"><b>📊 綜合分析（本頁）</b>：空手看盤，回答「<b>今天這支該不該買/賣</b>」— 五方綜合 + 短線(5日)/中期(2–3月)雙視角 + 40/60日勝率。</div>
+      <div><b>💼 我的部位決策</b>：已持有，回答「<b>我手上這批（均價×持股數）該減幾成、加幾成、保本線拉多高</b>」— 含損益、止損/止盈、加碼/減碼、決策矩陣。</div>
+    </div>
+    <a class="share-btn" id="guideBtn" style="width:auto;margin-top:8px;padding:7px 14px;font-size:12px;display:inline-block;text-align:center;text-decoration:none" onclick="jumpToSell()">💼 我要管手上的部位 → 去「我的部位決策」</a>
+  </div>
+
   <div class="controls">
     <label>代號</label>
     <input id="ticker" value="2330" placeholder="代號">
@@ -2011,6 +2020,19 @@ function openPortfolio(){
   qs.push('ticker=' + encodeURIComponent(t));
   if (shares >= 1) qs.push('shares=' + shares);
   if (cost > 0) qs.push('cost=' + cost);
+  location.href = 'sell.html?' + qs.join('&');
+}
+
+// 引導卡「去我的部位決策」:帶當前代號(若已有均價則一併帶),跳 sell.html
+function jumpToSell(){
+  const t = document.getElementById('ticker').value.trim().toUpperCase();
+  if (!/^\d{4}$/.test(t)) { alert("請先輸入 4 位代號,再跳到部位決策。"); return; }
+  const qs = ['ticker=' + encodeURIComponent(t)];
+  try {
+    const costs = JSON.parse(localStorage.getItem('tony_costs_web') || '{}');
+    const c = costs[t];
+    if (c) { if (c.shares) qs.push('shares=' + c.shares); if (c.cost) qs.push('cost=' + c.cost); }
+  } catch (e) {}
   location.href = 'sell.html?' + qs.join('&');
 }
 
