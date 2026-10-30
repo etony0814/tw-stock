@@ -201,7 +201,18 @@
       <button id="rtWatch" onclick="rtWatchToggle()"
         style="background:var(--card2);color:var(--accent);border:1px solid var(--accent);border-radius:8px;padding:6px 12px;font-size:13px;cursor:pointer">＋ 加入自選</button>
       <button class="share-btn" id="shareBtn" onclick="shareAnalysis()" style="display:none;width:auto;margin-top:0">📤 分享結果</button>
-      <button id="portBtn" onclick="openPortfolio()" style="display:none;width:auto;margin-top:0;background:var(--card2);color:var(--text);border:1px solid var(--yellow);border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer">💼 我的部位決策</button>
+      <button id="portBtn" onclick="openPortfolioForm()" style="display:none;width:auto;margin-top:0;background:var(--card2);color:var(--text);border:1px solid var(--yellow);border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer">💼 我的部位決策</button>
+    </div>
+    <!-- 15b. 我的部位 頁內小表單(取代 prompt / 直接跳轉) -->
+    <div id="portForm" style="display:none;margin-top:12px;background:var(--card2);border:1px solid var(--yellow);border-radius:10px;padding:12px">
+      <div style="font-size:13px;font-weight:700;margin-bottom:8px">💼 輸入你的部位（均價 / 持股數），帶入「我的部位決策」</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <label style="font-size:12px;color:var(--muted)">持股數</label>
+        <input id="portShares" type="number" min="1" inputmode="numeric" placeholder="100" style="width:90px;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:7px 10px;font-size:14px">
+        <label style="font-size:12px;color:var(--muted)">均價</label>
+        <input id="portCost" type="number" min="0" step="0.01" inputmode="decimal" placeholder="750" style="width:90px;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:7px 10px;font-size:14px">
+        <button id="portGo" onclick="openPortfolio()" style="background:var(--yellow);color:#0f1419;border:none;border-radius:8px;padding:7px 16px;font-size:13px;font-weight:700;cursor:pointer">帶入評估 →</button>
+      </div>
     </div>
   </div>
 
@@ -221,7 +232,7 @@
     </div>
   </div>
 
-  <div id="loading"><div class="spin"></div>正在抓取行情與分析，請稍候…</div>
+  <div id="loading"><div class="spin"></div><span id="loadingMsg">正在抓取行情與分析，請稍候…</span></div>
   <div id="demoBanner" class="card" style="display:none;border:1px solid var(--yellow);background:rgba(245,158,11,.08)">
     <b style="color:var(--yellow)">⚠ 示範資料</b> — 真實行情暫時抓不到（Yahoo 跨域受限），以下為內建示範 K 線，僅展示介面與分析流程。稍後重試，或用電腦版（python server.py）取真實資料。
   </div>
@@ -703,17 +714,24 @@ async function run(){
   btn.style.opacity='0.6';
   btn.style.cursor='not-allowed';
   try{
+    // 14b. 階段式進度提示
+    const _lm = document.getElementById('loadingMsg');
+    const _setLoading = (m) => { if (_lm) _lm.textContent = m; };
+    _setLoading('正在抓 ' + t + ' 行情（並行 relay / Jina）…');
     const stockRows = await fetchRows(toYahoo(t), period);
+    _setLoading('正在抓大盤加權行情…');
     const taiexRows = await fetchRows("^TWII", "1mo");
     const with_news = document.getElementById('ckNews').checked;
     const with_fund = document.getElementById('ckFund').checked;
     const news_days = parseInt(document.getElementById('newsDays').value, 10) || 7;
+    _setLoading('正在算訊號與五方分數…');
     const nmAuto = await fetchStockName(t);
     const all = await StockCore.computeAll(stockRows,
       { ticker:t, name:nmAuto, taiexRows, with_news, with_fund, news_days });
 
     // 籌碼面多日統計
     if (with_fund) {
+      _setLoading('正在抓籌碼面多日統計…');
       all.fund_multi = await StockCore.fetchFundFlowMulti(t, 5);
     }
     // 個股相對大盤強度：直接重用已抓到的個股日K 與大盤日K（不重抓，避免 429）
@@ -723,6 +741,7 @@ async function run(){
 
     document.getElementById('results').style.display='block';
     document.getElementById('demoBanner').style.display='none';
+    _setLoading('正在繪圖與整理結果…');
     await new Promise(r=>requestAnimationFrame(r)); // 等版面展開再畫圖
     render(all, stockRows, t);
     showResultTitle(t, nmAuto);
@@ -918,14 +937,11 @@ function render(A, rows, t){
     };
     const m40w = A.hist_mid40, m60w = A.hist_mid60;
     const midWinHtml =
-    histEl.innerHTML =
-
-
       '<div style="font-weight:700;color:var(--text);margin:6px 0 4px;font-size:12px">📊 中期勝率長條（訊號觸發後是否照做）</div>' +
       midWinBar('持有 40 日', m40w ? m40w.up_rate : null, m40w ? m40w.down_rate : null) +
       midWinBar('持有 60 日', m60w ? m60w.up_rate : null, m60w ? m60w.down_rate : null) +
       '<div style="font-size:10px;color:var(--muted);margin-top:4px">右側紅＝看多勝率、左側綠＝看空勝率，中線 50%。勝率越高該方向越可信。</div>';
-
+    histEl.innerHTML =
       '<div style="font-weight:700;color:var(--text);margin-bottom:4px">📊 歷史訊號準確度（訊號觸發後是否照做）</div>' +
       '<div style="font-size:11px;color:var(--muted);margin-bottom:3px">短線視角（5 日）：</div>' +
       '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">' +
@@ -935,8 +951,6 @@ function render(A, rows, t){
       '<div style="font-size:11px;color:var(--muted);margin-bottom:3px">中期視角（2–3 個月持有）：</div>' +
       '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">' +
         midChip +
-        '<span style="background:var(--card2);color:var(--text);font-weight:700;padding:2px 8px;border-radius:10px;font-size:11px;border:1px solid var(--border)">40 日 漲' + mUp40 + ' 跌' + mDn40 + '</span>' +
-        '<span style="background:var(--card2);color:var(--text);font-weight:700;padding:2px 8px;border-radius:10px;font-size:11px;border:1px solid var(--border)">60 日 漲' + mUp60 + ' 跌' + mDn60 + '</span>' +
       '</div>' +
              midWinHtml +
 (filterNote ? '<div style="font-size:11px;color:var(--muted);margin-bottom:4px">🔍 趨勢濾網：' + filterNote + '</div>' : '') +
@@ -1898,11 +1912,34 @@ function togglePanel(id){
   if(arrow) arrow.textContent = open ? '▾' : '▸';
 }
 
-// 💼 我的部位決策：跳 sell.html 並帶代碼（均價由 sell.html 讀 localStorage 自動帶出）
+// 15b. 兩步:openPortfolioForm() 展開頁內小表單;openPortfolio() 讀表單值帶 query 跳 sell.html
+function openPortfolioForm(){
+  const t = document.getElementById('ticker').value.trim().toUpperCase();
+  if (!/^\d{4}$/.test(t)) { alert("請先輸入 4 位代號再評估部位。"); return; }
+  // 從 sell.html 的 localStorage 預填(同 origin 可讀)
+  try {
+    const costs = JSON.parse(localStorage.getItem('tony_costs_web') || '{}');
+    const c = costs[t];
+    if (c) {
+      const s = document.getElementById('portShares'); if (s) s.value = c.shares || '';
+      const co = document.getElementById('portCost'); if (co) co.value = c.cost || '';
+    }
+  } catch (e) {}
+  const f = document.getElementById('portForm');
+  if (f) f.style.display = 'block';
+}
 function openPortfolio(){
   const t = document.getElementById('ticker').value.trim().toUpperCase();
   if (!/^\d{4}$/.test(t)) { alert("請先輸入 4 位代號再評估部位。"); return; }
-  location.href = "sell.html?ticker=" + encodeURIComponent(t);
+  const s = document.getElementById('portShares');
+  const co = document.getElementById('portCost');
+  const shares = s ? parseInt(s.value, 10) : NaN;
+  const cost = co ? parseFloat(co.value) : NaN;
+  const qs = [];
+  qs.push('ticker=' + encodeURIComponent(t));
+  if (shares >= 1) qs.push('shares=' + shares);
+  if (cost > 0) qs.push('cost=' + cost);
+  location.href = 'sell.html?' + qs.join('&');
 }
 
 // #9 分享按鈕（複製綜合結論＋五方分數到剪貼簿）
