@@ -826,6 +826,7 @@ function saveAnalysisState(t, period, rows, all, name){
 }
 function restoreAnalysis(){
   // 從 sell.html「← 回到綜合分析」跳回時,query 帶 restore=1 + ticker,還原上次結果、不重跑
+  // 重載(F5)時 URL 帶的 restore=1 已被清掉(restore 成功後 history.replaceState),不再還原
   const qs = new URLSearchParams(location.search);
   if (qs.get('restore') !== '1') return false;
   const t = (qs.get('ticker')||'').toUpperCase();
@@ -849,6 +850,12 @@ function restoreAnalysis(){
   window._lastIND = data.all.indicators;
   // 還原 window._shareData(讓分享按鈕可用)
   try{ if (data.all && data.all.final){ const f=data.all.final; window._shareData = Object.assign(window._shareData||{}, {ticker:t,name:data.name,advice:f.final_advice,combined:f.combined_score!=null?f.combined_score.toFixed(2):'—',score_breakdown:f.score_breakdown||{}}); } }catch(e){}
+  // 還原成功後,把 restore=1 從 URL 清掉,避免「重載(F5)」又觸發還原、卡在已展開狀態
+  try{
+    const cleanUrl = location.pathname + location.hash;
+    history.replaceState(null, '', cleanUrl);
+    sessionStorage.removeItem('restore_once_' + t);
+  }catch(e){}
   return true;
 }
 
