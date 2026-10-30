@@ -725,9 +725,10 @@ return {
     winDays = winDays || 40;
     const closes = rows.map(r => r.close);
     const n = closes.length;
-    // 自適應:回看窗 = min(lookback, n - winDays - 60),讓 6mo 資料也能算
-    const avail = Math.max(0, n - winDays - 60);
-    const start = Math.max(60, n - Math.min(lookback, avail || lookback));
+    // 自適應:回看窗 = min(lookback, n - winDays - 5),讓 1y 資料能算 40/60 日
+    // 起點起碼要 winDays+5 根(讓 SMA60 等指標有足夠歷史),不能硬卡 60 根
+    const avail = Math.max(0, n - winDays - 5);
+    const start = Math.max(winDays + 5, n - Math.min(lookback, avail || lookback));
     let upN = 0, upW = 0, dnN = 0, dnW = 0;
     for (let i = start; i < n - winDays; i++) {
       let mid;
