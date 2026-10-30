@@ -789,6 +789,8 @@ async function run(){
     applyMode();  // 依「簡易/專業」模式切換顯示
     document.getElementById('err').textContent =
       "⚠️ 真實行情暫時取不到（Yahoo 跨域受限），下方為「示範資料」僅展示介面。稍後重試，或改用電腦版（python server.py）拿真實資料。";
+      // demo 路徑也存,讓「← 回到綜合分析」跳回時能還原(哪怕是示意資料),不用重跑
+      saveAnalysisState(t, period, stockRows, all, WNAMES[t] || '');
   }finally{
     document.getElementById('loading').style.display='none';
     btn.disabled=false;
@@ -800,12 +802,15 @@ async function run(){
 
 function saveAnalysisState(t, period, rows, all, name){
   try{
+    // 存下 render 用到的 all,但拿掉最大的重複 K 線(_stockRows/_taiexRows),rows 已另行存,避免爆 sessionStorage quota
+    const slim = Object.assign({}, all);
+    if (slim) { delete slim._stockRows; delete slim._taiexRows; }
     sessionStorage.setItem('analysis_'+t, JSON.stringify({
       t:t, period:period, name:name,
       ckNews:document.getElementById('ckNews')?document.getElementById('ckNews').checked:false,
       ckFund:document.getElementById('ckFund')?document.getElementById('ckFund').checked:false,
       newsDays:document.getElementById('newsDays')?document.getElementById('newsDays').value:'',
-      rows:rows, all:all,
+      rows:rows, all:slim,
       savedAt:Date.now()
     }));
   }catch(e){}
