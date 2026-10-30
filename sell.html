@@ -181,43 +181,73 @@ function jinaParse(text){
   if (m) { try { return JSON.parse(m[0]); } catch (e) {} }
   return null;
 }
-async function fetchRows(code, period){
+// 快取：同一 ticker+period 只抓一次（避免重按「開始評估」重複網路）
+const _rowCache = {};
+function withTimeout(promise, ms, label){
+  return new Promise((res, rej) => {
+    const t = setTimeout(() => rej(new Error((label || "fetch") + " 逾時(" + ms + "ms)")), ms);
+    promise.then(v => { clearTimeout(t); res(v); }, e => { clearTimeout(t); rej(e); });
+  });
+}
+// 並行快取：同時向 relay / Jina 發，誰先回誰贏（大幅降低最慢端點拖垮整體）
+async function raceFetch(code, period){
   const qs = "?range=" + period + "&interval=1d";
+  // 決定正確變體：上市/ETF 用 .TW，上櫃(3/4/5/6/8 字頭)用 .TWO
+  const c = code.toUpperCase().replace(/\.TW$/,'').replace(/\.TWO$/,'');
+  const primary = /^[34568]\d{3}$/.test(c) ? c + ".TWO" : c + ".TW";
+  const alt = primary.endsWith(".TWO") ? c + ".TW" : c + ".TWO";
+
+  // 各來源的取法
+  const relayGet = async (v) => {
+    const r = await withTimeout(fetch(QUOTE_RELAY + "?ticker=" + encodeURIComponent(v) + "&range=" + encodeURIComponent(period) + "&interval=1d"), 8000, "relay");
+    if (!r.ok) throw new Error("relay HTTP " + r.status);
+    const j = await r.json();
+    if (j && j.chart) return j;
+    if (j && j.ok === false) throw new Error("relay " + j.error);
+    throw new Error("relay 無 chart");
+  };
+  const jinaGet = async (v) => {
+    const r = await withTimeout(fetch(JINA + "https://query1.finance.yahoo.com/v8/finance/chart/" + v + qs, { headers: { "Accept": "text/plain" } }), 8000, "jina");
+    if (!r.ok) throw new Error("jina HTTP " + r.status);
+    const j = jinaParse(await r.text());
+    if (!j) throw new Error("jina 無解析");
+    return j;
+  };
+  const yahooDirect = async () => {
+    const r = await withTimeout(fetch("https://query1.finance.yahoo.com/v8/finance/chart/" + primary + qs, { headers: { "Accept": "application/json" } }), 6000, "yahoo");
+    if (!r.ok) throw new Error("yahoo HTTP " + r.status);
+    return await r.json();
+  };
+  const allorigins = async () => {
+    const target = "https://query1.finance.yahoo.com/v8/finance/chart/" + primary + qs;
+    const r = await withTimeout(fetch("https://api.allorigins.win/raw?url=" + encodeURIComponent(target), { headers: { "Accept": "application/json" } }), 8000, "allorigins");
+    if (!r.ok) throw new Error("allorigins HTTP " + r.status);
+    return await r.json();
+  };
+
+  // 並行：relay(主+備) + jina(主) + allorigins + yahoo直抓(僅本地/許 CORS 時有用)
+  const tasks = [
+    relayGet(primary).catch(() => relayGet(alt)),
+    jinaGet(primary),
+    allorigins(),
+    yahooDirect().catch(() => { throw new Error("yahoo CORS"); }),
+  ];
   let lastErr = null;
-  if (QUOTE_RELAY) {
-    const c = code.toUpperCase().replace(/\.TW$/,'').replace(/\.TWO$/,'');
-    const variants = [c, c + ".TW", c + ".TWO"];
-    for (const v of variants) {
-      try {
-        const r = await fetch(QUOTE_RELAY + "?ticker=" + encodeURIComponent(v) + "&range=" + encodeURIComponent(period) + "&interval=1d");
-        if (r.ok) {
-          const j = await r.json();
-          if (j && j.chart) return buildRows(j, code);
-          if (j && j.ok === false) lastErr = new Error("relay " + j.error);
-        }
-      } catch (e) { lastErr = e; }
-    }
-  }
-  for (const base of STOCK_URLS) {
-    try { return buildRows(await fetchJsonOne(base + code + qs), code); }
-    catch (e) { lastErr = e; }
-  }
-  try {
-    const target = STOCK_URLS[0] + code + qs;
-    const r = await fetch("https://api.allorigins.win/raw?url=" + encodeURIComponent(target), { headers: { "Accept": "application/json" } });
-    if(!r.ok) throw new Error("allorigins HTTP " + r.status);
-    return buildRows(await r.json(), code);
-  } catch (e) { lastErr = e; }
-  for (const base of STOCK_URLS) {
+  for (const t of tasks) {
     try {
-      const target = base + code + qs;
-      const r = await fetch(JINA + target, { headers: { "Accept": "text/plain" } });
-      if(!r.ok) throw new Error("Jina HTTP " + r.status);
-      const j = jinaParse(await r.text());
-      if (j) return buildRows(j, code);
+      const j = await t;
+      if (j && j.chart) return j;
     } catch (e) { lastErr = e; }
   }
-  throw new Error("取不到 " + code + " 行情（所有端點與代理皆失敗：" + (lastErr ? lastErr.message : "無") + "）");
+  throw new Error("取不到 " + code + " 行情（並行端點皆失敗：" + (lastErr ? lastErr.message : "無") + "）");
+}
+async function fetchRows(code, period){
+  const key = code + ":" + period;
+  if (_rowCache[key]) return _rowCache[key];
+  const j = await raceFetch(code, period);
+  const rows = buildRows(j, code);
+  _rowCache[key] = rows;
+  return rows;
 }
 function buildRows(j, code){
   const res = j.chart && j.chart.result && j.chart.result[0];
@@ -426,7 +456,12 @@ async function runSell(){
 
   let rows, demo = false;
   try {
-    rows = await fetchRows(toYahoo(t), "1y");
+    // 6mo(~126 根)已足夠 40/60 日勝率;比 1y 輕量、relay 回傳更快。
+    // 並加 12 秒總 timeout:超時退「示意資料」,不干等。
+    rows = await Promise.race([
+      fetchRows(toYahoo(t), "6mo"),
+      new Promise((_, rej) => setTimeout(() => rej(new Error("12s 逾時")), 12000))
+    ]);
   } catch (e) {
     rows = demoRows(t); demo = true;
   }
