@@ -656,16 +656,25 @@
   function marketSession() {
     // 台股交易時段
     const now = new Date();
-    const hhmm = now.getUTCHours() + 9; // 台北 UTC+8
-    const h = hhmm, m = now.getUTCMinutes();
-    const t = h * 100 + m;
-    let code = 'closed', label = '盤中';
-    if (t >= 900 && t < 1130) { code = 'am'; label = '上午盤'; }
-    else if (t >= 1300 && t < 1430) { code = 'pm'; label = '下午盤'; }
-    else if (t < 900 || (t >= 1130 && t < 1300)) { code = 'pre'; label = '盤前'; }
-    else if (t >= 1430 && t < 1500) { code = 'after'; label = '盤後'; }
+    // 台北時間(UTC+8):取本地小時 + 分鐘,但若系統設成 UTC 則需補 9 小時偏移
+    // 直接用 Intl API 取台北時間,避免跨時區誤判
+    let hhmm = 0;
+    try {
+      const parts = new Intl.DateTimeFormat('zh-TW', { timeZone: 'Asia/Taipei', hour: '2-digit', minute: '2-digit', hour12: false }).formatToParts(now);
+      const h = parseInt(parts.find(p => p.type === 'hour').value, 10) || 0;
+      const mi = parseInt(parts.find(p => p.type === 'minute').value, 10) || 0;
+      hhmm = h * 100 + mi;
+    } catch (e) {
+      hhmm = now.getUTCHours() * 100 + now.getUTCMinutes();
+    }
+    let code = 'closed', label = '收盤';
+    if (hhmm >= 900 && hhmm < 930) { code = 'pre'; label = '盤前'; }
+    else if (hhmm >= 930 && hhmm < 1130) { code = 'am'; label = '上午盤'; }
+    else if (hhmm >= 1130 && hhmm < 1300) { code = 'lunch'; label = '午休'; }
+    else if (hhmm >= 1300 && hhmm < 1430) { code = 'pm'; label = '下午盤'; }
+    else if (hhmm >= 1430 && hhmm < 1500) { code = 'after'; label = '盤後'; }
     else { code = 'closed'; label = '收盤'; }
-    return { code: code, label: label };
+    return { code: code, label: label, hhmm: hhmm };
   }
 
   function actionForScore(techScore, sessionCode) {
