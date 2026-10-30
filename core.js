@@ -568,14 +568,19 @@
     const signals = detectSignals(IND, i);
     const comp = compositeSignal(signals);
 
-    const ff = opts.with_fund !== false ? await fetchFundFlow() : { ok: false, score: 0, label: "未啟用" };
+    // 若呼叫端已「並行抓好」籌碼全場榜單 / 新聞,就直接用,不重抓(省時間)
+    let ff;
+    if (opts.prec_fund != null) ff = opts.prec_fund;
+    else ff = opts.with_fund !== false ? await fetchFundFlow() : { ok: false, score: 0, label: "未啟用" };
     const tf = tickerInFundFlow(ff, opts.ticker);
     let taiex = { ok: false, score: 0, direction: "未啟用", advice: "" };
     if (opts.taiexRows) taiex = fetchTaiexFromRows(opts.taiexRows);
     const intra = intradayFromRows(stockRows, IND, i);
 
     let news = null;
-    if (opts.with_news) {
+    if (opts.prec_news != null) {
+      news = opts.prec_news; // 呼叫端已並行抓好 + 算好 sentiment
+    } else if (opts.with_news) {
       const heads = await fetchNewsHeadlines(opts.ticker, opts.name, opts.news_days || 7);
       if (heads.length) news = newsSentiment(heads);
     }
