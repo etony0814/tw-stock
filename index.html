@@ -496,54 +496,61 @@ function jinaParse(text){
 
 async function fetchRows(code, period){
   const qs = "?range=" + period + "&interval=1d";
-  let lastErr = null;
-  // 0) Cloudflare Worker 行情中繼（最穩：CORS 已開、瀏覽器不噴 CORS 紅字）
-  //    同時試 .TW 和 .TWO 兩個版本，任一個成功就用（上市/上櫃字頭混用問題）
-  if (QUOTE_RELAY) {
-    const c = code.toUpperCase().replace(/\.TW$/,'').replace(/\.TWO$/,'');
-    const variants = [c, c + ".TW", c + ".TWO"];
-    for (const v of variants) {
-      try {
-        const r = await fetch(QUOTE_RELAY + "?ticker=" + encodeURIComponent(v) +
-          "&range=" + encodeURIComponent(period) + "&interval=1d");
-        if (r.ok) {
-          const j = await r.json();
-          if (j && j.chart) return buildRows(j, code);
-          if (j && j.ok === false) lastErr = new Error("relay " + j.error);
-        }
-      } catch (e) { lastErr = e; }
-    }
-  }
-  // 1) 直抓 Yahoo（本地 / 允許 CORS 的環境；GitHub Pages 會噴瀏覽器 CORS 紅字，故優先走中繼）
-  for (const base of STOCK_URLS) {
-    try { return buildRows(await fetchJsonOne(base + code + qs), code); }
-    catch (e) { lastErr = e; }
-  }
-  // 2) allorigins 代理
-  try {
-    const target = STOCK_URLS[0] + code + qs;
+  const c = code.toUpperCase().replace(/\.TW$/,'').replace(/\.TWO$/,'');
+  const primary = (code === "^TWII" || !/^[34568]\d{3}$/.test(c)) ? (code==="^TWII"?code:toYahoo(c)) : toYahoo(c);
+  const isTaiex = code === "^TWII";
+  const variants = isTaiex ? ["^TWII"] : [toYahoo(c)];
+  // GitHub Pages(https) 下直抓 Yahoo 一定被 CORS 擋,白等 → 跳過;本地(http) 保留
+  const isSecure = location.protocol === "https:";
+
+  // 各來源並行取法(誰先回 chart 誰贏),大幅降低串列拖慢
+  const relayOne = async (v) => {
+    if (!QUOTE_RELAY) throw new Error("no relay");
+    const r = await fetch(QUOTE_RELAY + "?ticker=" + encodeURIComponent(v) + "&range=" + encodeURIComponent(period) + "&interval=1d");
+    if (!r.ok) throw new Error("relay HTTP " + r.status);
+    const j = await r.json();
+    if (j && j.chart) return j;
+    throw new Error(j && j.error ? ("relay " + j.error) : "relay 無 chart");
+  };
+  const jinaOne = async (v) => {
+    const target = STOCK_URLS[0] + v + qs;
+    const r = await fetch(JINA + target, { headers: { "Accept": "text/plain" } });
+    if (!r.ok) throw new Error("jina HTTP " + r.status);
+    const j = jinaParse(await r.text());
+    if (!j || !j.chart) throw new Error("jina 無解析");
+    return j;
+  };
+  const allOrigins = async (v) => {
+    const target = STOCK_URLS[0] + v + qs;
     const r = await fetch("https://api.allorigins.win/raw?url=" + encodeURIComponent(target), { headers: { "Accept": "application/json" } });
-    if(!r.ok) throw new Error("allorigins HTTP " + r.status);
-    return buildRows(await r.json(), code);
-  } catch (e) { lastErr = e; }
-  // 3) Jina Reader 代理（瀏覽器跨域可直抓）
-  for (const base of STOCK_URLS) {
-    try {
-      const target = base + code + qs;
-      const r = await fetch(JINA + target, { headers: { "Accept": "text/plain" } });
-      if(!r.ok) throw new Error("Jina HTTP " + r.status);
-      const text = await r.text();
-      return buildRows(jinaParse(text), code);
-    } catch (e) { lastErr = e; }
+    if (!r.ok) throw new Error("allorigins HTTP " + r.status);
+    const j = await r.json();
+    if (j && j.chart) return j;
+    throw new Error("allorigins 無 chart");
+  };
+  const yahooDirect = async (v) => {
+    const r = await fetch(STOCK_URLS[0] + v + qs, { headers: { "Accept": "application/json" } });
+    if (!r.ok) throw new Error("yahoo HTTP " + r.status);
+    return await r.json();
+  };
+
+  // 並行任務:relay(主+備)+ jina + allorigins +(非 https 才 yahoo 直抓)
+  const tasks = [];
+  if (QUOTE_RELAY) {
+    tasks.push(relayOne(variants[0]));
+    if (variants[1]) tasks.push(relayOne(variants[1]));
   }
-  // 4) corsproxy.io 備援
+  tasks.push(jinaOne(variants[0]), allOrigins(variants[0]));
+  if (!isSecure) tasks.push(yahooDirect(variants[0]));
+
+  let lastErr = null;
   try {
-    const target = STOCK_URLS[0] + code + qs;
-    const r = await fetch("https://corsproxy.io/?url=" + encodeURIComponent(target), { headers: { "Accept": "application/json" } });
-    if(!r.ok) throw new Error("corsproxy HTTP " + r.status);
-    return buildRows(await r.json(), code);
-  } catch (e) { lastErr = e; }
-  throw new Error("取不到 " + code + " 行情（所有端點與代理皆失敗：" + (lastErr ? lastErr.message : "無") + "）");
+    const j = await Promise.any(tasks.map(fn => fn().then(v => { if (v && v.chart) return v; throw new Error("無 chart"); })));
+    return buildRows(j, code);
+  } catch (agg) {
+    lastErr = (agg && agg.errors && agg.errors[0]) || agg;
+    throw new Error("取不到 " + code + " 行情（並行端點皆失敗：" + (lastErr ? lastErr.message : "無") + "）");
+  }
 }
 
 function buildRows(j, code){
@@ -716,19 +723,22 @@ async function run(){
     // 14b. 階段式進度提示
     const _lm = document.getElementById('loadingMsg');
     const _setLoading = (m) => { if (_lm) _lm.textContent = m; };
-    _setLoading('正在抓 ' + t + ' 行情（並行 relay / Jina）…');
-    const stockRows = await fetchRows(toYahoo(t), period);
-    _setLoading('正在抓大盤加權行情…');
-    const taiexRows = await fetchRows("^TWII", "1mo");
+    _setLoading('正在抓 ' + t + ' 行情 + 大盤 + 名稱（並行）…');
+    // 並行抓個股 / 大盤 / 股票名稱,誰先回誰贏,大幅縮短串列等待
     const with_news = document.getElementById('ckNews').checked;
     const with_fund = document.getElementById('ckFund').checked;
     const news_days = parseInt(document.getElementById('newsDays').value, 10) || 7;
+    const [stockRows, taiexRows, nmAuto] = await Promise.all([
+      fetchRows(toYahoo(t), period),
+      fetchRows("^TWII", "1mo"),
+      fetchStockName(t).catch(() => WNAMES[t] || '')
+    ]);
     _setLoading('正在算訊號與五方分數…');
-    const nmAuto = await fetchStockName(t);
+    // computeAll 內含消息/籌碼,若勾選就讓它跑;籌碼多日與相對強度與「繪圖前」可並行
     const all = await StockCore.computeAll(stockRows,
       { ticker:t, name:nmAuto, taiexRows, with_news, with_fund, news_days });
 
-    // 籌碼面多日統計
+    // 籌碼面多日統計(僅勾選籌碼時),與「算籌碼/消息」無關 → 並行不等
     if (with_fund) {
       _setLoading('正在抓籌碼面多日統計…');
       all.fund_multi = await StockCore.fetchFundFlowMulti(t, 5);
