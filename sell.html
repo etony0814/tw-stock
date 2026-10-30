@@ -593,8 +593,18 @@ function renderMidBox(d, h40, h60){
   const cls = d.midScore >= 0.2 ? "var(--bull)" : d.midScore <= -0.2 ? "var(--bear)" : "var(--muted)";
   const m40 = h40 && h40.up_rate != null ? h40.up_rate + "%" : "資料不足";
   const m60 = h60 && h60.up_rate != null ? h60.up_rate + "%" : "資料不足";
+  // 中期類別 英文代碼 → 中文白話
+  const midClassZh = {
+    multi: "多頭（中期偏多，漲多）",
+    dip: "回檔（長期多頭、短期回檔）",
+    weak: "弱多（趨勢偏弱）",
+    bear_rebound: "空頭反彈（下跌中的反彈）",
+    neutral: "中性"
+  }[d.midClass] || d.midClass;
+  const midClassColor = (d.midClass === "multi" || d.midClass === "dip") ? "var(--bull)" :
+    (d.midClass === "weak" || d.midClass === "bear_rebound") ? "var(--bear)" : "var(--muted)";
   el.innerHTML =
-    '<div>中期分數：<b style="color:' + cls + '">' + d.midScore.toFixed(2) + '</b>、類別：<b>' + d.midClass + '</b></div>' +
+    '<div>中期分數：<b style="color:' + cls + '">' + d.midScore.toFixed(2) + '</b>、類別：<b style="color:' + midClassColor + '">' + midClassZh + '</b></div>' +
     '<div style="margin-top:4px">中期(40日)止損 <b style="color:var(--yellow)">' + fmt2(StockCore.slTpForHorizon(d.close, d.atr, "mid40").sl) + '</b>、(60日)止損 <b style="color:var(--yellow)">' + fmt2(StockCore.slTpForHorizon(d.close, d.atr, "mid60").sl) + '</b></div>' +
     '<div style="margin-top:4px;font-size:11px;color:var(--muted)">偏多勝率：40日 ' + m40 + '、60日 ' + m60 + '。勝率越高，持有該方向越可信。</div>' +
     (d.bearAlert ? '<div style="margin-top:6px;padding:6px 8px;border-radius:6px;background:' + (d.bearAlert.level === "strong" ? "rgba(239,68,68,.12)" : "rgba(245,158,11,.12)") + ';border:1px solid ' + (d.bearAlert.level === "strong" ? "var(--bear)" : "var(--yellow)") + '">' + d.bearAlert.text + '</div>' : '');
