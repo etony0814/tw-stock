@@ -821,7 +821,10 @@ function render(A, rows, t){
   const ms = (typeof marketSession !== 'undefined') ? marketSession() : StockCore.marketSession();
   const ss=document.getElementById('sessionTag');
   if(ss){
-    ss.textContent = ms.label + ' · ' + ms.t;
+    // hhmm 是 4 位數字(如 930),轉成 9:30 顯示
+    const hhmm = ms.hhmm != null ? ms.hhmm : null;
+    const hhmmStr = hhmm != null ? Math.floor(hhmm/100) + ':' + String(hhmm%100).padStart(2,'0') : '';
+    ss.textContent = hhmmStr ? (ms.label + ' ' + hhmmStr) : ms.label;
     ss.style.display = 'inline-block';
   }
   // 資料時效提示（#2：盤中使用時提醒收盤靜態資料）
@@ -830,9 +833,9 @@ function render(A, rows, t){
     const lastDate = rows[rows.length-1] ? rows[rows.length-1].date : '';
     if (ms.code === 'am' || ms.code === 'pm') {
       df.textContent = '📅 盤中：數據依收盤（' + lastDate + '）估算，非即時';
-    } else if (ms.code === 'post') {
+    } else if (ms.code === 'after') {
       df.textContent = '📅 盤後：收盤定案資料（' + lastDate + '）';
-    } else if (ms.code === 'pre') {
+    } else if (ms.code === 'pre' || ms.code === 'lunch') {
       df.textContent = '📅 開盤前：昨日收盤（' + lastDate + '）';
     } else {
       df.textContent = '📅 休市：最近收盤（' + lastDate + '）';
