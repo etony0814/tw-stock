@@ -519,45 +519,62 @@ function renderPnl(p){
     '<div class="stat-mini"><div class="sm-lbl">浮動損益</div><div class="sm-val ' + cls + '">' + (p.float >= 0 ? "+" : "") + fmt2(p.float) + "（" + fmtPct(p.floatPct) + '）</div></div>';
 }
 
-function renderMatrix(d, tableId){
+function renderMatrix(d, tableId, view){
   const wrap = document.getElementById(tableId || "matrixTableShort");
-  const rows = [
-    { key: "sl",   cond: "跌破止損",           hit: d.breachedSL,                        action: "強減碼 / 全賣" },
-    { key: "tp2",  cond: "達第二檔止盈",       hit: d.hitTP2,                            action: "減碼 60%、trailing stop" },
-    { key: "tp1",  cond: "達第一檔止盈",       hit: d.hitTP1,                            action: "減碼 1/3 鎖利" },
-    { key: "alert",cond: "中期⚠️強警報",       hit: d.bearAlert && d.bearAlert.level === "strong", action: "減碼 30% 觀望" },
-    { key: "deep", cond: "深賠（浮動賠 >−8%）", hit: (d.pnl.floatPct <= -8), action: "減碼 20% 控風險" },
-    { key: "weak", cond: "浮動賠 + 短線空頭 + 中期弱", hit: (d.pnl.floatPct < 0 && d.shortScore < -0.15 && (d.midClass === "weak" || d.midClass === "bear_rebound")), action: "減碼 30% 控損" },
-    { key: "win",  cond: "浮動賺 + 中期多頭", hit: (d.pnl.floatPct > 0 && d.midScore > 0.2 && !d.belowSma60), action: "持股、上移止損保本" },
-    { key: "add",  cond: "可加碼(強多+浮動賺+趨勢)", hit: !!(d.addOn && d.addOn.ok && d.addOn.pct === 30), action: "可加碼 30%、加碼後保本 " + (d.addOn ? d.addOn.breakeven.toFixed(0) : "—") },
-    { key: "addS", cond: "小量加碼(偏多)", hit: !!(d.addOn && d.addOn.ok && d.addOn.pct === 15), action: "可小量加碼 15%、加碼後保本 " + (d.addOn ? d.addOn.breakeven.toFixed(0) : "—") },
+  view = view || "short";
+  const isMid = view === "mid";
+  // 依視角給不同的止損/止盈 ATR 倍數說明
+  const slLabel = isMid ? "中期 40 日止損" : "短線止損(1.5×ATR)";
+  const tp1Label = isMid ? "中期第一檔止盈" : "短線第一檔止盈";
+  const tp2Label = isMid ? "中期第二檔止盈" : "短線第二檔止盈";
+  // 依視角決定「你目前落在」該視角情境
+  const rows = isMid ? [
+    { key: "sl",   cond: "跌破中期 40 日止損",       hit: d.breachedSL, action: "減碼 50%、trailing stop" },
+    { key: "tp2",  cond: "達中期第二檔止盈",         hit: d.hitTP2,     action: "減碼 60%、剩 40% 持股" },
+    { key: "tp1",  cond: "達中期第一檔止盈",         hit: d.hitTP1,     action: "減碼 30% 鎖利" },
+    { key: "alert",cond: "中期⚠️強警報(收盤低於 60 日均線)", hit: !!(d.bearAlert && d.bearAlert.level === "strong"), action: "減碼 30% 觀望" },
+    { key: "deep", cond: "深賠(浮動賠 >−8%)",        hit: (d.pnl.floatPct <= -8), action: "減碼 20% 控風險" },
+    { key: "weak", cond: "浮動賠 + 中期弱(weak/bear_rebound)", hit: (d.pnl.floatPct < 0 && (d.midClass === "weak" || d.midClass === "bear_rebound")), action: "減碼 30% 控損" },
+    { key: "win",  cond: "浮動賺 + 中期偏多",         hit: (d.pnl.floatPct > 0 && d.midScore > 0.2 && !d.belowSma60), action: "持股、上移中期止損到 " + Math.max(d.pnl.cost, (d.close * 0.98).toFixed(0)) + "(max 均價 / 現價−2%)" },
+    { key: "add",  cond: "可加碼(中期強多+浮動賺)",   hit: !!(d.addOn && d.addOn.ok && d.addOn.pct === 30), action: "可加碼 30%、加碼後保本 " + (d.addOn ? d.addOn.breakeven.toFixed(0) : "—") },
+    { key: "addS", cond: "小量加碼(中期偏多)",        hit: !!(d.addOn && d.addOn.ok && d.addOn.pct === 15), action: "可小量加碼 15%、加碼後保本 " + (d.addOn ? d.addOn.breakeven.toFixed(0) : "—") },
+  ] : [
+    { key: "sl",   cond: "跌破短線止損(1.5×ATR)",    hit: d.breachedSL, action: "減碼 30%、不抗跌" },
+    { key: "tp2",  cond: "達短線第二檔止盈",          hit: d.hitTP2,     action: "減碼 60%、剩 40% trailing" },
+    { key: "tp1",  cond: "達短線第一檔止盈",          hit: d.hitTP1,     action: "減碼 1/3 鎖利" },
+    { key: "short",cond: "短線偏空(分數 ≤−0.15)",    hit: (d.shortScore <= -0.15), action: "減碼 20%、等短線翻多再說" },
+    { key: "deep", cond: "深賠(浮動賠 >−8%)",        hit: (d.pnl.floatPct <= -8), action: "減碼 20% 控風險" },
+    { key: "win",  cond: "浮動賺 + 短線偏多",          hit: (d.pnl.floatPct > 0 && d.shortScore >= 0.15), action: "持股、破短線止損 " + d.slTp.sl.toFixed(0) + " 即減" },
+    { key: "add",  cond: "可加碼(短線強多+浮動賺+趨勢)", hit: !!(d.addOn && d.addOn.ok && d.addOn.pct === 30), action: "可加碼 30%、加碼後保本 " + (d.addOn ? d.addOn.breakeven.toFixed(0) : "—") },
+    { key: "addS", cond: "小量加碼(短線偏多)",         hit: !!(d.addOn && d.addOn.ok && d.addOn.pct === 15), action: "可小量加碼 15%、加碼後保本 " + (d.addOn ? d.addOn.breakeven.toFixed(0) : "—") },
   ];
   const hit = rows.find(r => r.hit) || null;
-  // 上方大字：命中格（若無命中則顯示「中性/未觸發減碼條件」）
+  // 上方大字：命中格(依視角出不同「你目前落在」)
+  const viewTitle = isMid ? "中期視角(2–3 月持有)" : "短線視角(5 日)";
   let topHtml;
   if (hit) {
-    const cColor = (hit.key === "win" || hit.key === "add" || hit.key === "addS" ? "var(--bull)" : hit.key === "alert" ? "var(--yellow)" : "var(--bear)");
+    const cColor = (hit.key === "win" || hit.key === "add" || hit.key === "addS" ? "var(--bull)" : (hit.key === "alert" || hit.key === "short") ? "var(--yellow)" : "var(--bear)");
     topHtml = '<div style="padding:10px 12px;background:rgba(56,189,248,.10);border:1px solid var(--accent);border-radius:10px;margin-bottom:10px">' +
-      '<div style="font-size:11px;color:var(--muted);margin-bottom:4px">📍 你目前落在</div>' +
+      '<div style="font-size:11px;color:var(--muted);margin-bottom:4px">📍 ' + viewTitle + ':你目前落在</div>' +
       '<div style="font-size:16px;font-weight:800;color:' + cColor + '">' + hit.cond + '</div>' +
       '<div style="font-size:13px;margin-top:4px;color:var(--text)">→ ' + hit.action + '</div>' +
       '</div>';
   } else {
     topHtml = '<div style="padding:10px 12px;background:var(--card2);border:1px solid var(--border);border-radius:10px;margin-bottom:10px">' +
-      '<div style="font-size:11px;color:var(--muted);margin-bottom:4px">📍 你目前落在</div>' +
-      '<div style="font-size:16px;font-weight:800;color:var(--accent)">未觸發減碼條件（中性觀望）</div>' +
-      '<div style="font-size:13px;margin-top:4px;color:var(--text)">未破止損、未達止盈、未深賠 — 依紀律觀望</div>' +
+      '<div style="font-size:11px;color:var(--muted);margin-bottom:4px">📍 ' + viewTitle + ':你目前落在</div>' +
+      '<div style="font-size:16px;font-weight:800;color:var(--accent)">未觸發減碼條件(中性觀望)</div>' +
+      '<div style="font-size:13px;margin-top:4px;color:var(--text)">' + (isMid ? "未破中期止損、未達中期止盈、未中期弱 — 依中期趨勢觀望" : "未破短線止損、未達短線止盈、未短線空頭 — 依短線紀律觀望") + '</div>' +
       '</div>';
   }
-  // 下方全部對照表（預設折疊）
-  let tbl = "<table class=\"matrix\" id=\"matrixFullTable\"><thead><tr><th>情境</th><th>觸發條件</th><th>建議動作</th></tr></thead><tbody>";
+  // 下方全部對照表(預設折疊)
+  let tbl = "<table class=\"matrix\" id=\"" + tableId + "Full\"><thead><tr><th>" + viewTitle + "情境</th><th>觸發條件</th><th>建議動作</th></tr></thead><tbody>";
   rows.forEach(r => {
     tbl += '<tr class="' + (r.hit ? "hit" : "") + '"><td>' + (r.hit ? '📍 ' : '') + r.cond + '</td><td>' + r.action + '</td></tr>';
   });
   tbl += "</tbody></table>";
   wrap.innerHTML = topHtml +
     '<details style="margin-top:4px">' +
-    '<summary style="cursor:pointer;font-size:12px;color:var(--muted);list-style:none;padding:4px 0">▸ 展開全部情境對照（9 格）</summary>' +
+    '<summary style="cursor:pointer;font-size:12px;color:var(--muted);list-style:none;padding:4px 0">▸ 展開' + viewTitle + '全部情境對照(' + rows.length + ' 格)</summary>' +
     '<div style="overflow-x:auto;margin-top:6px">' + tbl + '</div>' +
     '</details>';
 }
@@ -712,8 +729,8 @@ async function runSell(){
     // 損益
     renderPnl(primary.pnl);
     // 決策矩陣
-    renderMatrix(primary, "matrixTableShort");
-    renderMatrix(dMid40, "matrixTableMid");
+    renderMatrix(primary, "matrixTableShort", "short");
+    renderMatrix(dMid40, "matrixTableMid", "mid");
     // K 線
     const dMid40forChart = dMid40 ? dMid40.slTp.sl : null;
     // 加碼保本線:只在「可加碼」情境才畫,= max(均價, 現價−5%)
