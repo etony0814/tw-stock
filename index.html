@@ -1702,7 +1702,7 @@ async function refreshWatchOverview(){
   // 並行抓取（上限 8 只）
   const tasks = list.slice(0, 8).map(async (t) => {
     try {
-      const rows = await fetchRows(toYahoo(t), '6mo');
+      const rows = await fetchRows(toYahoo(t), '1y');
       const tail = rows.slice(-21);
       const close = rows[rows.length-1].close;
       const r20 = tail.length >= 2
