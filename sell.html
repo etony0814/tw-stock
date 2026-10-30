@@ -221,7 +221,9 @@ async function raceFetch(code, period){
 
   // 各來源的取法
   const relayGet = async (v) => {
-    const r = await withTimeout(fetch(QUOTE_RELAY + "?ticker=" + encodeURIComponent(v) + "&range=" + encodeURIComponent(period) + "&interval=1d"), 8000, "relay");
+    // Cloudflare Worker 冷啟動常需 5–10s,主端點給 15s、備端點給 8s
+    const timeoutMs = (v === primary) ? 15000 : 8000;
+    const r = await withTimeout(fetch(QUOTE_RELAY + "?ticker=" + encodeURIComponent(v) + "&range=" + encodeURIComponent(period) + "&interval=1d"), timeoutMs, "relay");
     if (!r.ok) throw new Error("relay HTTP " + r.status);
     const j = await r.json();
     if (j && j.chart) return j;
@@ -509,7 +511,7 @@ async function runSell(){
     // 並加 12 秒總 timeout:超時退「示意資料」,不干等。
     rows = await Promise.race([
       fetchRows(toYahoo(t), "6mo"),
-      new Promise((_, rej) => setTimeout(() => rej(new Error("12s 逾時")), 12000))
+      new Promise((_, rej) => setTimeout(() => rej(new Error("18s 逾時")), 18000))
     ]);
   } catch (e) {
     rows = demoRows(t); demo = true;
