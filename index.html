@@ -723,22 +723,32 @@ async function run(){
     // 14b. 階段式進度提示
     const _lm = document.getElementById('loadingMsg');
     const _setLoading = (m) => { if (_lm) _lm.textContent = m; };
-    _setLoading('正在抓 ' + t + ' 行情 + 大盤 + 名稱（並行）…');
-    // 並行抓個股 / 大盤 / 股票名稱,誰先回誰贏,大幅縮短串列等待
+    _setLoading('正在並行抓：個股 / 大盤 / 名稱 / 籌碼 / 新聞…');
     const with_news = document.getElementById('ckNews').checked;
     const with_fund = document.getElementById('ckFund').checked;
     const news_days = parseInt(document.getElementById('newsDays').value, 10) || 7;
-    const [stockRows, taiexRows, nmAuto] = await Promise.all([
+
+    // 一波並行:個股 K 線、大盤、股票名稱、籌碼全場榜單(預抓)、新聞情緒(預抓)
+    // 預抓籌碼/新聞失敗都不影響主流程,computeAll 內會自己補(或標未啟用)
+    const prec_fund_p = with_fund ? StockCore.fetchFundFlow().catch(() => null) : Promise.resolve(undefined);
+
+    // 新聞情緒:等名稱抓完再搜(名稱+代號 搜更準),但仍與「個股 K 線」並行,不阻塞主流程
+    const prec_news_p = with_news ? fetchStockName(t).then(nm2 => StockCore.fetchNewsHeadlines(t, nm2 || '', news_days)).then(heads => (heads && heads.length ? StockCore.newsSentiment(heads) : null)).catch(() => null) : Promise.resolve(undefined);
+
+    const [stockRows, taiexRows, nmAuto, prec_fund, prec_news] = await Promise.all([
       fetchRows(toYahoo(t), period),
       fetchRows("^TWII", "1mo"),
-      fetchStockName(t).catch(() => WNAMES[t] || '')
+      fetchStockName(t).catch(() => WNAMES[t] || ''),
+      prec_fund_p,
+      prec_news_p
     ]);
-    _setLoading('正在算訊號與五方分數…');
-    // computeAll 內含消息/籌碼,若勾選就讓它跑;籌碼多日與相對強度與「繪圖前」可並行
-    const all = await StockCore.computeAll(stockRows,
-      { ticker:t, name:nmAuto, taiexRows, with_news, with_fund, news_days });
 
-    // 籌碼面多日統計(僅勾選籌碼時),與「算籌碼/消息」無關 → 並行不等
+    _setLoading('正在算訊號與五方分數…');
+    // computeAll 拿到已並行抓好的 prec_fund/prec_news,不再串列重抓
+    const all = await StockCore.computeAll(stockRows,
+      { ticker:t, name:nmAuto, taiexRows, with_news, with_fund, news_days, prec_fund, prec_news });
+
+    // 籌碼面多日統計(僅勾選時),與主結果並行後再等它完成繪圖前即可
     if (with_fund) {
       _setLoading('正在抓籌碼面多日統計…');
       all.fund_multi = await StockCore.fetchFundFlowMulti(t, 5);
