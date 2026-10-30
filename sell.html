@@ -228,9 +228,9 @@ async function raceFetch(code, period){
   const alt = primary.endsWith(".TWO") ? c + ".TW" : c + ".TWO";
 
   // 各來源的取法
+  // Cloudflare Worker 冷啟動常需 5–15s,主端點給 20s、備端點給 12s;並行端點給 12s
   const relayGet = async (v) => {
-    // Cloudflare Worker 冷啟動常需 5–10s,主端點給 15s、備端點給 8s
-    const timeoutMs = (v === primary) ? 15000 : 8000;
+    const timeoutMs = (v === primary) ? 20000 : 12000;
     const r = await withTimeout(fetch(QUOTE_RELAY + "?ticker=" + encodeURIComponent(v) + "&range=" + encodeURIComponent(period) + "&interval=1d"), timeoutMs, "relay");
     if (!r.ok) throw new Error("relay HTTP " + r.status);
     const j = await r.json();
@@ -239,7 +239,7 @@ async function raceFetch(code, period){
     throw new Error("relay 無 chart");
   };
   const jinaGet = async (v) => {
-    const r = await withTimeout(fetch(JINA + "https://query1.finance.yahoo.com/v8/finance/chart/" + v + qs, { headers: { "Accept": "text/plain" } }), 8000, "jina");
+    const r = await withTimeout(fetch(JINA + "https://query1.finance.yahoo.com/v8/finance/chart/" + v + qs, { headers: { "Accept": "text/plain" } }), 12000, "jina");
     if (!r.ok) throw new Error("jina HTTP " + r.status);
     const j = jinaParse(await r.text());
     if (!j) throw new Error("jina 無解析");
@@ -252,7 +252,7 @@ async function raceFetch(code, period){
   };
   const allorigins = async () => {
     const target = "https://query1.finance.yahoo.com/v8/finance/chart/" + primary + qs;
-    const r = await withTimeout(fetch("https://api.allorigins.win/raw?url=" + encodeURIComponent(target), { headers: { "Accept": "application/json" } }), 8000, "allorigins");
+    const r = await withTimeout(fetch("https://api.allorigins.win/raw?url=" + encodeURIComponent(target), { headers: { "Accept": "application/json" } }), 12000, "allorigins");
     if (!r.ok) throw new Error("allorigins HTTP " + r.status);
     return await r.json();
   };
@@ -265,6 +265,7 @@ async function raceFetch(code, period){
     allorigins(),
     yahooDirect(),
   ];
+  // 誰先成功誰贏;relay 主變體最可靠、冷啟動 20s 內可撐過
   const guarded = tasks.map(fn => fn().then(j => { if (j && j.chart) return j; throw new Error("端點無 chart"); }));
   let lastErr = null;
   try {
@@ -516,10 +517,10 @@ async function runSell(){
   let rows, demo = false;
   try {
     // 6mo(~126 根)已足夠 40/60 日勝率;比 1y 輕量、relay 回傳更快。
-    // 並加 12 秒總 timeout:超時退「示意資料」,不干等。
+    // 並加 22s 總 timeout(給 relay 冷啟動 20s 空間);超時退「示意資料」,不干等。
     rows = await Promise.race([
       fetchRows(toYahoo(t), "6mo"),
-      new Promise((_, rej) => setTimeout(() => rej(new Error("15s 逾時")), 15000))
+      new Promise((_, rej) => setTimeout(() => rej(new Error("22s 逾時")), 22000))
     ]);
   } catch (e) {
     rows = demoRows(t); demo = true;
