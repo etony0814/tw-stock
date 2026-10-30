@@ -1,0 +1,10 @@
+/* 共用 design tokens：Tony 台股小幫手(深色預設 + 淺色主題)
+   頁面: deploy/index.html / deploy/sell.html(GitHub Pages) + ui.html(本機 server) */
+:root{
+  --bg:#0f1419;--card:#1a202c;--card2:#1e2633;--border:#2a3441;--text:#e2e8f0;
+  --muted:#94a3b8;--accent:#38bdf8;--bull:#ef4444;--bear:#22c55e;--green:#ef4444;--red:#22c55e;--yellow:#f59e0b;--purple:#a855f7;
+}
+:root[data-theme="light"]{
+  --bg:#f1f5f9;--card:#ffffff;--card2:#f8fafc;--border:#e2e8f0;--text:#0f172a;
+  --muted:#64748b;--accent:#0284c7;--bull:#dc2626;--bear:#16a34a;--green:#dc2626;--red:#16a34a;--yellow:#d97706;--purple:#7c3aed;
+}
