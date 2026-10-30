@@ -104,6 +104,7 @@
     <input id="cost" class="num" type="number" min="0" step="0.01" placeholder="750" inputmode="decimal">
     <button id="btn" onclick="runSell()">開始評估</button>
     <button class="share-btn" id="shareBtn" onclick="shareSell()" style="display:none;width:auto;margin-top:0">📤 分享決策</button>
+    <button class="theme-toggle" id="modeToggle" onclick="toggleMode()" style="display:none;margin-top:0">⚙️ 專業模式</button>
     <div style="width:100%;display:flex;align-items:center;gap:6px;margin-top:4px">
       <label style="font-size:11px;color:var(--muted)">我持有的部位</label>
       <select id="posSel" style="flex:1;background:var(--card2);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:6px 8px;font-size:12px" onchange="loadPosSel()"></select>
@@ -141,20 +142,20 @@
     </div>
 
     <!-- 損益面板 -->
-    <div class="card">
+    <div class="card" id="pnlCard">
       <h3>💰 我的部位損益（現價 vs 均價）</h3>
       <div class="grid" id="pnlGrid"></div>
     </div>
 
     <!-- 決策矩陣 -->
-    <div class="card">
+    <div class="card" id="matrixCard">
       <h3>🎯 決策矩陣（短線 + 中期 各 7 格對照）</h3>
       <div id="matrixShort" style="overflow-x:auto;margin-bottom:12px"><div style="font-size:12px;font-weight:700;color:var(--accent);margin-bottom:6px">📉 短線（5 日）</div><table class="matrix" id="matrixTableShort"></table></div>
       <div id="matrixMid" style="overflow-x:auto"><div style="font-size:12px;font-weight:700;color:var(--yellow);margin-bottom:6px">📈 中期（2–3 月持有）</div><table class="matrix" id="matrixTableMid"></table></div>
     </div>
 
     <!-- K 線 + 均價/止損/止盈 -->
-    <div class="card">
+    <div class="card" id="chartCard">
       <h3>📈 K 線與部位參考線</h3>
       <canvas id="chart" width="800" height="300"></canvas>
       <div style="font-size:11px;color:var(--muted);margin-top:6px">黑色實線＝均價、綠色虛線＝短線止損、紅色實線＝止盈、橘色點線＝中期止損、紫色點線＝保本止損（僅「持股」情境顯示）</div>
@@ -196,6 +197,29 @@ function initTheme(){
   document.documentElement.setAttribute("data-theme", saved);
 }
 initTheme();
+
+// ── 簡易/專業 模式(與綜合分析頁共用 tony_mode,行為一致)──
+const MODE_KEY = "tony_mode";
+function getMode(){ return localStorage.getItem(MODE_KEY) || "simple"; }
+function isPro(){ return getMode() === "pro"; }
+function toggleMode(){
+  localStorage.setItem(MODE_KEY, isPro() ? "simple" : "pro");
+  applyMode();
+}
+// 賣出頁:專家模式才顯示的細節(簡易=只看結論+損益+K線;專家=加決策矩陣/短中期分數框/完整理由)
+const PRO_ONLY = ["shortBox", "midBox", "reasonList", "matrixCard"];
+function applyMode(){
+  const pro = isPro();
+  const btn = document.getElementById("modeToggle");
+  if (btn) { btn.textContent = pro ? "⚙️ 專業模式（點回簡易）" : "⚙️ 專業模式"; }
+  // 僅在「結果已展開」時才套用細節顯隱,避免載入即顯示空框
+  const results = document.getElementById("results");
+  if (results && results.style.display === "block") {
+    PRO_ONLY.forEach(function(id){ const el = document.getElementById(id); if (el) el.style.display = pro ? "block" : "none"; });
+  }
+}
+// 載入即套用模式(結論卡各 block 預設 none,評估後 runSell 會依 isPro() 重設)
+applyMode();
 
 // ── 行情的 toYahoo / fetchRows（同 index.html）────────────────────────────
 function toYahoo(t){
@@ -559,6 +583,9 @@ async function runSell(){
     const primary = dShort; // 主結論(短線),後續 pnl/matrix 仍用它
     document.getElementById("results").style.display = "block";
     document.getElementById("demoBanner").style.display = demo ? "block" : "none";
+    // 依專業/簡易模式,決定細節區塊顯不顯示(決策矩陣/短中期分數/理由)
+    applyMode();
+    const mt = document.getElementById("modeToggle"); if (mt) mt.style.display = "inline-block";
     const ft = document.getElementById("finalText");
     ft.className = "final-text";
     const shortVerdictColor = dShort.verdict === "sell" ? "var(--bear)" : dShort.verdict === "reduce" ? "var(--yellow)" : dShort.verdict === "hold" ? "var(--bull)" : "var(--muted)";
@@ -584,14 +611,12 @@ async function runSell(){
       '<div style="font-size:12px;color:var(--muted)">現價 <b style="color:var(--text)">' + fmt2(A.close) + '</b>、均價 <b style="color:var(--text)">' + fmt2(cost) + '</b>、持股 <b style="color:var(--text)">' + shares + '</b> 股。</div>' +
       '<div style="font-size:11px;color:var(--muted);margin-top:4px">上列建議分「短線(5日)」與「中期(2–3月持有)」兩種視角,短線看震盪波段、中期看趨勢,可依實際持有目的擇一執行。</div>';
 
-    document.getElementById("shortBox").style.display = "block";
     renderShortBox(Object.assign({}, primary, { atr: A.atr }));
-    document.getElementById("midBox").style.display = "block";
     renderMidBox(Object.assign({}, dMid40, { atr: A.atr, midScore: dMid40.midScore, midClass: dMid40.midClass, bearAlert: dMid40.bearAlert, belowSma60: dMid40.belowSma60 }), A.hist_mid40, A.hist_mid60);
+    // shortBox/midBox 顯示由 applyMode 依專業模式決定(簡易不顯示,專家顯示)
 
     // 理由清單
     const rl = document.getElementById("reasonList");
-    rl.style.display = "block";
     const midReasons = (dMid40 && dMid40.reasons && dMid40.reasons.length) ? dMid40.reasons : ["（中期視角無額外減碼理由,依短線視角為准）"];
     rl.innerHTML = "<div style='font-weight:700;margin-bottom:4px'>📝 決策依據（白話）：</div>" +
       "<div style='font-size:12px;font-weight:700;color:var(--accent)'>📉 短線</div><ul>" + primary.reasons.map(r => "<li>" + r + "</li>").join("") + "</ul>" +
