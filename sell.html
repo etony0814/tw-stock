@@ -95,6 +95,15 @@
     <button class="theme-toggle" onclick="toggleTheme()" id="themeToggle">🌗 換色</button>
   </div>
 
+  <div id="guideCard" class="card" style="margin-bottom:14px;border-left:4px solid var(--yellow)">
+    <div style="font-size:12px;font-weight:700;color:var(--yellow);margin-bottom:4px">🧭 這兩頁差在哪？</div>
+    <div style="font-size:12px;line-height:1.6;color:var(--text)">
+      <div style="margin-bottom:6px"><b>💼 我的部位決策（本頁）</b>：已持有，回答「<b>我手上這批（均價×持股數）該減幾成、加幾成、保本線拉多高</b>」— 含損益、止損/止盈、加碼/減碼、決策矩陣。</div>
+      <div><b>📊 綜合分析</b>：空手看盤，回答「<b>今天這支該不該買/賣</b>」— 五方綜合 + 短線(5日)/中期(2–3月)雙視角 + 40/60日勝率。</div>
+    </div>
+    <a class="share-btn" id="guideBack" style="width:auto;margin-top:8px;padding:7px 14px;font-size:12px;display:inline-block;text-align:center;text-decoration:none;cursor:pointer" onclick="jumpToIndex()">📊 我要看今天整體多空 → 回「綜合分析」</a>
+  </div>
+
   <div class="controls">
     <label>代號</label>
     <input id="ticker" maxlength="5" placeholder="2330">
@@ -184,6 +193,8 @@ function goBackToAnalysis(){
   if (/^\d{4}$/.test(t)) href = "index.html?ticker=" + encodeURIComponent(t) + "&restore=1";
   location.href = href;
 }
+// 引導卡「回綜合分析」:帶代號 + restore=1(還原上次結果、不重跑)
+function jumpToIndex(){ goBackToAnalysis(); }
 
 // ── 主題 ──
 function toggleTheme(){
