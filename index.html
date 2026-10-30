@@ -745,6 +745,8 @@ async function run(){
     render(all, stockRows, t);
     showResultTitle(t, nmAuto);
     applyMode();  // 依「簡易/專業」模式切換顯示
+    // 存下本次結果,供 sell.html「← 回到綜合分析」時還原、不重跑
+    saveAnalysisState(t, period, stockRows, all, nmAuto);
   }catch(e){
     // 真實行情都抓不到（如 Yahoo 限流），改用示範資料把整頁跑通
     document.getElementById('demoBanner').style.display='block';
@@ -771,6 +773,46 @@ async function run(){
     btn.style.opacity='';
     btn.style.cursor='';
   }
+}
+
+function saveAnalysisState(t, period, rows, all, name){
+  try{
+    sessionStorage.setItem('analysis_'+t, JSON.stringify({
+      t:t, period:period, name:name,
+      ckNews:document.getElementById('ckNews')?document.getElementById('ckNews').checked:false,
+      ckFund:document.getElementById('ckFund')?document.getElementById('ckFund').checked:false,
+      newsDays:document.getElementById('newsDays')?document.getElementById('newsDays').value:'',
+      rows:rows, all:all,
+      savedAt:Date.now()
+    }));
+  }catch(e){}
+}
+function restoreAnalysis(){
+  // 從 sell.html「← 回到綜合分析」跳回時,query 帶 restore=1 + ticker,還原上次結果、不重跑
+  const qs = new URLSearchParams(location.search);
+  if (qs.get('restore') !== '1') return false;
+  const t = (qs.get('ticker')||'').toUpperCase();
+  if (!/^\d{4}$/.test(t)) return false;
+  let data=null;
+  try{ data = JSON.parse(sessionStorage.getItem('analysis_'+t)||'null'); }catch(e){}
+  if (!data || !data.rows || !data.all) return false;
+  // 還原表單
+  document.getElementById('ticker').value = t;
+  const p = document.getElementById('period'); if(p) p.value = data.period || p.value;
+  const cn = document.getElementById('ckNews'); if(cn) cn.checked = !!data.ckNews;
+  const cf = document.getElementById('ckFund'); if(cf) cf.checked = !!data.ckFund;
+  const nd = document.getElementById('newsDays'); if(nd && data.newsDays) nd.value = data.newsDays;
+  // 直接重畫(不重抓行情)
+  document.getElementById('results').style.display='block';
+  document.getElementById('demoBanner').style.display='none';
+  render(data.all, data.rows, t);
+  showResultTitle(t, data.name || '');
+  applyMode();
+  window._lastRows = data.rows;
+  window._lastIND = data.all.indicators;
+  // 還原 window._shareData(讓分享按鈕可用)
+  try{ if (data.all && data.all.final){ const f=data.all.final; window._shareData = Object.assign(window._shareData||{}, {ticker:t,name:data.name,advice:f.final_advice,combined:f.combined_score!=null?f.combined_score.toFixed(2):'—',score_breakdown:f.score_breakdown||{}}); } }catch(e){}
+  return true;
 }
 
 function render(A, rows, t){
@@ -1970,7 +2012,9 @@ window.addEventListener('load',()=>{
   renderWatch(loadWatch());
   applyMode();  // 開頁時先依預設「簡易模式」收折各面板
   // 不自動抓自選總覽，等使用者按「⟳ 更新」再拉資料
-  // 不再自動分析，等使用者輸入代號後再按「分析」或按 Enter
+  // 不自動分析,等使用者輸入代號後再按「分析」或按 Enter
+  // 例外:從 sell.html「← 回到綜合分析」跳回(restore=1)→ 直接還原上次結果,不重跑
+  if (!restoreAnalysis()) { /* 正常:等使用者手動分析 */ }
 });
 window.addEventListener('resize',()=>{ if(window._lastRows) { drawChart(window._lastRows, window._lastIND); drawMACD(window._lastRows, window._lastIND); drawRSI(window._lastRows, window._lastIND); drawVolChart(window._lastRows, window._lastIND); } });
 
