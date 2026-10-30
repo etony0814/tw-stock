@@ -424,12 +424,25 @@ function sellDecision(A, IND, cost, shares, horizon){
     advice = "已達第一檔止盈（" + slTp.tp1.toFixed(0) + "），建議減碼 1/3 鎖利，剩餘觀望第二檔止盈 " + slTp.tp2.toFixed(0) + "。";
     reasons.push("達第一檔止盈 " + slTp.tp1.toFixed(0));
     if (bearAlert) { sellPct = 50; tag = "減碼 50%"; advice = "已達止盈但中期⚠️警報，建議加碼減碼至 50% 防回檔。"; reasons.push("⚠️ 中期警報：" + bearAlert.text); }
-  } else if (bearAlert && bearAlert.level === "strong") {
-    // 未破止損、未達止盈，但中期⚠️強警報
+  } else if (bearAlert && bearAlert.level === "strong" && horizon !== "short") {
+    // 未破止損、未達止盈,但中期⚠️強警報(只在中期 40/60 日情境觸發;短線 5 日不用中期警報當主結論)
     sellPct = 30; verdict = "reduce"; tag = "減碼 30%";
     advice = "未破止損也未達止盈，但中期⚠️趨勢偏弱（" + bearAlert.text + "），建議先減碼 30% 觀望。";
     reasons.push("⚠️ 中期趨勢警報：" + bearAlert.text);
     if (belowSma60) reasons.push("現價低於 60 日均線（趨勢轉弱）");
+  } else if (bearAlert && bearAlert.level === "strong" && horizon === "short") {
+    // 短線 5 日:中期警報作「輔助」,主結論仍看短線分數;短線偏多則持股、短線偏空則減碼
+    if (shortScore >= 0.15) {
+      sellPct = 0; verdict = "hold"; tag = "持股";
+      advice = "短線偏多（分數 " + shortScore.toFixed(2) + "），但⚠️中期趨勢偏弱（" + bearAlert.text + "）；短線波段可持股，破短線止損 " + slTp.sl.toFixed(0) + " 即減碼。";
+      reasons.push("短線偏多 " + shortScore.toFixed(2));
+      reasons.push("⚠️ 中期警報（輔助）：" + bearAlert.text);
+    } else {
+      sellPct = 20; verdict = "reduce"; tag = "減碼 20%";
+      advice = "短線偏空（分數 " + shortScore.toFixed(2) + "）+ 中期⚠️偏弱（" + bearAlert.text + "），建議減碼 20% 控風險。";
+      reasons.push("短線偏空 " + shortScore.toFixed(2));
+      reasons.push("⚠️ 中期警報：" + bearAlert.text);
+    }
   } else if (close < cost && shortScore < -0.15 && (midClass === "weak" || midClass === "bear_rebound")) {
     // 浮動賠 + 訊號空頭 + 中期弱
     sellPct = 30; verdict = "reduce"; tag = "減碼 30%";
@@ -444,13 +457,19 @@ function sellDecision(A, IND, cost, shares, horizon){
     reasons.push("浮動賠 " + Math.abs(pnl.floatPct).toFixed(1) + "%（超過 −8% 深賠線）");
     if (shortScore < 0) reasons.push("短線分數 " + shortScore.toFixed(2) + "（偏空）");
   } else if (close > cost && midScore > 0.2 && !belowSma60) {
-    // 浮動賺 + 中期多頭
+    // 浮動賺 + 中期多頭:依 horizon 出不同文字(短線看 5 日、中期看趨勢)
     sellPct = 0; verdict = "hold"; tag = "持股";
     const trailSl = Math.max(cost, +(close * 0.98).toFixed(2));
-    advice = "浮動賺 " + pnl.floatPct.toFixed(1) + "% 且中期偏多（分數 " + midScore.toFixed(2) + "），建議持股；把止損上移到保本線 " + trailSl.toFixed(0) + "（max 均價 / 現價−2%），破線先減碼。";
-    reasons.push("浮動賺 " + pnl.floatPct.toFixed(1) + "%");
-    reasons.push("中期偏多 " + midScore.toFixed(2));
-    if (h40 && h40.up_rate != null) reasons.push("40 日偏多勝率 " + h40.up_rate + "%");
+    if (horizon === "short") {
+      advice = "浮動賺 " + pnl.floatPct.toFixed(1) + "%、短線偏多（分數 " + shortScore.toFixed(2) + "），建議持股；短線止損 " + slTp.sl.toFixed(0) + "（1.5×ATR），破線減碼、不抗跌。";
+      reasons.push("浮動賺 " + pnl.floatPct.toFixed(1) + "%");
+      reasons.push("短線偏多 " + shortScore.toFixed(2));
+    } else {
+      advice = "浮動賺 " + pnl.floatPct.toFixed(1) + "% 且中期偏多（分數 " + midScore.toFixed(2) + "），建議持股；把中期止損上移到 " + trailSl.toFixed(0) + "（max 均價 / 現價−2%），破線先減碼。";
+      reasons.push("浮動賺 " + pnl.floatPct.toFixed(1) + "%");
+      reasons.push("中期偏多 " + midScore.toFixed(2));
+      if (h40 && h40.up_rate != null) reasons.push("40 日偏多勝率 " + h40.up_rate + "%");
+    }
   } else {
     // 中性
     sellPct = 0; verdict = "watch"; tag = "觀望";
