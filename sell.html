@@ -519,7 +519,7 @@ async function runSell(){
     // 並加 12 秒總 timeout:超時退「示意資料」,不干等。
     rows = await Promise.race([
       fetchRows(toYahoo(t), "6mo"),
-      new Promise((_, rej) => setTimeout(() => rej(new Error("18s 逾時")), 18000))
+      new Promise((_, rej) => setTimeout(() => rej(new Error("15s 逾時")), 15000))
     ]);
   } catch (e) {
     rows = demoRows(t); demo = true;
