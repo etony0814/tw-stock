@@ -88,6 +88,11 @@
     <input id="cost" class="num" type="number" min="0" step="0.01" placeholder="750">
     <button id="btn" onclick="runSell()">開始評估</button>
     <button class="share-btn" id="shareBtn" onclick="shareSell()" style="display:none;width:auto;margin-top:0">📤 分享決策</button>
+    <div style="width:100%;display:flex;align-items:center;gap:6px;margin-top:4px">
+      <label style="font-size:11px;color:var(--muted)">我持有的部位</label>
+      <select id="posSel" style="flex:1;background:var(--card2);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:6px 8px;font-size:12px" onchange="loadPosSel()"></select>
+    </div>
+    <div id="dirtyHint" style="display:none;width:100%;font-size:11px;color:var(--yellow)">⚠️ 你已修改均價/持股數，結論未更新，請按「重新評估」。</div>
   </div>
 
   <div id="demoBanner" style="display:none;background:rgba(245,158,11,.12);border:1px solid var(--yellow);border-radius:8px;padding:8px 12px;font-size:12px;margin-bottom:12px">⚠️ 真實行情暫時取不到（Yahoo 跨域受限），下方為「示意資料」僅展示介面。</div>
@@ -126,7 +131,7 @@
 
     <!-- 決策矩陣 -->
     <div class="card">
-      <h3>🎯 決策矩陣（你目前落在哪一格）</h3>
+      <h3>🎯 決策矩陣（短線視角，你目前落在哪一格）</h3>
       <div style="overflow-x:auto">
         <table class="matrix" id="matrixTable"></table>
       </div>
@@ -227,19 +232,21 @@ async function raceFetch(code, period){
 
   // 並行：relay(主+備) + jina(主) + allorigins + yahoo直抓(僅本地/許 CORS 時有用)
   const tasks = [
-    relayGet(primary).catch(() => relayGet(alt)),
+    relayGet(primary),
+    relayGet(alt),
     jinaGet(primary),
     allorigins(),
-    yahooDirect().catch(() => { throw new Error("yahoo CORS"); }),
+    yahooDirect(),
   ];
+  const guarded = tasks.map(fn => fn().then(j => { if (j && j.chart) return j; throw new Error("端點無 chart"); }));
   let lastErr = null;
-  for (const t of tasks) {
-    try {
-      const j = await t;
-      if (j && j.chart) return j;
-    } catch (e) { lastErr = e; }
+  try {
+    const j = await Promise.any(guarded);
+    return j;
+  } catch (agg) {
+    lastErr = (agg && agg.errors && agg.errors[0]) || agg;
+    throw new Error("取不到 " + code + " 行情（並行端點皆失敗：" + (lastErr ? lastErr.message : "無") + "）");
   }
-  throw new Error("取不到 " + code + " 行情（並行端點皆失敗：" + (lastErr ? lastErr.message : "無") + "）");
 }
 async function fetchRows(code, period){
   const key = code + ":" + period;
@@ -294,7 +301,7 @@ function sellDecision(A, IND, cost, shares, horizon){
 
   const slTp = StockCore.slTpForHorizon(close, atr, horizon || "short");
   const pnl = {
-    cost: cost, shares: shares,
+    cost: cost, shares: shares, close: close,
     marketValue: close * shares,
     positionValue: cost * shares,
     float: (close - cost) * shares,
@@ -352,10 +359,17 @@ function sellDecision(A, IND, cost, shares, horizon){
     reasons.push("浮動賠 " + Math.abs(pnl.floatPct).toFixed(1) + "%");
     reasons.push("短線分數 " + shortScore.toFixed(2) + "（偏空）");
     if (midClass === "weak") reasons.push("中期類別：弱多（" + (h40 ? ("40日勝率 " + (h40.up_rate != null ? h40.up_rate + "%" : "資料不足")) : "") + "）");
+  } else if (pnl.floatPct <= -8) {
+    // D. 深賠（>−8%）單獨觸發：先減碼 20% 控風險
+    sellPct = 20; verdict = "reduce"; tag = "減碼 20%";
+    advice = "浮動賠 " + Math.abs(pnl.floatPct).toFixed(1) + "%（深賠），建議先減碼 20% 控風險；短線翻多再視情況加回。";
+    reasons.push("浮動賠 " + Math.abs(pnl.floatPct).toFixed(1) + "%（超過 −8% 深賠線）");
+    if (shortScore < 0) reasons.push("短線分數 " + shortScore.toFixed(2) + "（偏空）");
   } else if (close > cost && midScore > 0.2 && !belowSma60) {
     // 浮動賺 + 中期多頭
     sellPct = 0; verdict = "hold"; tag = "持股";
-    advice = "浮動賺 " + pnl.floatPct.toFixed(1) + "% 且中期偏多（分數 " + midScore.toFixed(2) + "），建議持股；可把止損上移到均價 " + cost.toFixed(0) + " 或 60 日均線保本。";
+    const trailSl = Math.max(cost, +(close * 0.98).toFixed(2));
+    advice = "浮動賺 " + pnl.floatPct.toFixed(1) + "% 且中期偏多（分數 " + midScore.toFixed(2) + "），建議持股；把止損上移到保本線 " + trailSl.toFixed(0) + "（max 均價 / 現價−2%），破線先減碼。";
     reasons.push("浮動賺 " + pnl.floatPct.toFixed(1) + "%");
     reasons.push("中期偏多 " + midScore.toFixed(2));
     if (h40 && h40.up_rate != null) reasons.push("40 日偏多勝率 " + h40.up_rate + "%");
@@ -367,7 +381,7 @@ function sellDecision(A, IND, cost, shares, horizon){
     reasons.push("距止損 " + (distSL != null ? distSL.toFixed(1) : "?") + "%、距第一檔止盈 " + (distTP1 != null ? distTP1.toFixed(1) : "?") + "%");
   }
 
-  return { verdict, tag, advice, sellPct, reasons, slTp, pnl, horizonLabel, close, shortScore, midScore, midClass, bearAlert, belowSma60, breachedSL, hitTP1, hitTP2, distSL, distTP1 };
+  return { verdict, tag, advice, sellPct, reasons, slTp, pnl, horizonLabel, close, atr, shortScore, midScore, midClass, bearAlert, belowSma60, breachedSL, hitTP1, hitTP2, distSL, distTP1 };
 }
 
 // ── 損益面板 + 決策矩陣 + 渲染 ──
@@ -380,7 +394,7 @@ function renderPnl(p){
   g.innerHTML =
     '<div class="stat-mini"><div class="sm-lbl">持股數</div><div class="sm-val neu">' + p.shares + ' 股</div></div>' +
     '<div class="stat-mini"><div class="sm-lbl">均價</div><div class="sm-val neu">' + fmt2(p.cost) + '</div></div>' +
-    '<div class="stat-mini"><div class="sm-lbl">現價</div><div class="sm-val ' + cls + '">' + fmt2(null) + '</div></div>' +
+    '<div class="stat-mini"><div class="sm-lbl">現價</div><div class="sm-val ' + cls + '">' + fmt2(p.close) + '</div></div>' +
     '<div class="stat-mini"><div class="sm-lbl">部位金額</div><div class="sm-val">' + fmt2(p.positionValue) + '</div></div>' +
     '<div class="stat-mini"><div class="sm-lbl">市值</div><div class="sm-val ' + cls + '">' + fmt2(p.marketValue) + '</div></div>' +
     '<div class="stat-mini"><div class="sm-lbl">浮動損益</div><div class="sm-val ' + cls + '">' + (p.float >= 0 ? "+" : "") + fmt2(p.float) + "（" + fmtPct(p.floatPct) + '）</div></div>';
@@ -393,7 +407,8 @@ function renderMatrix(d){
     { key: "tp2",  cond: "達第二檔止盈",       hit: d.hitTP2,                            action: "減碼 60%、trailing stop" },
     { key: "tp1",  cond: "達第一檔止盈",       hit: d.hitTP1,                            action: "減碼 1/3 鎖利" },
     { key: "alert",cond: "中期⚠️強警報",       hit: d.bearAlert && d.bearAlert.level === "strong", action: "減碼 30% 觀望" },
-    { key: "weak", cond: "浮動賠 + 空頭 + 中期弱", hit: (d.shortScore < -0.15 && (d.midClass === "weak" || d.midClass === "bear_rebound")), action: "減碼 30% 控損" },
+    { key: "deep", cond: "深賠（浮動賠 >−8%）", hit: (d.pnl.floatPct <= -8), action: "減碼 20% 控風險" },
+    { key: "weak", cond: "浮動賠 + 短線空頭 + 中期弱", hit: (d.pnl.floatPct < 0 && d.shortScore < -0.15 && (d.midClass === "weak" || d.midClass === "bear_rebound")), action: "減碼 30% 控損" },
     { key: "win",  cond: "浮動賺 + 中期多頭", hit: (d.pnl.floatPct > 0 && d.midScore > 0.2 && !d.belowSma60), action: "持股、上移止損保本" },
   ];
   let html = "<thead><tr><th>情境</th><th>觸發條件</th><th>建議動作</th><th>目前</th></tr></thead><tbody>";
@@ -453,6 +468,7 @@ async function runSell(){
   document.getElementById("loading").style.display = "block";
   document.getElementById("err").style.display = "none";
   btn.disabled = true; btn.textContent = "評估中…"; btn.style.opacity = "0.6";
+  const loadMsg = document.getElementById("loadingMsg"); if (loadMsg) loadMsg.textContent = "正在抓 " + t + " 行情…（並行 relay / Jina / allorigins）";
 
   let rows, demo = false;
   try {
@@ -467,6 +483,7 @@ async function runSell(){
   }
 
   try {
+    if (loadMsg) loadMsg.textContent = "計算訊號與決策中…";
     const IND = StockCore.computeIndicators(rows);
     const i = rows.length - 1;
     const signals = StockCore.detectSignals(IND, i);
@@ -530,9 +547,27 @@ async function runSell(){
     document.getElementById("err").style.display = "block";
   } finally {
     document.getElementById("loading").style.display = "none";
-    btn.disabled = false; btn.textContent = "開始評估"; btn.style.opacity = "";
+    btn.disabled = false; btn.style.opacity = "";
+    // H. 記下本次已評估的輸入，供「重新評估」dirty 判斷
+    window._sellEvaluated = { ticker: t, shares: shares, cost: cost };
+    markDirty();
+    btn.textContent = markDirtyLabel();
   }
 }
+
+// H. 輸入變更 → 按鈕變「重新評估」並提示有未套用變更
+function markDirty(){
+  const ev = window._sellEvaluated;
+  if (!ev) return false;
+  const t = document.getElementById("ticker").value.trim().toUpperCase();
+  const sh = parseInt(document.getElementById("shares").value, 10);
+  const co = parseFloat(document.getElementById("cost").value);
+  const dirty = (ev.ticker !== t) || (ev.shares !== sh) || (ev.cost !== co);
+  const hint = document.getElementById("dirtyHint");
+  if (hint) hint.style.display = dirty ? "block" : "none";
+  return dirty;
+}
+function markDirtyLabel(){ return markDirty() ? "重新評估" : "開始評估"; }
 
 // ── K 線（簡化：K 線 + 均價 + 止損 + 止盈 + 中期止損）────────────────────
 function drawChart(rows, IND, lines){
@@ -709,7 +744,39 @@ document.addEventListener("DOMContentLoaded", () => {
         if (c) { document.getElementById("shares").value = c.shares || ""; document.getElementById("cost").value = c.cost || ""; }
       } catch (e) {}
     }
+    fillPosSel(); markDirty();
   });
+  // I. 填充「我持有的部位」下拉（所有已存均價的代號）
+  window.fillPosSel = function(){
+    const sel = document.getElementById("posSel");
+    if (!sel) return;
+    let keys = [];
+    try { keys = Object.keys(JSON.parse(localStorage.getItem(COSTS_KEY) || "{}")).sort(); } catch (e) {}
+    const cur = t.value.trim().toUpperCase();
+    sel.innerHTML = keys.length ? keys.map(k => {
+      const nm = (WNAMES[k] || "");
+      return '<option value="'+k+'" '+(k === cur ? "selected" : "")+'>'+k+' '+nm+'</option>';
+    }).join("") : '<option value="">（尚未存任何部位均價）</option>';
+  };
+  window.loadPosSel = function(){
+    const sel = document.getElementById("posSel");
+    if (!sel) return;
+    const q = sel.value;
+    if (!/^\d{4}$/.test(q)) return;
+    document.getElementById("ticker").value = q;
+    try {
+      const costs = JSON.parse(localStorage.getItem(COSTS_KEY) || "{}");
+      const c = costs[q];
+      if (c) { document.getElementById("shares").value = c.shares || ""; document.getElementById("cost").value = c.cost || ""; }
+    } catch (e) {}
+    markDirty();
+  };
+  // H. 均價/持股數 變更 → dirty 提示
+  ["shares","cost"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener("input", () => { markDirty(); document.getElementById("btn").textContent = markDirtyLabel(); });
+  });
+  fillPosSel();
 });
 </script>
 </body>
