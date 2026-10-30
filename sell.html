@@ -141,7 +141,7 @@
     <div class="card">
       <h3>📈 K 線與部位參考線</h3>
       <canvas id="chart" width="800" height="300"></canvas>
-      <div style="font-size:11px;color:var(--muted);margin-top:6px">黑色實線＝均價、綠色虛線＝短線止損、紅色實線＝止盈、橘色點線＝中期止損</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:6px">黑色實線＝均價、綠色虛線＝短線止損、紅色實線＝止盈、橘色點線＝中期止損、紫色點線＝保本止損（僅「持股」情境顯示）</div>
     </div>
   </div>
 
@@ -537,7 +537,13 @@ async function runSell(){
     // 決策矩陣
     renderMatrix(primary);
     // K 線
-    drawChart(rows, IND, { cost: cost, sl: primary.slTp.sl, tp1: primary.slTp.tp1, slMid: dMid40 ? dMid40.slTp.sl : null });
+    const dMid40forChart = dMid40 ? dMid40.slTp.sl : null;
+    // 保本止損線：只在「持股」(浮動賺+多頭) 情境才畫,= max(均價, 現價−2%)
+    let breakevenLine = null;
+    if (primary.verdict === "hold") {
+      breakevenLine = Math.max(cost, +(A.close * 0.98).toFixed(2));
+    }
+    drawChart(rows, IND, { cost: cost, sl: primary.slTp.sl, tp1: primary.slTp.tp1, slMid: dMid40forChart, breakeven: breakevenLine });
 
     // 分享
     window._sellShare = { ticker: t, name: WNAMES[t] || "", cost: cost, shares: shares, close: A.close, verdict: primary.verdict, tag: primary.tag, advice: primary.advice, reasons: primary.reasons, pnl: primary.pnl, sl: primary.slTp.sl, tp1: primary.slTp.tp1, mid40: A.hist_mid40, mid60: A.hist_mid60 };
@@ -585,7 +591,7 @@ function drawChart(rows, IND, lines){
   const plotW = W - pad.l - pad.r, plotH = H - pad.t - pad.b;
   let hi = -Infinity, lo = Infinity;
   showRows.forEach(r => { hi = Math.max(hi, r.high); lo = Math.min(lo, r.low); });
-  [lines.cost, lines.sl, lines.tp1, lines.slMid].forEach(v => { if (v != null) { hi = Math.max(hi, v); lo = Math.min(lo, v); } });
+  [lines.cost, lines.sl, lines.tp1, lines.slMid, lines.breakeven].forEach(v => { if (v != null) { hi = Math.max(hi, v); lo = Math.min(lo, v); } });
   const y = v => pad.t + (hi - v) / (hi - lo) * plotH;
   const x = i => pad.l + i * (plotW / n);
 
@@ -640,6 +646,12 @@ function drawChart(rows, IND, lines){
     ctx.beginPath(); ctx.moveTo(pad.l, y(lines.slMid)); ctx.lineTo(W - pad.r, y(lines.slMid)); ctx.stroke(); ctx.setLineDash([]);
     ctx.fillStyle = "#f59e0b"; ctx.font = "10px sans-serif"; ctx.textAlign = "right";
     ctx.fillText("中期止損 " + lines.slMid.toFixed(0), W - pad.r - 4, y(lines.slMid) + 12);
+  }
+  if (lines.breakeven != null) {
+    ctx.strokeStyle = "rgba(168,85,247,0.95)"; ctx.setLineDash([6,3]); ctx.lineWidth = 1.2;
+    ctx.beginPath(); ctx.moveTo(pad.l, y(lines.breakeven)); ctx.lineTo(W - pad.r, y(lines.breakeven)); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = "#a855f7"; ctx.font = "10px sans-serif"; ctx.textAlign = "right";
+    ctx.fillText("保本止損 " + lines.breakeven.toFixed(0), W - pad.r - 4, y(lines.breakeven) - 3);
   }
   // 收盤
   const last = showRows[n - 1];
