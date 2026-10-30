@@ -548,23 +548,34 @@ async function runSell(){
     const dMid40 = sellDecision(A, IND, cost, shares, "mid40");
     const dMid60 = sellDecision(A, IND, cost, shares, "mid60");
 
-    // 主結論：依 期別 預設 短線；使用者可切換
-    const primary = dShort;
+    // 結論：短線 + 中期 兩種建議動作並列顯示
+    const primary = dShort; // 主結論(短線),後續 pnl/matrix 仍用它
     document.getElementById("results").style.display = "block";
     document.getElementById("demoBanner").style.display = demo ? "block" : "none";
-
-    // 結論
     const ft = document.getElementById("finalText");
-    ft.textContent = primary.advice;
-    ft.className = "final-text " + (primary.verdict === "sell" ? "neg" : primary.verdict === "hold" ? "pos" : primary.verdict === "watch" ? "neu" : "neg");
+    ft.className = "final-text";
+    const shortVerdictColor = dShort.verdict === "sell" ? "var(--bear)" : dShort.verdict === "reduce" ? "var(--yellow)" : dShort.verdict === "hold" ? "var(--bull)" : "var(--muted)";
+    const midVerdictColor = dMid40.verdict === "sell" ? "var(--bear)" : dMid40.verdict === "reduce" ? "var(--yellow)" : dMid40.verdict === "hold" ? "var(--bull)" : "var(--muted)";
+    ft.innerHTML =
+      '<div style="display:flex;flex-wrap:wrap;gap:8px 16px;align-items:baseline">' +
+        '<div style="font-size:14px;font-weight:700;color:var(--accent)">📉 短線（5 日）：<span style="color:' + shortVerdictColor + '">' + dShort.tag + '</span></div>' +
+        '<div style="font-size:14px;font-weight:700;color:var(--yellow)">📈 中期（2–3 月）：<span style="color:' + midVerdictColor + '">' + dMid40.tag + '</span></div>' +
+      '</div>' +
+      '<div style="margin-top:6px;font-size:13px;line-height:1.6;color:var(--text)">' + dShort.advice + '</div>' +
+      '<div style="margin-top:4px;font-size:13px;line-height:1.6;color:var(--muted)">' + dMid40.advice + '</div>';
+    // verdictTag 改顯示「短線 + 中期」兩個 tag 並列
     const vt = document.getElementById("verdictTag");
     vt.style.display = "";
-    vt.textContent = primary.tag;
-    vt.className = "verdict-tag " + (primary.verdict === "sell" ? "vt-sell" : primary.verdict === "reduce" ? "vt-reduce" : primary.verdict === "hold" ? "vt-hold" : "vt-watch");
+    vt.textContent = "";
+    vt.className = "verdict-tag";
+    vt.innerHTML =
+      '<span style="color:' + shortVerdictColor + '">' + dShort.tag + '</span>' +
+      ' <span style="opacity:.4">·</span> ' +
+      '<span style="color:' + midVerdictColor + '">' + dMid40.tag + '</span>';
 
     document.getElementById("adviceLine").innerHTML =
       '<div style="font-size:12px;color:var(--muted)">現價 <b style="color:var(--text)">' + fmt2(A.close) + '</b>、均價 <b style="color:var(--text)">' + fmt2(cost) + '</b>、持股 <b style="color:var(--text)">' + shares + '</b> 股。</div>' +
-      '<div style="font-size:11px;color:var(--muted);margin-top:4px">以下結論預設「短線(5日)」視角；中期視角見下方「📈 中期視角」框。</div>';
+      '<div style="font-size:11px;color:var(--muted);margin-top:4px">上列建議分「短線(5日)」與「中期(2–3月持有)」兩種視角,短線看震盪波段、中期看趨勢,可依實際持有目的擇一執行。</div>';
 
     document.getElementById("shortBox").style.display = "block";
     renderShortBox(Object.assign({}, primary, { atr: A.atr }));
