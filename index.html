@@ -495,6 +495,20 @@ async function fetchJsonOne(url){
   return await r.json();
 }
 
+// 帶逾時的中斷器:逾時時 reject(讓 relayRetry 不卡死)
+async function withTimeout(url, ms, label){
+  const ctl = new AbortController();
+  const timer = setTimeout(() => ctl.abort(), ms);
+  try {
+    const r = await fetch(url, { signal: ctl.signal });
+    return r;
+  } catch (e) {
+    throw new Error((label||"fetch") + " 逾時 (" + ms + "ms)");
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 // 從 Jina Reader 的 Markdown 包裝抽出內層 JSON
 function jinaParse(text){
   const idx = text.indexOf("Markdown Content:");
@@ -554,6 +568,16 @@ async function fetchRows(code, period){
   tasks.push(jinaOne(variants[0]), allOrigins(variants[0]));
   if (!isSecure) tasks.push(yahooDirect(variants[0]));
 
+  // 加「corsproxy」備援(能繞過 GitHub Pages 的 CORS、兜底 jina/allorigins 掛時)
+  const corsProxyOne = async (v) => {
+    const target = "https://query1.finance.yahoo.com/v8/finance/chart/" + v + qs;
+    const r = await fetch("https://api.codetabs.com/v1/proxy/?url=" + encodeURIComponent(target), { headers: { "Accept": "application/json" } });
+    if (!r.ok) throw new Error("corsproxy HTTP " + r.status);
+    const j = await r.json();
+    if (j && j.chart) return j;
+    throw new Error("corsproxy 無 chart");
+  };
+  if (!isSecure) tasks.push(corsProxyOne(variants[0])); // 本地可用;https 下 corsproxy 也可能被擋、不強加
   // 全部端點 catch 後回 null、Promise.all 等完挑第一支有 chart,
   // 避免並行端點無害 reject(yahoo 直抓 CORS / allorigins 逾時 / ^TWII 查不到)污染 console。
   const settled = await Promise.all(tasks.map(async fn => {
@@ -562,6 +586,13 @@ async function fetchRows(code, period){
   }));
   const winner = settled.find(j => j && j.chart);
   if (winner) return buildRows(winner, code);
+  // 全端點無 chart → 對「個股主變體 relay」再試一次(冷啟動/抖動容錯),再失敗才真 throw
+  if (QUOTE_RELAY && !/^\.?TWII/.test(code)) {
+    try {
+      const rr = await withTimeout(QUOTE_RELAY + "?ticker=" + encodeURIComponent(variants[0]) + "&range=" + encodeURIComponent(period) + "&interval=1d", 10000, "relayRetry");
+      if (rr.ok) { const j = await rr.json(); if (j && j.chart) return buildRows(j, code); }
+    } catch (e) {}
+  }
   throw new Error("取不到 " + code + " 行情（所有端點皆無 chart）");
 }
 
