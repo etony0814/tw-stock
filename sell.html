@@ -180,7 +180,7 @@
 <script>
 "use strict";
 // ── 常量（複用 index.html 的 Yahoo 端點 / 中繼）──────────────────────────
-const QUOTE_RELAY = "https://tw-news-relay.etonylin.workers.dev";
+const QUOTE_RELAY = (typeof global !== "undefined" && global.SELF_RELY_URL) || "https://tw-news-relay.etonylin.workers.dev";
 // 預熱 relay:頁面載入即發一筆輕量請求,讓 Cloudflare Worker 保持熱、避免「第一次評估」遇冷啟動拖慢/掉示意資料
 (function warmRelay(){ if (QUOTE_RELAY && location.protocol === "https:") fetch(QUOTE_RELAY + "?ticker=2330.TW&range=5d&interval=1d").catch(function(){}); })();
 const STOCK_URLS = ["https://query1.finance.yahoo.com/v8/finance/chart/","https://query2.finance.yahoo.com/v8/finance/chart/"];
