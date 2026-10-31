@@ -291,11 +291,27 @@
     }
   }
 
+  // relay 端点辅助:先直抓直关端点(本地/https 不被阻时),失败走 SELF_RELY_URL/?<key>=1
+  async function relayFetch(relayKey, directUrl) {
+    // 1) relay(优先;跨站能抓)
+    if (SELF_RELY_URL) {
+      try {
+        const r = await fetch(SELF_RELY_URL + "/?" + relayKey);
+        if (r.ok) {
+          const t = await r.text();
+          const j = JSON.parse(t);
+          if (j && j.data) return j;   // T86 成功
+        }
+      } catch (e) {}
+    }
+    // 2) 直抓(本地或非阻;https GitHub Pages 下必被 CORS 挡住,作为备援)
+    const data = await fetchJsonSmart(directUrl);
+    return data;
+  }
+
   async function fetchFundFlow() {
     try {
-      const data = await fetchJsonSmart(
-        "https://www.twse.com.tw/rwd/zh/fund/t86?step=1&response=json"
-      );
+      const data = await relayFetch("fundflow=1", "https://www.twse.com.tw/rwd/zh/fund/t86?step=1&response=json");
       const rows = data.data || [];
       const fields = data.fields || [];
       const intOf = v => { const s = String(v).replace(",", "").trim(); return s === "-" || s === "" ? 0 : parseInt(s, 10) || 0; };
@@ -372,7 +388,8 @@
   // 指定日期的 T86
   async function fetchFundFlowDate(mmdd) {
     try {
-      const data = await fetchJsonSmart(
+      const data = await relayFetch(
+        "fundflow=1&date=" + mmdd,
         "https://www.twse.com.tw/rwd/zh/fund/t86?step=1&response=json&date=" + mmdd
       );
       if (!data.data || !data.data.length) return { ok: false };
