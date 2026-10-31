@@ -672,13 +672,19 @@ async function runSell(){
   let rows, demo = false;
   try {
     // 6mo(~126 根)已足夠 40/60 日勝率;比 1y 輕量、relay 回傳更快。
-    // 並加 22s 總 timeout(給 relay 冷啟動 20s 空間);超時退「示意資料」,不干等。
+    // 並加 22s 總 timeout(給 relay 冷啟動 20s 空間);超時 → 明確重試,不干等。
     rows = await Promise.race([
       fetchRows(toYahoo(t), "6mo"),
       new Promise((_, rej) => setTimeout(() => rej(new Error("22s 逾時")), 22000))
     ]);
   } catch (e) {
-    rows = demoRows(t); demo = true;
+    // 全端點失敗/逾時:不掉 demo、不算分數、不 .toFixed(null);明確提示重試。
+    document.getElementById("results").style.display = "none";
+    document.getElementById("loading").style.display = "none";
+    document.getElementById("err").textContent = "取不到 " + t + " 行情（" + e.message + "），請稍後「重試一次」。";
+    document.getElementById("err").style.display = "block";
+    btn.disabled = false; btn.textContent = "重試一次"; btn.style.opacity = "1";
+    return;
   }
 
   try {
