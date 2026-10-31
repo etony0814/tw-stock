@@ -386,11 +386,15 @@
   }
 
   // 指定日期的 T86
-  async function fetchFundFlowDate(mmdd) {
+  async   // 指定日的 T86:走 relay ?fundflow=1&date=YYYYMMDD(8 位)
+  async function fetchFundFlowDate(ymdstr) {
+    if (!ymdstr) return null;
+    // 8 位 YYYYMMDD 直接用;4 位 MMDD 補 2026 西元年(民國 115 年)
+    const d8 = /^\d{8}$/.test(ymdstr) ? ymdstr : ("2026" + String(ymdstr).padStart(4, "0"));
     try {
       const data = await relayFetch(
-        "fundflow=1&date=" + mmdd,
-        "https://www.twse.com.tw/rwd/zh/fund/t86?step=1&response=json&date=" + mmdd
+        "fundflow=1&date=" + d8,
+        "https://www.twse.com.tw/rwd/zh/fund/t86?step=1&response=json&date=" + d8
       );
       if (!data.data || !data.data.length) return { ok: false };
       const fields = data.fields || [];
