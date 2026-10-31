@@ -495,22 +495,36 @@
       headlines: headlines.slice(0, 15) };
   }
 
-  // 前端直抓 Google News RSS（瀏覽器可跨站抓 XML；抓不到回傳空陣列）
+  // 前端直抓新聞:優先走 relay 的「新聞路由」(https://tw-news-relay.etonylin.workers.dev/?news=代號 回 Bing 新聞 RSS,可跨站),
+  // 回退 Google News RSS 直抓(瀏覽器可跨站抓 XML);都抓不到回傳空陣列。
   async function fetchNewsHeadlines(ticker, name, days) {
     const q = encodeURIComponent((name || "") + " " + ticker);
-    const url = "https://news.google.com/rss/search?q=" + q + "&hl=zh-TW&gl=TW&ce=zh";
-    try {
-      const text = await fetchTextSmart(url);
+    const gurl = "https://news.google.com/rss/search?q=" + q + "&hl=zh-TW&gl=TW&ce=zh";
+    const parseRss = (text) => {
       const doc = new DOMParser().parseFromString(text, "text/xml");
-      const items = Array.from(doc.querySelectorAll("item"))
-        .map(it => it.querySelector("title").textContent.trim());
+      const titles = Array.from(doc.querySelectorAll("item"))
+        .map(it => it.querySelector("title") ? it.querySelector("title").textContent.trim() : "");
       const now = Date.now();
       const cutoff = now - (days || 7) * 86400000;
-      const items2 = Array.from(doc.querySelectorAll("item")).map(it => ({
-        title: it.querySelector("title").textContent.trim(),
+      const dated = Array.from(doc.querySelectorAll("item")).map(it => ({
+        title: it.querySelector("title") ? it.querySelector("title").textContent.trim() : "",
         ts: it.querySelector("pubDate") ? Date.parse(it.querySelector("pubDate").textContent) : 0
       })).filter(it => it.ts >= cutoff || it.ts === 0);
-      return (items2.length ? items2.map(it => it.title) : items).slice(0, 30);
+      const pick = dated.length ? dated.map(it => it.title) : titles;
+      // 過濾掉「代號」「2330 - Bing新聞」這類非標題雜訊
+      return pick.filter(t => t && t.length > 6 && t !== ticker && !/^- Bing新聞$/.test(t)).slice(0, 30);
+    };
+    try {
+      // 1) relay 新聞路由(能跨站、穩定;?news=代號)
+      const relay = "https://tw-news-relay.etonylin.workers.dev/?news=" + encodeURIComponent(ticker);
+      const text = await fetchTextSmart(relay);
+      const got = parseRss(text);
+      if (got.length) return got;
+      // 2) 回退 Google News RSS 直抓
+      if (gurl) {
+        try { const t2 = await fetchTextSmart(gurl); const g2 = parseRss(t2); if (g2.length) return g2; } catch (e) {}
+      }
+      return [];
     } catch (e) { return []; }
   }
 
