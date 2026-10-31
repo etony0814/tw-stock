@@ -522,11 +522,11 @@ function jinaParse(text){
 async function fetchRows(code, period){
   const qs = "?range=" + period + "&interval=1d";
   const c = code.toUpperCase().replace(/\.TW$/,'').replace(/\.TWO$/,'');
-  // 大盤代理:relay 對 Yahoo 大盤符號 (^TWII/TWII.TW/^TPX) 全數查不到(回 no data),
-  // 改用 0050.TW(元大台灣50 ETF,加權代表)當大盤代理,relay 有真實 K 線。
+  // 大盤:relay 對 Yahoo 大盤符號查無資料,回 ^TWII 讓上層 try/catch 降級 null,
+  // 大盤卡誠實標「大盤資料未取得、本頁個股訊號為主」,不用 0050 代理造假數值。
   const isTaiex = code === "^TWII";
-  const primary = isTaiex ? "0050.TW" : toYahoo(c);
-  const variants = isTaiex ? ["0050.TW"] : [toYahoo(c)];
+  const primary = isTaiex ? "^TWII" : toYahoo(c);
+  const variants = isTaiex ? ["^TWII"] : [toYahoo(c)];
   // GitHub Pages(https) 下直抓 Yahoo 一定被 CORS 擋,白等 → 跳過;本地(http) 保留
   const isSecure = location.protocol === "https:";
 
@@ -782,7 +782,7 @@ async function run(){
 
     const [stockRows, _taiexRows, nmAuto, prec_fund, prec_news] = await Promise.all([
       fetchRows(toYahoo(t), period),
-      fetchRows("^TWII", "1mo").catch(() => null), // 大盤代理 0050(加權 ETF)抓不到時降級 null,不連帶個股
+      fetchRows("^TWII", "1mo").catch(() => null), // 大盤抓不到降級 null,不連帶個股;大盤 15% 權重不計入
       fetchStockName(t).catch(() => WNAMES[t] || ''),
       prec_fund_p,
       prec_news_p
@@ -1337,7 +1337,7 @@ function render(A, rows, t){
   setVal('tScore', tx.score, cls(tx.score));
   document.getElementById('tInfo').innerHTML = tx.ok
     ? `加權 <b>${tx.point.toLocaleString()}</b>、${tx.chg_pct>0?'+':''}${tx.chg_pct}%、${tx.direction}${tx.vol20!=null?'、近20日年化波動 '+tx.vol20+'%':''}。<br><span style="font-size:12px;color:var(--muted)">${tx.advice}</span>`
-    : `<span style="color:var(--muted)">大盤資料未取得(目前用 0050 加權 ETF 當代理;relay 對 ^TWII 大盤符號查無資料)。</span>`;
+    : `<span style="color:var(--muted)">大盤資料未取得(Yahoo 大盤符號 ^TWII 查無資料);大盤那 15% 未計入,本頁以個股訊號為主。</span>`;
 
   // 籌碼
   const ff=A.fund_flow;
