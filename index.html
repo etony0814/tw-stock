@@ -1299,7 +1299,7 @@ function render(A, rows, t){
 
   // 盤面
   const it=A.intraday;
-  setVal('iScore', it.score, cls(it.score));
+  setVal('iScore', it.score, cls(it.score), it.score>=0.2?'偏多，當天偏強、可留意多頭訊號':it.score<=-0.2?'偏空，當天偏弱、留意減碼':'中性，盤面方向不明、先觀望');
   document.getElementById('iInfo').innerHTML =
     `現價 <b>${it.last!=null?it.last.toLocaleString():'—'}</b>、開盤 ${it.open!=null?it.open.toLocaleString():'—'}、`+
     `漲跌 ${it.chg_pct!=null?(it.chg_pct>0?'+':'')+it.chg_pct+'%':'—'}、量比 ${it.vol_ratio!=null?it.vol_ratio:'—'}；<br>`+
@@ -1344,14 +1344,14 @@ function render(A, rows, t){
 
   // 大盤
   const tx=A.taiex;
-  setVal('tScore', tx.score, cls(tx.score));
+  setVal('tScore', tx.score, cls(tx.score), tx.ok? (tx.score>=0.2?'大盤偏多，環境友善':tx.score<=-0.2?'大盤偏空，環境偏壓制':'大盤中性，未明顯加碼/減碼'):'大盤資料未取得，15% 未計入、以個股訊號為主');
   document.getElementById('tInfo').innerHTML = tx.ok
     ? `加權 <b>${tx.point.toLocaleString()}</b>、${tx.chg_pct>0?'+':''}${tx.chg_pct}%、${tx.direction}${tx.vol20!=null?'、近20日年化波動 '+tx.vol20+'%':''}。<br><span style="font-size:12px;color:var(--muted)">${tx.advice}</span>`
     : `<span style="color:var(--muted)">大盤資料未取得(Yahoo 大盤符號 ^TWII 查無資料);大盤那 15% 未計入,本頁以個股訊號為主。</span>`;
 
   // 籌碼
   const ff=A.fund_flow;
-  setVal('fScore', ff.score||0, cls(ff.score||0));
+  setVal('fScore', ff.score||0, cls(ff.score||0), ff.ok? (ff.score>=0.2?'法人偏多，當日機構買盤較強':ff.score<=-0.2?'法人偏空，當日機構賣壓較重':'法人中性，機構多空交織'):'籌碼面未取得，暫以中性計');
   document.getElementById('fInfo').innerHTML = ff.ok
     ? `${ff.label}（當日榜單 ${ff.net_buy_count} 家淨買／${ff.net_sell_count} 家淨賣）。`+
       (ff.on_list&&ff.inst?`<br><span style="font-size:12px;color:var(--muted)">本股當榜：三大法人 ${ff.inst.total_net>=0?'+':''}${ff.inst.total_net.toLocaleString()} 股、外資 ${ff.inst.foreign_net>=0?'+':''}${ff.inst.foreign_net.toLocaleString()} 股。</span>`
@@ -1404,7 +1404,7 @@ function render(A, rows, t){
 
   // 消息
   const nw=A.news;
-  setVal('nScore', nw?nw.score:0, cls(nw?nw.score:0));
+  setVal('nScore', nw?nw.score:0, cls(nw?nw.score:0), nw? (nw.failed?'⚠ '+nw.label+'：'+nw.advice:(nw.score>=0.2?'新聞情緒偏正面，消息面利多':nw.score<=-0.2?'新聞情緒偏負面，消息面利空':'新聞情緒中性，消息面未明顯助漲/助跌')):'沒有抓到相關新聞，消息面未計入');
   document.getElementById('nInfo').innerHTML = nw
     ? (nw.failed
         ? `<span style="color:var(--yellow)">⚠ ${nw.label}：${nw.advice}</span>`
@@ -1668,10 +1668,17 @@ function drawVolChart(rows, IND){
 
 // 相對強度圖已移除（drawRSChart 已刪除，僅保留 rsInfo 文字顯示）
 
-function setVal(id, v, c){
+function setVal(id, v, c, desc){
   const el=document.getElementById(id);
   el.textContent = Number.isFinite(v)?v.toFixed(2):'—';
   el.className='val '+c;
+  // 分數值下方放一句白話說明(同框,讓「分數」自己看得到「這是什麼意思」)
+  const box=el.closest('.score-box');
+  let d=box?box.querySelector('.val-desc'):null;
+  if(desc!=null && box){
+    if(!d){ d=document.createElement('div'); d.className='val-desc'; d.style.cssText='font-size:11px;color:var(--muted);margin-top:4px;font-weight:400;line-height:1.4'; box.appendChild(d); }
+    d.textContent=desc; d.style.display='block';
+  } else if(d){ d.style.display='none'; }
 }
 
 // ── K 線＋均線（原生 Canvas）──────────────────────────────
