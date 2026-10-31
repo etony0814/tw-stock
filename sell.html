@@ -534,17 +534,17 @@ function renderMatrix(d, tableId, view){
     { key: "deep", cond: "深賠(浮動賠 >−8%)",        hit: (d.pnl.floatPct <= -8), action: "減碼 20% 控風險" },
     { key: "weak", cond: "浮動賠 + 中期弱(weak/bear_rebound)", hit: (d.pnl.floatPct < 0 && (d.midClass === "weak" || d.midClass === "bear_rebound")), action: "減碼 30% 控損" },
     { key: "win",  cond: "浮動賺 + 中期偏多",         hit: (d.pnl.floatPct > 0 && d.midScore > 0.2 && !d.belowSma60), action: "持股、上移中期止損到 " + Math.max(d.pnl.cost, (d.close * 0.98).toFixed(0)) + "(max 均價 / 現價−2%)" },
-    { key: "add",  cond: "可加碼(中期強多+浮動賺)",   hit: !!(d.addOn && d.addOn.ok && d.addOn.pct === 30), action: "可加碼 30%、加碼後保本 " + (d.addOn ? d.(addOn.breakeven != null ? addOn.breakeven.toFixed(0) : "—") : "—") },
-    { key: "addS", cond: "小量加碼(中期偏多)",        hit: !!(d.addOn && d.addOn.ok && d.addOn.pct === 15), action: "可小量加碼 15%、加碼後保本 " + (d.addOn ? d.(addOn.breakeven != null ? addOn.breakeven.toFixed(0) : "—") : "—") },
+    { key: "add",  cond: "可加碼(中期強多+浮動賺)",   hit: !!(d.addOn && d.addOn.ok && d.addOn.pct === 30), action: "可加碼 30%、加碼後保本 " + (d.addOn ? d.addOn.breakeven.toFixed(0) : "—") },
+    { key: "addS", cond: "小量加碼(中期偏多)",        hit: !!(d.addOn && d.addOn.ok && d.addOn.pct === 15), action: "可小量加碼 15%、加碼後保本 " + (d.addOn ? d.addOn.breakeven.toFixed(0) : "—") },
   ] : [
     { key: "sl",   cond: "跌破短線止損(1.5×ATR)",    hit: d.breachedSL, action: "減碼 30%、不抗跌" },
     { key: "tp2",  cond: "達短線第二檔止盈",          hit: d.hitTP2,     action: "減碼 60%、剩 40% trailing" },
     { key: "tp1",  cond: "達短線第一檔止盈",          hit: d.hitTP1,     action: "減碼 1/3 鎖利" },
     { key: "short",cond: "短線偏空(分數 ≤−0.15)",    hit: (d.shortScore <= -0.15), action: "減碼 20%、等短線翻多再說" },
     { key: "deep", cond: "深賠(浮動賠 >−8%)",        hit: (d.pnl.floatPct <= -8), action: "減碼 20% 控風險" },
-    { key: "win",  cond: "浮動賺 + 短線偏多",          hit: (d.pnl.floatPct > 0 && d.shortScore >= 0.15), action: "持股、破短線止損 " + d.(slTp.sl != null ? slTp.sl.toFixed(0) : "—") + " 即減" },
-    { key: "add",  cond: "可加碼(短線強多+浮動賺+趨勢)", hit: !!(d.addOn && d.addOn.ok && d.addOn.pct === 30), action: "可加碼 30%、加碼後保本 " + (d.addOn ? d.(addOn.breakeven != null ? addOn.breakeven.toFixed(0) : "—") : "—") },
-    { key: "addS", cond: "小量加碼(短線偏多)",         hit: !!(d.addOn && d.addOn.ok && d.addOn.pct === 15), action: "可小量加碼 15%、加碼後保本 " + (d.addOn ? d.(addOn.breakeven != null ? addOn.breakeven.toFixed(0) : "—") : "—") },
+    { key: "win",  cond: "浮動賺 + 短線偏多",          hit: (d.pnl.floatPct > 0 && d.shortScore >= 0.15), action: "持股、破短線止損 " + d.slTp.sl.toFixed(0) + " 即減" },
+    { key: "add",  cond: "可加碼(短線強多+浮動賺+趨勢)", hit: !!(d.addOn && d.addOn.ok && d.addOn.pct === 30), action: "可加碼 30%、加碼後保本 " + (d.addOn ? d.addOn.breakeven.toFixed(0) : "—") },
+    { key: "addS", cond: "小量加碼(短線偏多)",         hit: !!(d.addOn && d.addOn.ok && d.addOn.pct === 15), action: "可小量加碼 15%、加碼後保本 " + (d.addOn ? d.addOn.breakeven.toFixed(0) : "—") },
   ];
   const hit = rows.find(r => r.hit) || null;
   // 上方大字：命中格(依視角出不同「你目前落在」)
@@ -920,12 +920,12 @@ function shareSell(){
   const msg =
     "【我的部位決策】" + d.ticker + " " + d.name + "\n" +
     "持股 " + d.shares + " 股、均價 " + d.cost + "、現價 " + (d.close != null ? (d.close != null ? d.close.toFixed(2) : "—") : "—") + "\n" +
-    "浮動損益：" + (d.pnl.float >= 0 ? "+" : "") + d.(pnl.float != null ? pnl.float.toFixed(0) : "—") + "（" + fmtPct(d.pnl.floatPct) + "）\n" +
+    "浮動損益：" + (d.pnl.float >= 0 ? "+" : "") + d.pnl.float.toFixed(0) + "（" + fmtPct(d.pnl.floatPct) + "）\n" +
     "結論（短線）：" + d.tag + "；結論（中期）：" + (d.midTag || "—") + "\n" +
     "短線建議：" + d.advice + "\n" +
     "中期建議：" + (d.midAdvice || "依短線為准") + "\n" +
     "短線止損 " + d.sl + "、止盈 " + d.tp1 + "；40日勝率 " + m40 + "、60日勝率 " + m60 + "\n" +
-    (d.addOn && d.addOn.ok ? "加碼：✅ 可加碼 " + d.addOn.pct + "%（加碼後保本 " + d.(addOn.breakeven != null ? addOn.breakeven.toFixed(0) : "—") + "、止損 " + d.(addOn.sl != null ? addOn.sl.toFixed(0) : "—") + "）\n"
+    (d.addOn && d.addOn.ok ? "加碼：✅ 可加碼 " + d.addOn.pct + "%（加碼後保本 " + d.addOn.breakeven.toFixed(0) + "、止損 " + d.addOn.sl.toFixed(0) + "）\n"
       : (d.addOn ? "加碼：🔒 " + d.addOn.reason + "\n" : "")) +
     (d.breakeven != null ? "保本止損 " + (d.breakeven != null ? d.breakeven.toFixed(0) : "—") + "（持股情境止損上移線）\n" : "") +
     "決策依據：" + d.reasons.join("、") + "\n" +
