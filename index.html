@@ -478,8 +478,9 @@ const STOCK_URLS = [
 ];
 const JINA = "https://r.jina.ai/";   // 免金鑰跨域讀取端點
 // 行情中繼：Cloudflare Worker（CORS 已開、瀏覽器不會噴 CORS 紅字）
-// 部署 deploy/cf-worker/relay.js 後填同一個 URL；留空則跳過此層
-const QUOTE_RELAY = "https://tw-news-relay.etonylin.workers.dev";
+// 部署 deploy/cf-worker/relay.js 後填同一個 URL；留空則跳過此層。relay 統一由 core.js 的 SELF_RELY_URL 定義,
+// 頁面讀 global.SELF_RELY_URL(換 URL 只改 core.js 一處),fallback 為硬編值。
+const QUOTE_RELAY = (typeof global !== "undefined" && global.SELF_RELY_URL) || "https://tw-news-relay.etonylin.workers.dev";
 // 預熱 relay:頁面載入即發一筆輕量請求,讓 Cloudflare Worker 保持熱、避免「第一次評估」遇冷啟動拖慢/掉示意資料
 (function warmRelay(){ if (QUOTE_RELAY && location.protocol === "https:") fetch(QUOTE_RELAY + "?ticker=2330.TW&range=5d&interval=1d").catch(function(){}); })();
 function toYahoo(t){
