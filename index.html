@@ -554,14 +554,15 @@ async function fetchRows(code, period){
   tasks.push(jinaOne(variants[0]), allOrigins(variants[0]));
   if (!isSecure) tasks.push(yahooDirect(variants[0]));
 
-  let lastErr = null;
-  try {
-    const j = await Promise.any(tasks.map(fn => fn().then(v => { if (v && v.chart) return v; throw new Error("無 chart"); })));
-    return buildRows(j, code);
-  } catch (agg) {
-    lastErr = (agg && agg.errors && agg.errors[0]) || agg;
-    throw new Error("取不到 " + code + " 行情（並行端點皆失敗：" + (lastErr ? lastErr.message : "無") + "）");
-  }
+  // 全部端點 catch 後回 null、Promise.all 等完挑第一支有 chart,
+  // 避免並行端點無害 reject(yahoo 直抓 CORS / allorigins 逾時 / ^TWII 查不到)污染 console。
+  const settled = await Promise.all(tasks.map(async fn => {
+    try { const j = await fn(); if (j && j.chart) return j; return null; }
+    catch (e) { return null; }
+  }));
+  const winner = settled.find(j => j && j.chart);
+  if (winner) return buildRows(winner, code);
+  throw new Error("取不到 " + code + " 行情（所有端點皆無 chart）");
 }
 
 function buildRows(j, code){
