@@ -528,7 +528,9 @@ async function fetchRows(code, period){
   // 大盤卡誠實標「大盤資料未取得、本頁個股訊號為主」,不用 0050 代理造假數值。
   const isTaiex = code === "^TWII";
   const primary = isTaiex ? "^TWII" : toYahoo(c);
-  const variants = isTaiex ? ["^TWII"] : [toYahoo(c)];
+  // 同代號可能掛 .TW 或 .TWO(如 3037 欣興在 Yahoo 是 .TW、但 3 字頭常被判 .TWO),
+  // 兩字尾都並行打、誰先回 chart 用誰,避免單字尾查無就掉「資料不足」。
+  const variants = isTaiex ? ["^TWII"] : Array.from(new Set([c + ".TW", c + ".TWO"]));
   // GitHub Pages(https) 下直抓 Yahoo 一定被 CORS 擋,白等 → 跳過;本地(http) 保留
   const isSecure = location.protocol === "https:";
 
