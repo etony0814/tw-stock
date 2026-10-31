@@ -295,13 +295,15 @@ async function raceFetch(code, period){
       .then(r => { if (!r.ok) throw new Error("yahoo HTTP " + r.status); return r.json(); });
 
   // 並行端點全並行 settled、無害 reject 全吃掉(不污染 console);誰先回有 chart 誰贏
+  // 構造時直接產生 promise(不是「回 promise 的函數」),settled 一次性 catch-all,
+  // 避免二次調用無害端點產生 Uncaught (in promise) reject。跟第一頁 fetchRows 同構。
   const pmap = [];
   variants.forEach((v, vi) => pmap.push(relayOne(v, vi === 0)));
   variants.forEach(v => pmap.push(jinaOne(v)));
   variants.forEach(v => pmap.push(allOrigins(v)));
   variants.forEach(v => pmap.push(codeTabs(v)));
   if (yahooDirect) variants.forEach(v => pmap.push(yahooDirect(v)));
-  const settled = await Promise.all(pmap.map(fn => fn().then(j => (j && j.chart ? j : null)).catch(() => null)));
+  const settled = await Promise.all(pmap.map(p => p.then(j => (j && j.chart ? j : null)).catch(() => null)));
   const winner = settled.find(j => j && j.chart);
   if (winner) return winner;
   // 全端點無 chart → 對第一變體 relay 再試一次(冷啟動/抖動容錯),再失敗才真 throw
