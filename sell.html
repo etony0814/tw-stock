@@ -359,7 +359,7 @@ function demoRows(code){
     const d = new Date(end.getTime() - (days - 1 - k) * 86400000);
     const drift = Math.sin(k / 8) * base * 0.004 + (rnd() - 0.48) * base * 0.008;
     const open = p, close = p + drift;
-    rows.push({ date: d.toISOString().slice(0, 10), open: +open.toFixed(2), high: +(Math.max(open, close) * 1.002).toFixed(2), low: +(Math.min(open, close) * 0.998).toFixed(2), close: +close.toFixed(2), volume: Math.round(base * 200000) });
+    rows.push({ date: d.toISOString().slice(0, 10), open: +(open != null ? open.toFixed(2) : "—"), high: +(Math.max(open, close) * 1.002).toFixed(2), low: +(Math.min(open, close) * 0.998).toFixed(2), close: +(close != null ? close.toFixed(2) : "—"), volume: Math.round(base * 200000) });
     p = close;
   }
   return rows;
@@ -410,17 +410,17 @@ function sellDecision(A, IND, cost, shares, horizon){
     // 1. 跌破止損 → 強制減碼 / 全賣
     sellPct = (horizon === "short") ? 100 : 50;
     verdict = "sell"; tag = "減碼 " + sellPct + "%";
-    advice = "現價已跌破" + horizonLabel + "止損（" + slTp.sl.toFixed(0) + "），依紀律減碼 " + sellPct + "%。";
-    reasons.push("跌破止損 " + slTp.sl.toFixed(0) + "（距離 " + (distSL != null ? distSL.toFixed(1) : "?") + "%）");
+    advice = "現價已跌破" + horizonLabel + "止損（" + (slTp.sl != null ? slTp.sl.toFixed(0) : "—") + "），依紀律減碼 " + sellPct + "%。";
+    reasons.push("跌破止損 " + (slTp.sl != null ? slTp.sl.toFixed(0) : "—") + "（距離 " + (distSL != null ? (distSL != null ? distSL.toFixed(1) : "—") : "?") + "%）");
     if (bearAlert) reasons.push("⚠️ 中期趨勢警報：" + bearAlert.text);
   } else if (hitTP2) {
     sellPct = 60; verdict = "sell"; tag = "減碼 60%";
-    advice = "已達第二檔止盈（" + slTp.tp2.toFixed(0) + "），建議減碼 60%、剩餘 " + (100 - sellPct) + "% 用 trailing stop 讓利潤奔跑。";
-    reasons.push("達第二檔止盈 " + slTp.tp2.toFixed(0));
+    advice = "已達第二檔止盈（" + (slTp.tp2 != null ? slTp.tp2.toFixed(0) : "—") + "），建議減碼 60%、剩餘 " + (100 - sellPct) + "% 用 trailing stop 讓利潤奔跑。";
+    reasons.push("達第二檔止盈 " + (slTp.tp2 != null ? slTp.tp2.toFixed(0) : "—"));
   } else if (hitTP1) {
     sellPct = 33; verdict = "reduce"; tag = "減碼 33%";
-    advice = "已達第一檔止盈（" + slTp.tp1.toFixed(0) + "），建議減碼 1/3 鎖利，剩餘觀望第二檔止盈 " + slTp.tp2.toFixed(0) + "。";
-    reasons.push("達第一檔止盈 " + slTp.tp1.toFixed(0));
+    advice = "已達第一檔止盈（" + (slTp.tp1 != null ? slTp.tp1.toFixed(0) : "—") + "），建議減碼 1/3 鎖利，剩餘觀望第二檔止盈 " + (slTp.tp2 != null ? slTp.tp2.toFixed(0) : "—") + "。";
+    reasons.push("達第一檔止盈 " + (slTp.tp1 != null ? slTp.tp1.toFixed(0) : "—"));
     if (bearAlert) { sellPct = 50; tag = "減碼 50%"; advice = "已達止盈但中期⚠️警報，建議加碼減碼至 50% 防回檔。"; reasons.push("⚠️ 中期警報：" + bearAlert.text); }
   } else if (bearAlert && bearAlert.level === "strong" && horizon !== "short") {
     // 未破止損、未達止盈,但中期⚠️強警報(只在中期 40/60 日情境觸發;短線 5 日不用中期警報當主結論)
@@ -432,13 +432,13 @@ function sellDecision(A, IND, cost, shares, horizon){
     // 短線 5 日:中期警報作「輔助」,主結論仍看短線分數;短線偏多則持股、短線偏空則減碼
     if (shortScore >= 0.15) {
       sellPct = 0; verdict = "hold"; tag = "持股";
-      advice = "短線偏多（分數 " + shortScore.toFixed(2) + "），但⚠️中期趨勢偏弱（" + bearAlert.text + "）；短線波段可持股，破短線止損 " + slTp.sl.toFixed(0) + " 即減碼。";
-      reasons.push("短線偏多 " + shortScore.toFixed(2));
+      advice = "短線偏多（分數 " + (shortScore != null ? shortScore.toFixed(2) : "—") + "），但⚠️中期趨勢偏弱（" + bearAlert.text + "）；短線波段可持股，破短線止損 " + (slTp.sl != null ? slTp.sl.toFixed(0) : "—") + " 即減碼。";
+      reasons.push("短線偏多 " + (shortScore != null ? shortScore.toFixed(2) : "—"));
       reasons.push("⚠️ 中期警報（輔助）：" + bearAlert.text);
     } else {
       sellPct = 20; verdict = "reduce"; tag = "減碼 20%";
-      advice = "短線偏空（分數 " + shortScore.toFixed(2) + "）+ 中期⚠️偏弱（" + bearAlert.text + "），建議減碼 20% 控風險。";
-      reasons.push("短線偏空 " + shortScore.toFixed(2));
+      advice = "短線偏空（分數 " + (shortScore != null ? shortScore.toFixed(2) : "—") + "）+ 中期⚠️偏弱（" + bearAlert.text + "），建議減碼 20% 控風險。";
+      reasons.push("短線偏空 " + (shortScore != null ? shortScore.toFixed(2) : "—"));
       reasons.push("⚠️ 中期警報：" + bearAlert.text);
     }
   } else if (close < cost && shortScore < -0.15 && (midClass === "weak" || midClass === "bear_rebound")) {
@@ -446,34 +446,34 @@ function sellDecision(A, IND, cost, shares, horizon){
     sellPct = 30; verdict = "reduce"; tag = "減碼 30%";
     advice = "浮動賠 " + Math.abs(pnl.floatPct).toFixed(1) + "% 且短線空頭 + 中期 " + midClass + "，建議減碼 30% 控損，不建議加碼攤平。";
     reasons.push("浮動賠 " + Math.abs(pnl.floatPct).toFixed(1) + "%");
-    reasons.push("短線分數 " + shortScore.toFixed(2) + "（偏空）");
+    reasons.push("短線分數 " + (shortScore != null ? shortScore.toFixed(2) : "—") + "（偏空）");
     if (midClass === "weak") reasons.push("中期類別：弱多（" + (h40 ? ("40日勝率 " + (h40.up_rate != null ? h40.up_rate + "%" : "資料不足")) : "") + "）");
   } else if (pnl.floatPct <= -8) {
     // D. 深賠（>−8%）單獨觸發：先減碼 20% 控風險
     sellPct = 20; verdict = "reduce"; tag = "減碼 20%";
     advice = "浮動賠 " + Math.abs(pnl.floatPct).toFixed(1) + "%（深賠），建議先減碼 20% 控風險；短線翻多再視情況加回。";
     reasons.push("浮動賠 " + Math.abs(pnl.floatPct).toFixed(1) + "%（超過 −8% 深賠線）");
-    if (shortScore < 0) reasons.push("短線分數 " + shortScore.toFixed(2) + "（偏空）");
+    if (shortScore < 0) reasons.push("短線分數 " + (shortScore != null ? shortScore.toFixed(2) : "—") + "（偏空）");
   } else if (close > cost && midScore > 0.2 && !belowSma60) {
     // 浮動賺 + 中期多頭:依 horizon 出不同文字(短線看 5 日、中期看趨勢)
     sellPct = 0; verdict = "hold"; tag = "持股";
     const trailSl = Math.max(cost, +(close * 0.98).toFixed(2));
     if (horizon === "short") {
-      advice = "浮動賺 " + pnl.floatPct.toFixed(1) + "%、短線偏多（分數 " + shortScore.toFixed(2) + "），建議持股；短線止損 " + slTp.sl.toFixed(0) + "（1.5×ATR），破線減碼、不抗跌。";
-      reasons.push("浮動賺 " + pnl.floatPct.toFixed(1) + "%");
-      reasons.push("短線偏多 " + shortScore.toFixed(2));
+      advice = "浮動賺 " + (pnl.floatPct != null ? pnl.floatPct.toFixed(1) : "—") + "%、短線偏多（分數 " + (shortScore != null ? shortScore.toFixed(2) : "—") + "），建議持股；短線止損 " + (slTp.sl != null ? slTp.sl.toFixed(0) : "—") + "（1.5×ATR），破線減碼、不抗跌。";
+      reasons.push("浮動賺 " + (pnl.floatPct != null ? pnl.floatPct.toFixed(1) : "—") + "%");
+      reasons.push("短線偏多 " + (shortScore != null ? shortScore.toFixed(2) : "—"));
     } else {
-      advice = "浮動賺 " + pnl.floatPct.toFixed(1) + "% 且中期偏多（分數 " + midScore.toFixed(2) + "），建議持股；把中期止損上移到 " + trailSl.toFixed(0) + "（max 均價 / 現價−2%），破線先減碼。";
-      reasons.push("浮動賺 " + pnl.floatPct.toFixed(1) + "%");
-      reasons.push("中期偏多 " + midScore.toFixed(2));
+      advice = "浮動賺 " + (pnl.floatPct != null ? pnl.floatPct.toFixed(1) : "—") + "% 且中期偏多（分數 " + (midScore != null ? midScore.toFixed(2) : "—") + "），建議持股；把中期止損上移到 " + (trailSl != null ? trailSl.toFixed(0) : "—") + "（max 均價 / 現價−2%），破線先減碼。";
+      reasons.push("浮動賺 " + (pnl.floatPct != null ? pnl.floatPct.toFixed(1) : "—") + "%");
+      reasons.push("中期偏多 " + (midScore != null ? midScore.toFixed(2) : "—"));
       if (h40 && h40.up_rate != null) reasons.push("40 日偏多勝率 " + h40.up_rate + "%");
     }
   } else {
     // 中性
     sellPct = 0; verdict = "watch"; tag = "觀望";
-    advice = "現價在均價附近（浮動 " + (pnl.floatPct >= 0 ? "+" : "") + pnl.floatPct.toFixed(1) + "%）、訊號中性，建議觀望；未破止損 " + slTp.sl.toFixed(0) + " 前不強制動作。";
-    reasons.push("浮動損益 " + (pnl.floatPct >= 0 ? "+" : "") + pnl.floatPct.toFixed(1) + "%");
-    reasons.push("距止損 " + (distSL != null ? distSL.toFixed(1) : "?") + "%、距第一檔止盈 " + (distTP1 != null ? distTP1.toFixed(1) : "?") + "%");
+    advice = "現價在均價附近（浮動 " + (pnl.floatPct >= 0 ? "+" : "") + (pnl.floatPct != null ? pnl.floatPct.toFixed(1) : "—") + "%）、訊號中性，建議觀望；未破止損 " + (slTp.sl != null ? slTp.sl.toFixed(0) : "—") + " 前不強制動作。";
+    reasons.push("浮動損益 " + (pnl.floatPct >= 0 ? "+" : "") + (pnl.floatPct != null ? pnl.floatPct.toFixed(1) : "—") + "%");
+    reasons.push("距止損 " + (distSL != null ? (distSL != null ? distSL.toFixed(1) : "—") : "?") + "%、距第一檔止盈 " + (distTP1 != null ? (distTP1 != null ? distTP1.toFixed(1) : "—") : "?") + "%");
   }
 
   // ── 加碼建議(add-on)：只在「浮動賺 + 中期偏多 + 未破中期 40 日止損 + 未觸任何減碼情境」才給可加碼 ──
@@ -489,11 +489,11 @@ function sellDecision(A, IND, cost, shares, horizon){
   const addSL = canAdd ? +(close - 4 * atr).toFixed(2) : null; // 加碼後新止損(中期 40 日,4×ATR)
   const addReason = canAdd
     ? (addPct === 30
-        ? "中期偏多(分數 " + midScore.toFixed(2) + ")、現價高於 60 日均線、浮動賺 " + pnl.floatPct.toFixed(1) + "%，趨勢與部位都站在這邊，可加碼 " + addPct + "% 加在 " + addBreakeven.toFixed(0) + " 下方"
-        : "中期偏多(分數 " + midScore.toFixed(2) + ")、現價高於 60 日均線、浮動賺 " + pnl.floatPct.toFixed(1) + "%，可小量加碼 " + addPct + "%，加碼後保本線 " + addBreakeven.toFixed(0) + "、止損 " + addSL.toFixed(0) + "。")
+        ? "中期偏多(分數 " + (midScore != null ? midScore.toFixed(2) : "—") + ")、現價高於 60 日均線、浮動賺 " + (pnl.floatPct != null ? pnl.floatPct.toFixed(1) : "—") + "%，趨勢與部位都站在這邊，可加碼 " + addPct + "% 加在 " + (addBreakeven != null ? addBreakeven.toFixed(0) : "—") + " 下方"
+        : "中期偏多(分數 " + (midScore != null ? midScore.toFixed(2) : "—") + ")、現價高於 60 日均線、浮動賺 " + (pnl.floatPct != null ? pnl.floatPct.toFixed(1) : "—") + "%，可小量加碼 " + addPct + "%，加碼後保本線 " + (addBreakeven != null ? addBreakeven.toFixed(0) : "—") + "、止損 " + (addSL != null ? addSL.toFixed(0) : "—") + "。")
     : (close < cost && pnl.floatPct < 0
         ? "浮動賠 " + Math.abs(pnl.floatPct).toFixed(1) + "%，不建議攤平；等短線翻多 + 中期偏多再考慮加碼"
-        : (midScore <= 0.2 ? "中期未偏多(分數 " + midScore.toFixed(2) + ")，加碼勝率不足，先不加碼"
+        : (midScore <= 0.2 ? "中期未偏多(分數 " + (midScore != null ? midScore.toFixed(2) : "—") + ")，加碼勝率不足，先不加碼"
         : (belowSma60 ? "現價低於 60 日均線(下降趨勢)，不宜加碼"
         : "已觸發減碼情境，不宜加碼")));
 
@@ -503,7 +503,7 @@ function sellDecision(A, IND, cost, shares, horizon){
 
 // ── 損益面板 + 決策矩陣 + 渲染 ──
 function fmt2(x){ return x == null ? "—" : Number(x).toLocaleString(undefined, { maximumFractionDigits: 2 }); }
-function fmtPct(x){ return x == null ? "—" : (x >= 0 ? "+" : "") + x.toFixed(1) + "%"; }
+function fmtPct(x){ return x == null ? "—" : (x >= 0 ? "+" : "") + (x != null ? x.toFixed(1) : "—") + "%"; }
 
 function renderPnl(p){
   const g = document.getElementById("pnlGrid");
@@ -534,17 +534,17 @@ function renderMatrix(d, tableId, view){
     { key: "deep", cond: "深賠(浮動賠 >−8%)",        hit: (d.pnl.floatPct <= -8), action: "減碼 20% 控風險" },
     { key: "weak", cond: "浮動賠 + 中期弱(weak/bear_rebound)", hit: (d.pnl.floatPct < 0 && (d.midClass === "weak" || d.midClass === "bear_rebound")), action: "減碼 30% 控損" },
     { key: "win",  cond: "浮動賺 + 中期偏多",         hit: (d.pnl.floatPct > 0 && d.midScore > 0.2 && !d.belowSma60), action: "持股、上移中期止損到 " + Math.max(d.pnl.cost, (d.close * 0.98).toFixed(0)) + "(max 均價 / 現價−2%)" },
-    { key: "add",  cond: "可加碼(中期強多+浮動賺)",   hit: !!(d.addOn && d.addOn.ok && d.addOn.pct === 30), action: "可加碼 30%、加碼後保本 " + (d.addOn ? d.addOn.breakeven.toFixed(0) : "—") },
-    { key: "addS", cond: "小量加碼(中期偏多)",        hit: !!(d.addOn && d.addOn.ok && d.addOn.pct === 15), action: "可小量加碼 15%、加碼後保本 " + (d.addOn ? d.addOn.breakeven.toFixed(0) : "—") },
+    { key: "add",  cond: "可加碼(中期強多+浮動賺)",   hit: !!(d.addOn && d.addOn.ok && d.addOn.pct === 30), action: "可加碼 30%、加碼後保本 " + (d.addOn ? d.(addOn.breakeven != null ? addOn.breakeven.toFixed(0) : "—") : "—") },
+    { key: "addS", cond: "小量加碼(中期偏多)",        hit: !!(d.addOn && d.addOn.ok && d.addOn.pct === 15), action: "可小量加碼 15%、加碼後保本 " + (d.addOn ? d.(addOn.breakeven != null ? addOn.breakeven.toFixed(0) : "—") : "—") },
   ] : [
     { key: "sl",   cond: "跌破短線止損(1.5×ATR)",    hit: d.breachedSL, action: "減碼 30%、不抗跌" },
     { key: "tp2",  cond: "達短線第二檔止盈",          hit: d.hitTP2,     action: "減碼 60%、剩 40% trailing" },
     { key: "tp1",  cond: "達短線第一檔止盈",          hit: d.hitTP1,     action: "減碼 1/3 鎖利" },
     { key: "short",cond: "短線偏空(分數 ≤−0.15)",    hit: (d.shortScore <= -0.15), action: "減碼 20%、等短線翻多再說" },
     { key: "deep", cond: "深賠(浮動賠 >−8%)",        hit: (d.pnl.floatPct <= -8), action: "減碼 20% 控風險" },
-    { key: "win",  cond: "浮動賺 + 短線偏多",          hit: (d.pnl.floatPct > 0 && d.shortScore >= 0.15), action: "持股、破短線止損 " + d.slTp.sl.toFixed(0) + " 即減" },
-    { key: "add",  cond: "可加碼(短線強多+浮動賺+趨勢)", hit: !!(d.addOn && d.addOn.ok && d.addOn.pct === 30), action: "可加碼 30%、加碼後保本 " + (d.addOn ? d.addOn.breakeven.toFixed(0) : "—") },
-    { key: "addS", cond: "小量加碼(短線偏多)",         hit: !!(d.addOn && d.addOn.ok && d.addOn.pct === 15), action: "可小量加碼 15%、加碼後保本 " + (d.addOn ? d.addOn.breakeven.toFixed(0) : "—") },
+    { key: "win",  cond: "浮動賺 + 短線偏多",          hit: (d.pnl.floatPct > 0 && d.shortScore >= 0.15), action: "持股、破短線止損 " + d.(slTp.sl != null ? slTp.sl.toFixed(0) : "—") + " 即減" },
+    { key: "add",  cond: "可加碼(短線強多+浮動賺+趨勢)", hit: !!(d.addOn && d.addOn.ok && d.addOn.pct === 30), action: "可加碼 30%、加碼後保本 " + (d.addOn ? d.(addOn.breakeven != null ? addOn.breakeven.toFixed(0) : "—") : "—") },
+    { key: "addS", cond: "小量加碼(短線偏多)",         hit: !!(d.addOn && d.addOn.ok && d.addOn.pct === 15), action: "可小量加碼 15%、加碼後保本 " + (d.addOn ? d.(addOn.breakeven != null ? addOn.breakeven.toFixed(0) : "—") : "—") },
   ];
   const hit = rows.find(r => r.hit) || null;
   // 上方大字：命中格(依視角出不同「你目前落在」)
@@ -585,7 +585,7 @@ function addOnHtml(d){
     return '<div style="margin-top:8px;padding:8px 10px;background:rgba(34,197,94,.12);border:1px solid var(--bull);border-radius:8px">' +
       '<div style="font-size:13px;font-weight:700;color:var(--bull)">✅ 可加碼 ' + a.pct + '%</div>' +
       '<div style="font-size:12px;line-height:1.55;color:var(--text);margin-top:4px">' + a.reason + '</div>' +
-      (a.breakeven != null ? '<div style="font-size:11px;color:var(--muted);margin-top:4px">加碼後保本線 ' + a.breakeven.toFixed(0) + (a.sl != null ? '、止損 ' + a.sl.toFixed(0) : '') + '</div>' : '') +
+      (a.breakeven != null ? '<div style="font-size:11px;color:var(--muted);margin-top:4px">加碼後保本線 ' + (a.breakeven != null ? a.breakeven.toFixed(0) : "—") + (a.sl != null ? '、止損 ' + (a.sl != null ? a.sl.toFixed(0) : "—") : '') + '</div>' : '') +
       '</div>';
   }
   return '<div style="margin-top:8px;padding:8px 10px;background:rgba(245,158,11,.10);border:1px solid var(--yellow);border-radius:8px">' +
@@ -598,7 +598,7 @@ function renderShortBox(d){
   const el = document.getElementById("shortDetail");
   const cls = d.shortScore >= 0.15 ? "var(--bull)" : d.shortScore <= -0.15 ? "var(--bear)" : "var(--muted)";
   el.innerHTML =
-    '<div>短線綜合分數：<b style="color:' + cls + '">' + d.shortScore.toFixed(2) + '</b>（' + (d.shortScore >= 0.15 ? "偏多" : d.shortScore <= -0.15 ? "偏空" : "中性") + '）</div>' +
+    '<div>短線綜合分數：<b style="color:' + cls + '">' + (d.shortScore != null ? d.shortScore.toFixed(2) : "—") + '</b>（' + (d.shortScore >= 0.15 ? "偏多" : d.shortScore <= -0.15 ? "偏空" : "中性") + '）</div>' +
     '<div style="margin-top:4px">短線止損 <b style="color:var(--bear)">' + fmt2(d.slTp.sl) + '</b>、止盈 <b style="color:var(--bull)">' + fmt2(d.slTp.tp1) + '/' + fmt2(d.slTp.tp2) + '</b></div>' +
     '<div style="margin-top:4px;font-size:11px;color:var(--muted)">白話：短線看 5 日震盪，破 1.5×ATR 止損就減碼，不抗漲不抗跌。</div>';
 }
@@ -619,7 +619,7 @@ function renderMidBox(d, h40, h60){
   const midClassColor = (d.midClass === "multi" || d.midClass === "dip") ? "var(--bull)" :
     (d.midClass === "weak" || d.midClass === "bear_rebound") ? "var(--bear)" : "var(--muted)";
   el.innerHTML =
-    '<div>中期分數：<b style="color:' + cls + '">' + d.midScore.toFixed(2) + '</b>、類別：<b style="color:' + midClassColor + '">' + midClassZh + '</b></div>' +
+    '<div>中期分數：<b style="color:' + cls + '">' + (d.midScore != null ? d.midScore.toFixed(2) : "—") + '</b>、類別：<b style="color:' + midClassColor + '">' + midClassZh + '</b></div>' +
     '<div style="margin-top:4px">中期(40日)止損 <b style="color:var(--yellow)">' + fmt2(StockCore.slTpForHorizon(d.close, d.atr, "mid40").sl) + '</b>、(60日)止損 <b style="color:var(--yellow)">' + fmt2(StockCore.slTpForHorizon(d.close, d.atr, "mid60").sl) + '</b></div>' +
     '<div style="margin-top:4px;font-size:11px;color:var(--muted)">偏多勝率：40日 ' + m40 + '、60日 ' + m60 + '。勝率越高，持有該方向越可信。</div>' +
     (d.bearAlert ? '<div style="margin-top:6px;padding:6px 8px;border-radius:6px;background:' + (d.bearAlert.level === "strong" ? "rgba(239,68,68,.12)" : "rgba(245,158,11,.12)") + ';border:1px solid ' + (d.bearAlert.level === "strong" ? "var(--bear)" : "var(--yellow)") + '">' + d.bearAlert.text + '</div>' : '');
@@ -704,8 +704,8 @@ async function runSell(){
     const midScoreLabel = midScoreNum >= 0.2 ? '偏多' : midScoreNum <= -0.2 ? '偏空' : '中性';
     ft.innerHTML =
       '<div style="display:flex;flex-wrap:wrap;gap:8px 16px;align-items:baseline">' +
-        '<div style="font-size:14px;font-weight:700;color:var(--accent)">📉 短線（5 日）：<span style="color:' + shortVerdictColor + '">' + dShort.tag + '</span> <span style="font-size:11px;font-weight:400;color:var(--muted);margin-left:2px">（分數 ' + shortScoreNum.toFixed(2) + ' · ' + shortScoreLabel + '）</span></div>' +
-        '<div style="font-size:14px;font-weight:700;color:var(--yellow)">📈 中期（2–3 月）：<span style="color:' + midVerdictColor + '">' + dMid40.tag + '</span> <span style="font-size:11px;font-weight:400;color:var(--muted);margin-left:2px">（分數 ' + midScoreNum.toFixed(2) + ' · ' + midScoreLabel + '）</span></div>' +
+        '<div style="font-size:14px;font-weight:700;color:var(--accent)">📉 短線（5 日）：<span style="color:' + shortVerdictColor + '">' + dShort.tag + '</span> <span style="font-size:11px;font-weight:400;color:var(--muted);margin-left:2px">（分數 ' + (shortScoreNum != null ? shortScoreNum.toFixed(2) : "—") + ' · ' + shortScoreLabel + '）</span></div>' +
+        '<div style="font-size:14px;font-weight:700;color:var(--yellow)">📈 中期（2–3 月）：<span style="color:' + midVerdictColor + '">' + dMid40.tag + '</span> <span style="font-size:11px;font-weight:400;color:var(--muted);margin-left:2px">（分數 ' + (midScoreNum != null ? midScoreNum.toFixed(2) : "—") + ' · ' + midScoreLabel + '）</span></div>' +
       '</div>' +
       '<div style="margin-top:6px;font-size:13px;line-height:1.6;color:var(--text)">' + dShort.advice + '</div>' +
       '<div style="margin-top:4px;font-size:13px;line-height:1.6;color:var(--muted)">' + dMid40.advice + '</div>' +
@@ -815,7 +815,7 @@ function drawChart(rows, IND, lines){
     const v = lo + (hi - lo) * g / 4;
     const yy = y(v);
     ctx.beginPath(); ctx.moveTo(pad.l, yy); ctx.lineTo(W - pad.r, yy); ctx.stroke();
-    ctx.fillText(v.toFixed(0), pad.l - 6, yy + 3);
+    ctx.fillText((v != null ? v.toFixed(0) : "—"), pad.l - 6, yy + 3);
   }
   // K 線
   const bw = Math.max(1, plotW / n * 0.6);
@@ -841,50 +841,50 @@ function drawChart(rows, IND, lines){
     ctx.strokeStyle = "rgba(226,232,240,0.9)"; ctx.lineWidth = 2; ctx.setLineDash([]);
     ctx.beginPath(); ctx.moveTo(pad.l, y(lines.cost)); ctx.lineTo(W - pad.r, y(lines.cost)); ctx.stroke();
     ctx.fillStyle = "#e2e8f0"; ctx.font = "bold 11px sans-serif"; ctx.textAlign = "left";
-    ctx.fillText("均價 " + lines.cost.toFixed(0), pad.l + 4, y(lines.cost) - 4);
+    ctx.fillText("均價 " + (lines.cost != null ? lines.cost.toFixed(0) : "—"), pad.l + 4, y(lines.cost) - 4);
   }
   if (lines.sl != null) {
     ctx.strokeStyle = "rgba(34,197,94,0.9)"; ctx.setLineDash([4,4]); ctx.lineWidth = 1;
     ctx.beginPath(); ctx.moveTo(pad.l, y(lines.sl)); ctx.lineTo(W - pad.r, y(lines.sl)); ctx.stroke(); ctx.setLineDash([]);
     ctx.fillStyle = "#22c55e"; ctx.font = "10px sans-serif"; ctx.textAlign = "right";
-    ctx.fillText("短線止損 " + lines.sl.toFixed(0), W - pad.r - 4, y(lines.sl) - 3);
+    ctx.fillText("短線止損 " + (lines.sl != null ? lines.sl.toFixed(0) : "—"), W - pad.r - 4, y(lines.sl) - 3);
   }
   if (lines.tp1 != null) {
     ctx.strokeStyle = "rgba(239,68,68,0.9)"; ctx.lineWidth = 1;
     ctx.beginPath(); ctx.moveTo(pad.l, y(lines.tp1)); ctx.lineTo(W - pad.r, y(lines.tp1)); ctx.stroke();
     ctx.fillStyle = "#ef4444"; ctx.font = "10px sans-serif"; ctx.textAlign = "right";
-    ctx.fillText("止盈 " + lines.tp1.toFixed(0), W - pad.r - 4, y(lines.tp1) - 3);
+    ctx.fillText("止盈 " + (lines.tp1 != null ? lines.tp1.toFixed(0) : "—"), W - pad.r - 4, y(lines.tp1) - 3);
   }
   if (lines.slMid != null) {
     ctx.strokeStyle = "rgba(245,158,11,0.9)"; ctx.setLineDash([2,3]); ctx.lineWidth = 1.2;
     ctx.beginPath(); ctx.moveTo(pad.l, y(lines.slMid)); ctx.lineTo(W - pad.r, y(lines.slMid)); ctx.stroke(); ctx.setLineDash([]);
     ctx.fillStyle = "#f59e0b"; ctx.font = "10px sans-serif"; ctx.textAlign = "right";
-    ctx.fillText("中期止損 " + lines.slMid.toFixed(0), W - pad.r - 4, y(lines.slMid) + 12);
+    ctx.fillText("中期止損 " + (lines.slMid != null ? lines.slMid.toFixed(0) : "—"), W - pad.r - 4, y(lines.slMid) + 12);
   }
   if (lines.slMid60 != null) {
     ctx.strokeStyle = "rgba(217,119,6,.95)"; ctx.setLineDash([3,3]); ctx.lineWidth = 1.2;
     ctx.beginPath(); ctx.moveTo(pad.l, y(lines.slMid60)); ctx.lineTo(W - pad.r, y(lines.slMid60)); ctx.stroke(); ctx.setLineDash([]);
     ctx.fillStyle = "#d97706"; ctx.font = "10px sans-serif"; ctx.textAlign = "right";
-    ctx.fillText("中期止損(60日) " + lines.slMid60.toFixed(0), W - pad.r - 4, y(lines.slMid60) + 12);
+    ctx.fillText("中期止損(60日) " + (lines.slMid60 != null ? lines.slMid60.toFixed(0) : "—"), W - pad.r - 4, y(lines.slMid60) + 12);
   }
   if (lines.breakeven != null) {
     ctx.strokeStyle = "rgba(168,85,247,0.95)"; ctx.setLineDash([6,3]); ctx.lineWidth = 1.2;
     ctx.beginPath(); ctx.moveTo(pad.l, y(lines.breakeven)); ctx.lineTo(W - pad.r, y(lines.breakeven)); ctx.stroke(); ctx.setLineDash([]);
     ctx.fillStyle = "#a855f7"; ctx.font = "10px sans-serif"; ctx.textAlign = "right";
-    ctx.fillText("保本止損 " + lines.breakeven.toFixed(0), W - pad.r - 4, y(lines.breakeven) - 3);
+    ctx.fillText("保本止損 " + (lines.breakeven != null ? lines.breakeven.toFixed(0) : "—"), W - pad.r - 4, y(lines.breakeven) - 3);
   }
   if (lines.addOn != null) {
     ctx.strokeStyle = "rgba(34,197,94,0.95)"; ctx.setLineDash([6,3]); ctx.lineWidth = 1.2;
     ctx.beginPath(); ctx.moveTo(pad.l, y(lines.addOn)); ctx.lineTo(W - pad.r, y(lines.addOn)); ctx.stroke(); ctx.setLineDash([]);
     ctx.fillStyle = "#22c55e"; ctx.font = "10px sans-serif"; ctx.textAlign = "right";
-    ctx.fillText("加碼保本 " + lines.addOn.toFixed(0), W - pad.r - 4, y(lines.addOn) + 12);
+    ctx.fillText("加碼保本 " + (lines.addOn != null ? lines.addOn.toFixed(0) : "—"), W - pad.r - 4, y(lines.addOn) + 12);
   }
   // 收盤
   const last = showRows[n - 1];
   if (last) {
     const ly = y(last.close);
     ctx.fillStyle = "#38bdf8"; ctx.font = "bold 11px sans-serif"; ctx.textAlign = "left";
-    ctx.fillText("收盤 " + last.close.toFixed(0), W - pad.r + 2, ly + 4);
+    ctx.fillText("收盤 " + (last.close != null ? last.close.toFixed(0) : "—"), W - pad.r + 2, ly + 4);
   }
   // X 軸
   ctx.textAlign = "center"; ctx.fillStyle = "#94a3b8"; ctx.font = "10px sans-serif";
@@ -919,15 +919,15 @@ function shareSell(){
   const m60 = d.mid60 && d.mid60.up_rate != null ? d.mid60.up_rate + "%" : "資料不足";
   const msg =
     "【我的部位決策】" + d.ticker + " " + d.name + "\n" +
-    "持股 " + d.shares + " 股、均價 " + d.cost + "、現價 " + (d.close != null ? d.close.toFixed(2) : "—") + "\n" +
-    "浮動損益：" + (d.pnl.float >= 0 ? "+" : "") + d.pnl.float.toFixed(0) + "（" + fmtPct(d.pnl.floatPct) + "）\n" +
+    "持股 " + d.shares + " 股、均價 " + d.cost + "、現價 " + (d.close != null ? (d.close != null ? d.close.toFixed(2) : "—") : "—") + "\n" +
+    "浮動損益：" + (d.pnl.float >= 0 ? "+" : "") + d.(pnl.float != null ? pnl.float.toFixed(0) : "—") + "（" + fmtPct(d.pnl.floatPct) + "）\n" +
     "結論（短線）：" + d.tag + "；結論（中期）：" + (d.midTag || "—") + "\n" +
     "短線建議：" + d.advice + "\n" +
     "中期建議：" + (d.midAdvice || "依短線為准") + "\n" +
     "短線止損 " + d.sl + "、止盈 " + d.tp1 + "；40日勝率 " + m40 + "、60日勝率 " + m60 + "\n" +
-    (d.addOn && d.addOn.ok ? "加碼：✅ 可加碼 " + d.addOn.pct + "%（加碼後保本 " + d.addOn.breakeven.toFixed(0) + "、止損 " + d.addOn.sl.toFixed(0) + "）\n"
+    (d.addOn && d.addOn.ok ? "加碼：✅ 可加碼 " + d.addOn.pct + "%（加碼後保本 " + d.(addOn.breakeven != null ? addOn.breakeven.toFixed(0) : "—") + "、止損 " + d.(addOn.sl != null ? addOn.sl.toFixed(0) : "—") + "）\n"
       : (d.addOn ? "加碼：🔒 " + d.addOn.reason + "\n" : "")) +
-    (d.breakeven != null ? "保本止損 " + d.breakeven.toFixed(0) + "（持股情境止損上移線）\n" : "") +
+    (d.breakeven != null ? "保本止損 " + (d.breakeven != null ? d.breakeven.toFixed(0) : "—") + "（持股情境止損上移線）\n" : "") +
     "決策依據：" + d.reasons.join("、") + "\n" +
     "（僅供學習，不構成投資建議）";
   const btn = document.getElementById("shareBtn");
