@@ -265,6 +265,11 @@
   // ─────────────────────────────────────────────────────────
   // 跨域代理：非 https 來源（本地測試）直抓會被 CORS 擋，fallback 用
   const CORS_PROXY = "https://api.allorigins.win/raw?url=";
+  // Cloudflare Worker:台股「新聞 + 行情」中繼(免金鑰)。兩種模式:
+  //   新聞:GET /?q=2330&days=7&format=json → {ok, items:[標題], count}(或 XML)
+  //   行情:GET /?ticker=2330.TW&range=6mo&interval=1d → Yahoo chart JSON + CORS
+  // 換 relay URL 時只改這一行。
+  const SELF_RELY_URL = "https://tw-news-relay.etonylin.workers.dev";
 
   async function fetchTextSmart(url) {
     try {
@@ -495,8 +500,8 @@
       headlines: headlines.slice(0, 15) };
   }
 
-  // 前端直抓新聞:優先走 relay 的「新聞路由」(https://tw-news-relay.etonylin.workers.dev/?news=代號 回 Bing 新聞 RSS,可跨站),
-  // 回退 Google News RSS 直抓(瀏覽器可跨站抓 XML);都抓不到回傳空陣列。
+  // 前端抓新聞:走 relay 的「新聞路由」https://tw-news-relay.etonylin.workers.dev/?q=代號&days=N&format=json
+  // 回 {ok, items:[真實新聞標題], count}(CORS *,跨站可抓);回退 Google News RSS;都抓不到回空陣列。
   async function fetchNewsHeadlines(ticker, name, days) {
     const q = encodeURIComponent((name || "") + " " + ticker);
     const gurl = "https://news.google.com/rss/search?q=" + q + "&hl=zh-TW&gl=TW&ce=zh";
@@ -511,19 +516,21 @@
         ts: it.querySelector("pubDate") ? Date.parse(it.querySelector("pubDate").textContent) : 0
       })).filter(it => it.ts >= cutoff || it.ts === 0);
       const pick = dated.length ? dated.map(it => it.title) : titles;
-      // 過濾掉「代號」「2330 - Bing新聞」這類非標題雜訊
       return pick.filter(t => t && t.length > 6 && t !== ticker && !/^- Bing新聞$/.test(t)).slice(0, 30);
     };
     try {
-      // 1) relay 新聞路由(能跨站、穩定;?news=代號)
-      const relay = "https://tw-news-relay.etonylin.workers.dev/?news=" + encodeURIComponent(ticker);
-      const text = await fetchTextSmart(relay);
-      const got = parseRss(text);
-      if (got.length) return got;
-      // 2) 回退 Google News RSS 直抓
-      if (gurl) {
-        try { const t2 = await fetchTextSmart(gurl); const g2 = parseRss(t2); if (g2.length) return g2; } catch (e) {}
+      // 1) relay 新聞路由(JSON、穩定、跨站):?q=代號&days=N&format=json
+      const relay = SELF_RELY_URL + "/?q=" + encodeURIComponent(ticker) + "&days=" + (days || 7) + "&format=json";
+      const jr = await fetch(relay);
+      if (jr.ok) {
+        const j = await jr.json();
+        if (j && j.ok && Array.isArray(j.items) && j.items.length) {
+          const clean = j.items.filter(t => typeof t === "string" && t.trim().length > 6 && t !== ticker).map(t => t.trim());
+          if (clean.length) return clean.slice(0, 30);
+        }
       }
+      // 2) 回退 Google News RSS 直抓
+      try { const t2 = await fetchTextSmart(gurl); const g2 = parseRss(t2); if (g2.length) return g2; } catch (e) {}
       return [];
     } catch (e) { return []; }
   }
