@@ -698,34 +698,36 @@ async function runSell(){
     const shortVerdictColor = dShort.verdict === "sell" ? "var(--bear)" : dShort.verdict === "reduce" ? "var(--yellow)" : dShort.verdict === "hold" ? "var(--bull)" : "var(--muted)";
     const midVerdictColor = dMid40.verdict === "sell" ? "var(--bear)" : dMid40.verdict === "reduce" ? "var(--yellow)" : dMid40.verdict === "hold" ? "var(--bull)" : "var(--muted)";
     // 結論大字旁掛「短線/中期分數小標」— 讓用戶一眼看到結論是依據什麼分數
-    const shortScoreNum = dShort.shortScore != null ? dShort.shortScore : 0;
-    const midScoreNum = dMid40.shortScore != null ? dMid40.shortScore : 0;
+    const dShortS = dShort || {}; // null 防衛:ATR null 路徑時 dShort/dMid40 可能 null
+    const dMid40S = dMid40 || {};
+    const shortScoreNum = (dShortS.shortScore != null) ? dShortS.shortScore : 0;
+    const midScoreNum = (dMid40S.shortScore != null) ? dMid40S.shortScore : 0;
     const shortScoreLabel = shortScoreNum >= 0.15 ? '偏多' : shortScoreNum <= -0.15 ? '偏空' : '中性';
     const midScoreLabel = midScoreNum >= 0.2 ? '偏多' : midScoreNum <= -0.2 ? '偏空' : '中性';
     ft.innerHTML =
       '<div style="display:flex;flex-wrap:wrap;gap:8px 16px;align-items:baseline">' +
-        '<div style="font-size:14px;font-weight:700;color:var(--accent)">📉 短線（5 日）：<span style="color:' + shortVerdictColor + '">' + dShort.tag + '</span> <span style="font-size:11px;font-weight:400;color:var(--muted);margin-left:2px">（分數 ' + (shortScoreNum != null ? shortScoreNum.toFixed(2) : "—") + ' · ' + shortScoreLabel + '）</span></div>' +
-        '<div style="font-size:14px;font-weight:700;color:var(--yellow)">📈 中期（2–3 月）：<span style="color:' + midVerdictColor + '">' + dMid40.tag + '</span> <span style="font-size:11px;font-weight:400;color:var(--muted);margin-left:2px">（分數 ' + (midScoreNum != null ? midScoreNum.toFixed(2) : "—") + ' · ' + midScoreLabel + '）</span></div>' +
+        '<div style="font-size:14px;font-weight:700;color:var(--accent)">📉 短線（5 日）：<span style="color:' + shortVerdictColor + '">' + dShortS.tag + '</span> <span style="font-size:11px;font-weight:400;color:var(--muted);margin-left:2px">（分數 ' + (shortScoreNum != null ? shortScoreNum.toFixed(2) : "—") + ' · ' + shortScoreLabel + '）</span></div>' +
+        '<div style="font-size:14px;font-weight:700;color:var(--yellow)">📈 中期（2–3 月）：<span style="color:' + midVerdictColor + '">' + dMid40S.tag + '</span> <span style="font-size:11px;font-weight:400;color:var(--muted);margin-left:2px">（分數 ' + (midScoreNum != null ? midScoreNum.toFixed(2) : "—") + ' · ' + midScoreLabel + '）</span></div>' +
       '</div>' +
-      '<div style="margin-top:6px;font-size:13px;line-height:1.6;color:var(--text)">' + dShort.advice + '</div>' +
-      '<div style="margin-top:4px;font-size:13px;line-height:1.6;color:var(--muted)">' + dMid40.advice + '</div>' +
-      addOnHtml(dShort);
+      '<div style="margin-top:6px;font-size:13px;line-height:1.6;color:var(--text)">' + (dShortS.advice || '—') + '</div>' +
+      '<div style="margin-top:4px;font-size:13px;line-height:1.6;color:var(--muted)">' + (dMid40S.advice || '—') + '</div>' +
+      addOnHtml(dShortS);
     // verdictTag 改顯示「短線 + 中期」兩個 tag 並列
     const vt = document.getElementById("verdictTag");
     vt.style.display = "";
     vt.textContent = "";
     vt.className = "verdict-tag";
     vt.innerHTML =
-      '<span style="color:' + shortVerdictColor + '">' + dShort.tag + '</span>' +
+      '<span style="color:' + shortVerdictColor + '">' + (dShortS.tag || '—') + '</span>' +
       ' <span style="opacity:.4">·</span> ' +
-      '<span style="color:' + midVerdictColor + '">' + dMid40.tag + '</span>';
+      '<span style="color:' + midVerdictColor + '">' + (dMid40S.tag || '—') + '</span>';
 
     document.getElementById("adviceLine").innerHTML =
       '<div style="font-size:12px;color:var(--muted)">現價 <b style="color:var(--text)">' + fmt2(A.close) + '</b>、均價 <b style="color:var(--text)">' + fmt2(cost) + '</b>、持股 <b style="color:var(--text)">' + shares + '</b> 股。</div>' +
       '<div style="font-size:11px;color:var(--muted);margin-top:4px">上列建議分「短線(5日)」與「中期(2–3月持有)」兩種視角,短線看震盪波段、中期看趨勢,可依實際持有目的擇一執行。</div>';
 
-    renderShortBox(Object.assign({}, primary, { atr: A.atr }));
-    renderMidBox(Object.assign({}, dMid40, { atr: A.atr, midScore: dMid40.midScore, midClass: dMid40.midClass, bearAlert: dMid40.bearAlert, belowSma60: dMid40.belowSma60 }), A.hist_mid40, A.hist_mid60);
+    renderShortBox(Object.assign({}, dShortS, { atr: A.atr }));
+    renderMidBox(Object.assign({}, dMid40S, { atr: A.atr, midScore: dMid40S.midScore, midClass: dMid40S.midClass, bearAlert: dMid40S.bearAlert, belowSma60: dMid40S.belowSma60 }), A.hist_mid40, A.hist_mid60);
     // shortBox/midBox 顯示由 applyMode 依專業模式決定(簡易不顯示,專家顯示)
 
     // 理由清單
@@ -738,8 +740,8 @@ async function runSell(){
     // 損益
     renderPnl(primary.pnl);
     // 決策矩陣
-    renderMatrix(primary, "matrixTableShort", "short");
-    renderMatrix(dMid40, "matrixTableMid", "mid");
+    renderMatrix(dShortS, "matrixTableShort", "short");
+    renderMatrix(dMid40S, "matrixTableMid", "mid");
     // K 線
     // 加碼保本線:只在「可加碼」情境才畫,= max(均價, 現價−5%)
     let addBreakevenLine = null;
