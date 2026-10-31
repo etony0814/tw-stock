@@ -8,3 +8,17 @@
   --bg:#f1f5f9;--card:#ffffff;--card2:#f8fafc;--border:#e2e8f0;--text:#0f172a;
   --muted:#64748b;--accent:#0284c7;--bull:#dc2626;--bear:#16a34a;--green:#dc2626;--red:#16a34a;--yellow:#d97706;--purple:#7c3aed;
 }
+
+/* 共用骨架占位(三頁一致):分析中各卡先顯示脈動骨架、抓完才填,減少「空白等待」感 */
+.skeleton{background:var(--card2);border-radius:8px;animation:skPulse 1.2s ease-in-out infinite;min-height:52px;padding:10px 12px;}
+.skeleton .sk-line{height:12px;background:var(--border);border-radius:4px;margin:8px 0;}
+.skeleton .sk-line:first-child{margin-top:2px;width:70%;}
+.skeleton .sk-line:last-child{width:45%;}
+@keyframes skPulse{0%,100%{opacity:.45;}50%{opacity:1;}}
+/* 分數長條可點擊跳轉(三頁一致) */
+.score-jump{cursor:pointer;text-decoration:none;display:block;}
+.score-jump:hover{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px;}
+/* 統一按鈕 hover(三頁一致) */
+button,.share-btn,.controls button{transition:opacity .15s;}
+button:hover,.share-btn:hover,.controls button:hover{opacity:.85;}
+button:disabled,.controls button:disabled{opacity:.4;cursor:not-allowed;}
