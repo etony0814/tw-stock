@@ -708,10 +708,15 @@ async function runSell(){
     ft.className = "final-text";
     const shortVerdictColor = dShort.verdict === "sell" ? "var(--bear)" : dShort.verdict === "reduce" ? "var(--yellow)" : dShort.verdict === "hold" ? "var(--bull)" : "var(--muted)";
     const midVerdictColor = dMid40.verdict === "sell" ? "var(--bear)" : dMid40.verdict === "reduce" ? "var(--yellow)" : dMid40.verdict === "hold" ? "var(--bull)" : "var(--muted)";
+    // 結論大字旁掛「短線/中期分數小標」— 讓用戶一眼看到結論是依據什麼分數
+    const shortScoreNum = dShort.shortScore != null ? dShort.shortScore : 0;
+    const midScoreNum = dMid40.shortScore != null ? dMid40.shortScore : 0;
+    const shortScoreLabel = shortScoreNum >= 0.15 ? '偏多' : shortScoreNum <= -0.15 ? '偏空' : '中性';
+    const midScoreLabel = midScoreNum >= 0.2 ? '偏多' : midScoreNum <= -0.2 ? '偏空' : '中性';
     ft.innerHTML =
       '<div style="display:flex;flex-wrap:wrap;gap:8px 16px;align-items:baseline">' +
-        '<div style="font-size:14px;font-weight:700;color:var(--accent)">📉 短線（5 日）：<span style="color:' + shortVerdictColor + '">' + dShort.tag + '</span></div>' +
-        '<div style="font-size:14px;font-weight:700;color:var(--yellow)">📈 中期（2–3 月）：<span style="color:' + midVerdictColor + '">' + dMid40.tag + '</span></div>' +
+        '<div style="font-size:14px;font-weight:700;color:var(--accent)">📉 短線（5 日）：<span style="color:' + shortVerdictColor + '">' + dShort.tag + '</span> <span style="font-size:11px;font-weight:400;color:var(--muted);margin-left:2px">（分數 ' + shortScoreNum.toFixed(2) + ' · ' + shortScoreLabel + '）</span></div>' +
+        '<div style="font-size:14px;font-weight:700;color:var(--yellow)">📈 中期（2–3 月）：<span style="color:' + midVerdictColor + '">' + dMid40.tag + '</span> <span style="font-size:11px;font-weight:400;color:var(--muted);margin-left:2px">（分數 ' + midScoreNum.toFixed(2) + ' · ' + midScoreLabel + '）</span></div>' +
       '</div>' +
       '<div style="margin-top:6px;font-size:13px;line-height:1.6;color:var(--text)">' + dShort.advice + '</div>' +
       '<div style="margin-top:4px;font-size:13px;line-height:1.6;color:var(--muted)">' + dMid40.advice + '</div>' +
