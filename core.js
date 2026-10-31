@@ -742,16 +742,22 @@
   function slTpForHorizon(close, atr, horizon) {
     const mult = { short: 1.5, mid40: 4, mid60: 5 };
     const m = mult[horizon] != null ? mult[horizon] : 1.5;
-    if (close == null || atr == null) return null;
+    // null / NaN 防衛:任一輸入非有限數 → 回全 null 欄位(下游 .toFixed 前會判 null 顯示「—」,不崩)
+    if (close == null || atr == null || !isFinite(close) || !isFinite(atr)) {
+      return { horizon: horizon, mult: m, sl: null, tp1: null, tp2: null, stop: null, target: null };
+    }
     // sl=止損、tp1/tp2=兩檔止盈;保留 stop/target 供 server 端相容
-return {
-  horizon: horizon, mult: m,
-  sl: +(close - m * atr).toFixed(2),
-  tp1: +(close + m * atr).toFixed(2),
-  tp2: +(close + 2 * m * atr).toFixed(2),
-  stop: +(close - m * atr).toFixed(2),
-  target: +(close + m * atr).toFixed(2)
-};
+    const sl = close - m * atr;
+    const tp1 = close + m * atr;
+    const tp2 = close + 2 * m * atr;
+    return {
+      horizon: horizon, mult: m,
+      sl: isFinite(sl) ? +sl.toFixed(2) : null,
+      tp1: isFinite(tp1) ? +tp1.toFixed(2) : null,
+      tp2: isFinite(tp2) ? +tp2.toFixed(2) : null,
+      stop: isFinite(sl) ? +sl.toFixed(2) : null,
+      target: isFinite(tp1) ? +tp1.toFixed(2) : null
+    };
   }
 
   function hist5(rows, IND, lookback) {
