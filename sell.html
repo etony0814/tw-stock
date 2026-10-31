@@ -754,10 +754,13 @@ async function runSell(){
     drawChart(rows, IND, { cost: cost, sl: primary.slTp.sl, tp1: primary.slTp.tp1, slMid: dMid40forChart, slMid60: dMid60sl, breakeven: breakevenLine, addOn: addBreakevenLine });
 
     // 分享
-    window._sellShare = { ticker: t, name: WNAMES[t] || "", cost: cost, shares: shares, close: A.close, verdict: primary.verdict, tag: primary.tag, advice: primary.advice, reasons: primary.reasons, pnl: primary.pnl, sl: primary.slTp.sl, tp1: primary.slTp.tp1, breakeven: (primary.verdict === "hold") ? Math.max(cost, +(A.close * 0.98).toFixed(2)) : null, mid40: A.hist_mid40, mid60: A.hist_mid60, midTag: dMid40 ? dMid40.tag : "—", midAdvice: dMid40 ? dMid40.advice : "—", midReasons: (dMid40 && dMid40.reasons) ? dMid40.reasons : [], addOn: (primary && primary.addOn) ? primary.addOn : null };
-    document.getElementById("shareBtn").style.display = "";
+    window._sellShare = { ticker: t, name: WNAMES[t] || "", cost: cost, shares: shares, close: A.close, verdict: primary ? primary.verdict : "—", tag: primary ? primary.tag : "—", advice: primary ? primary.advice : "—", reasons: primary ? primary.reasons : [], pnl: primary ? primary.pnl : null, sl: (primary && primary.slTp) ? primary.slTp.sl : null, tp1: (primary && primary.slTp) ? primary.slTp.tp1 : null, breakeven: (primary && primary.verdict === "hold") ? Math.max(cost, +((A.close||0) * 0.98).toFixed(2)) : null, mid40: A.hist_mid40, mid60: A.hist_mid60, midTag: dMid40 ? dMid40.tag : "—", midAdvice: dMid40 ? dMid40.advice : "—", midReasons: (dMid40 && dMid40.reasons) ? dMid40.reasons : [], addOn: (primary && primary.addOn) ? primary.addOn : null };
+    const _sb = document.getElementById("shareBtn"); if (_sb) _sb.style.display = "";
   } catch (e) {
-    document.getElementById("errMsg").textContent = "評估失敗：" + e.message;
+    const _em = document.getElementById("errMsg");
+    if (_em) { _em.textContent = "評估失敗：" + e.message; _em.style.display = "block"; }
+    const _er = document.getElementById("err");
+    if (_er) { _er.textContent = "評估失敗：" + e.message; _er.style.display = "block"; }
     const rb=document.getElementById("retryBtn"); if(rb){ rb.style.display="inline-block"; rb.onclick=function(){ rb.style.display="none"; runSell(); }; }
     document.getElementById("err").style.display = "block";
   } finally {
