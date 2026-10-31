@@ -265,75 +265,53 @@ function withTimeout(promise, ms, label){
 // 並行快取：同時向 relay / Jina 發，誰先回誰贏（大幅降低最慢端點拖垮整體）
 async function raceFetch(code, period){
   const qs = "?range=" + period + "&interval=1d";
-  // 決定正確變體：上市/ETF 用 .TW，上櫃(3/4/5/6/8 字頭)用 .TWO
+  // 跟第一頁同構:同代號兩字尾(.TW/.TWO)全端點並行 settled、誰先回有 chart 誰贏。
   const c = code.toUpperCase().replace(/\.TW$/,'').replace(/\.TWO$/,'');
-  const primary = /^[34568]\d{3}$/.test(c) ? c + ".TWO" : c + ".TW";
-  const alt = primary.endsWith(".TWO") ? c + ".TW" : c + ".TWO";
+  const variants = Array.from(new Set([c + ".TW", c + ".TWO"]));
+  const isSecure = location.protocol === "https:";
 
-  // 各來源的取法
-  // Cloudflare Worker 冷啟動常需 5–15s,主端點給 20s、備端點給 12s;並行端點給 12s
-  const relayGet = async (v) => {
-    const timeoutMs = (v === primary) ? 20000 : 12000;
-    const r = await withTimeout(fetch(QUOTE_RELAY + "?ticker=" + encodeURIComponent(v) + "&range=" + encodeURIComponent(period) + "&interval=1d"), timeoutMs, "relay");
-    if (!r.ok) throw new Error("relay HTTP " + r.status);
-    const j = await r.json();
-    if (j && j.chart) return j;
-    if (j && j.ok === false) throw new Error("relay " + j.error);
-    throw new Error("relay 無 chart");
-  };
-  const jinaGet = async (v) => {
-    const r = await withTimeout(fetch(JINA + "https://query1.finance.yahoo.com/v8/finance/chart/" + v + qs, { headers: { "Accept": "text/plain" } }), 12000, "jina");
-    if (!r.ok) throw new Error("jina HTTP " + r.status);
-    const j = jinaParse(await r.text());
-    if (!j) throw new Error("jina 無解析");
-    return j;
-  };
-  const yahooDirect = async () => {
-    const r = await withTimeout(fetch("https://query1.finance.yahoo.com/v8/finance/chart/" + primary + qs, { headers: { "Accept": "application/json" } }), 6000, "yahoo");
-    if (!r.ok) throw new Error("yahoo HTTP " + r.status);
-    return await r.json();
-  };
-  const allorigins = async () => {
-    const target = "https://query1.finance.yahoo.com/v8/finance/chart/" + primary + qs;
-    const r = await withTimeout(fetch("https://api.allorigins.win/raw?url=" + encodeURIComponent(target), { headers: { "Accept": "application/json" } }), 12000, "allorigins");
-    if (!r.ok) throw new Error("allorigins HTTP " + r.status);
-    return await r.json();
-  };
+  const relayOne = (v, isPrimary) =>
+    withTimeout(fetch(QUOTE_RELAY + "?ticker=" + encodeURIComponent(v) + "&range=" + encodeURIComponent(period) + "&interval=1d"),
+      isPrimary ? 20000 : 12000, "relay").then(r => {
+        if (!r.ok) throw new Error("relay HTTP " + r.status);
+        return r.json();
+      }).then(j => {
+        if (j && j.chart) return j;
+        if (j && j.ok === false) throw new Error("relay " + j.error);
+        throw new Error("relay 無 chart");
+      });
+  const jinaOne = v =>
+    withTimeout(fetch(JINA + "https://query1.finance.yahoo.com/v8/finance/chart/" + v + qs, { headers: { "Accept": "text/plain" } }), 12000, "jina")
+      .then(r => { if (!r.ok) throw new Error("jina HTTP " + r.status); return r.text(); })
+      .then(t => { const j = jinaParse(t); if (!j) throw new Error("jina 無解析"); return j; });
+  const allOrigins = v =>
+    withTimeout(fetch("https://api.allorigins.win/raw?url=" + encodeURIComponent("https://query1.finance.yahoo.com/v8/finance/chart/" + v + qs), { headers: { "Accept": "application/json" } }), 12000, "allorigins")
+      .then(r => { if (!r.ok) throw new Error("allorigins HTTP " + r.status); return r.json(); });
+  const codeTabs = v =>
+    withTimeout(fetch("https://api.codetabs.com/v1/proxy/?url=" + encodeURIComponent("https://query1.finance.yahoo.com/v8/finance/chart/" + v + qs), { headers: { "Accept": "application/json" } }), 12000, "codetabs")
+      .then(r => { if (!r.ok) throw new Error("codetabs HTTP " + r.status); return r.json(); });
+  const yahooDirect = isSecure ? null : v =>
+    withTimeout(fetch("https://query1.finance.yahoo.com/v8/finance/chart/" + v + qs, { headers: { "Accept": "application/json" } }), 6000, "yahoo")
+      .then(r => { if (!r.ok) throw new Error("yahoo HTTP " + r.status); return r.json(); });
 
-  // 並行：relay(主+備) + jina(主) + allorigins + yahoo直抓(僅本地/許 CORS 時有用)
-  // 加 codetabs CORS 代理備援(能繞過 GitHub Pages 的 CORS、兜底 jina/allorigins 掛時)
-  const corsGet = async () => {
-    const target = "https://query1.finance.yahoo.com/v8/finance/chart/" + primary + qs;
-    const r = await withTimeout(fetch("https://api.codetabs.com/v1/proxy/?url=" + encodeURIComponent(target), { headers: { "Accept": "application/json" } }), 12000, "codetabs");
-    if (!r.ok) throw new Error("codetabs HTTP " + r.status);
-    const j = await r.json();
-    if (j && j.chart) return j;
-    throw new Error("codetabs 無 chart");
-  };
-const tasks = [
-    relayGet(primary),
-    relayGet(alt),
-    jinaGet(primary),
-    allorigins(),
-    corsGet(),
-    yahooDirect(),
-  ];
-  // 誰先成功誰贏;relay 主變體最可靠、冷啟動 20s 內可撐過
-    // 全部端點 catch 後回 null、Promise.all 等完挑第一支有 chart,
-  // 避免並行端點無害 reject(yahoo 直抓 CORS / allorigins 逾時 / .TWO 查不到)污染 console。
-  const settled = await Promise.all(tasks.map(async fn => {
-    try { const j = await fn(); if (j && j.chart) return j; return null; }
-    catch (e) { return null; }
-  }));
+  // 並行端點全並行 settled、無害 reject 全吃掉(不污染 console);誰先回有 chart 誰贏
+  const pmap = [];
+  variants.forEach((v, vi) => pmap.push(relayOne(v, vi === 0)));
+  variants.forEach(v => pmap.push(jinaOne(v)));
+  variants.forEach(v => pmap.push(allOrigins(v)));
+  variants.forEach(v => pmap.push(codeTabs(v)));
+  if (yahooDirect) variants.forEach(v => pmap.push(yahooDirect(v)));
+  const settled = await Promise.all(pmap.map(fn => fn().then(j => (j && j.chart ? j : null)).catch(() => null)));
   const winner = settled.find(j => j && j.chart);
   if (winner) return winner;
-  // 全端點無 chart → 對「個股主變體 relay」再試一次(冷啟動/抖動容錯),再失敗才真 throw
+  // 全端點無 chart → 對第一變體 relay 再試一次(冷啟動/抖動容錯),再失敗才真 throw
   try {
-    const rr = await withTimeout(fetch(QUOTE_RELAY + "?ticker=" + encodeURIComponent(primary) + "&range=" + encodeURIComponent(period) + "&interval=1d"), 10000, "relayRetry");
+    const rr = await withTimeout(fetch(QUOTE_RELAY + "?ticker=" + encodeURIComponent(variants[0]) + "&range=" + encodeURIComponent(period) + "&interval=1d"), 10000, "relayRetry");
     if (rr.ok) { const j = await rr.json(); if (j && j.chart) return j; }
   } catch (e) {}
   throw new Error("取不到 " + code + " 行情（所有端點皆無 chart）");
 }
+
 async function fetchRows(code, period){
   const key = code + ":" + period;
   if (_rowCache[key]) return _rowCache[key];
