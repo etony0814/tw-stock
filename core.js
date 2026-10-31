@@ -874,4 +874,6 @@ return {
     marketSession, actionForScore, slTp, slTpForHorizon,
     hist5, histMid, volConfirm, detectMidSignals, midClassify, midFiveWayComposite, midActionForScore
   };
+  // relay URL 統一由 core.js 定義;兩頁讀 global.SELF_RELY_URL 即可,換 URL 只改這一行。
+  global.SELF_RELY_URL = SELF_RELY_URL;
 })(typeof window !== "undefined" ? window : globalThis);
