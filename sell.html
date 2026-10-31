@@ -444,20 +444,20 @@ function sellDecision(A, IND, cost, shares, horizon){
   } else if (close < cost && shortScore < -0.15 && (midClass === "weak" || midClass === "bear_rebound")) {
     // 浮動賠 + 訊號空頭 + 中期弱
     sellPct = 30; verdict = "reduce"; tag = "減碼 30%";
-    advice = "浮動賠 " + Math.abs(pnl.floatPct).toFixed(1) + "% 且短線空頭 + 中期 " + midClass + "，建議減碼 30% 控損，不建議加碼攤平。";
-    reasons.push("浮動賠 " + Math.abs(pnl.floatPct).toFixed(1) + "%");
+    advice = "浮動賠 " + (pnl.floatPct!=null?Math.abs(pnl.floatPct).toFixed(1):"—") + "% 且短線空頭 + 中期 " + midClass + "，建議減碼 30% 控損，不建議加碼攤平。";
+    reasons.push("浮動賠 " + (pnl.floatPct!=null?Math.abs(pnl.floatPct).toFixed(1):"—") + "%");
     reasons.push("短線分數 " + (shortScore != null ? shortScore.toFixed(2) : "—") + "（偏空）");
     if (midClass === "weak") reasons.push("中期類別：弱多（" + (h40 ? ("40日勝率 " + (h40.up_rate != null ? h40.up_rate + "%" : "資料不足")) : "") + "）");
   } else if (pnl.floatPct <= -8) {
     // D. 深賠（>−8%）單獨觸發：先減碼 20% 控風險
     sellPct = 20; verdict = "reduce"; tag = "減碼 20%";
-    advice = "浮動賠 " + Math.abs(pnl.floatPct).toFixed(1) + "%（深賠），建議先減碼 20% 控風險；短線翻多再視情況加回。";
-    reasons.push("浮動賠 " + Math.abs(pnl.floatPct).toFixed(1) + "%（超過 −8% 深賠線）");
+    advice = "浮動賠 " + (pnl.floatPct!=null?Math.abs(pnl.floatPct).toFixed(1):"—") + "%（深賠），建議先減碼 20% 控風險；短線翻多再視情況加回。";
+    reasons.push("浮動賠 " + (pnl.floatPct!=null?Math.abs(pnl.floatPct).toFixed(1):"—") + "%（超過 −8% 深賠線）");
     if (shortScore < 0) reasons.push("短線分數 " + (shortScore != null ? shortScore.toFixed(2) : "—") + "（偏空）");
   } else if (close > cost && midScore > 0.2 && !belowSma60) {
     // 浮動賺 + 中期多頭:依 horizon 出不同文字(短線看 5 日、中期看趨勢)
     sellPct = 0; verdict = "hold"; tag = "持股";
-    const trailSl = Math.max(cost, +(close * 0.98).toFixed(2));
+    const trailSl = (close!=null) ? Math.max(cost, +(close * 0.98).toFixed(2)) : null;
     if (horizon === "short") {
       advice = "浮動賺 " + (pnl.floatPct != null ? pnl.floatPct.toFixed(1) : "—") + "%、短線偏多（分數 " + (shortScore != null ? shortScore.toFixed(2) : "—") + "），建議持股；短線止損 " + (slTp.sl != null ? slTp.sl.toFixed(0) : "—") + "（1.5×ATR），破線減碼、不抗跌。";
       reasons.push("浮動賺 " + (pnl.floatPct != null ? pnl.floatPct.toFixed(1) : "—") + "%");
@@ -485,14 +485,14 @@ function sellDecision(A, IND, cost, shares, horizon){
     // 強多(≥0.4)可加 30%；偏多(0.2~0.4)可加 15~20%
     addPct = (midScore >= 0.4) ? 30 : 15;
   }
-  const addBreakeven = canAdd ? Math.max(cost, +(close * 0.95).toFixed(2)) : null; // 加碼後新保本線 = max(原均價, 現價−5%)
-  const addSL = canAdd ? +(close - 4 * atr).toFixed(2) : null; // 加碼後新止損(中期 40 日,4×ATR)
+  const addBreakeven = (canAdd && close!=null) ? Math.max(cost, +(close * 0.95).toFixed(2)) : null; // 加碼後新保本線 = max(原均價, 現價−5%)
+  const addSL = (canAdd && close!=null && atr!=null) ? +(close - 4 * atr).toFixed(2) : null; // 加碼後新止損(中期 40 日,4×ATR)
   const addReason = canAdd
     ? (addPct === 30
         ? "中期偏多(分數 " + (midScore != null ? midScore.toFixed(2) : "—") + ")、現價高於 60 日均線、浮動賺 " + (pnl.floatPct != null ? pnl.floatPct.toFixed(1) : "—") + "%，趨勢與部位都站在這邊，可加碼 " + addPct + "% 加在 " + (addBreakeven != null ? addBreakeven.toFixed(0) : "—") + " 下方"
         : "中期偏多(分數 " + (midScore != null ? midScore.toFixed(2) : "—") + ")、現價高於 60 日均線、浮動賺 " + (pnl.floatPct != null ? pnl.floatPct.toFixed(1) : "—") + "%，可小量加碼 " + addPct + "%，加碼後保本線 " + (addBreakeven != null ? addBreakeven.toFixed(0) : "—") + "、止損 " + (addSL != null ? addSL.toFixed(0) : "—") + "。")
     : (close < cost && pnl.floatPct < 0
-        ? "浮動賠 " + Math.abs(pnl.floatPct).toFixed(1) + "%，不建議攤平；等短線翻多 + 中期偏多再考慮加碼"
+        ? "浮動賠 " + (pnl.floatPct!=null?Math.abs(pnl.floatPct).toFixed(1):"—") + "%，不建議攤平；等短線翻多 + 中期偏多再考慮加碼"
         : (midScore <= 0.2 ? "中期未偏多(分數 " + (midScore != null ? midScore.toFixed(2) : "—") + ")，加碼勝率不足，先不加碼"
         : (belowSma60 ? "現價低於 60 日均線(下降趨勢)，不宜加碼"
         : "已觸發減碼情境，不宜加碼")));
@@ -534,7 +534,7 @@ function renderMatrix(d, tableId, view){
     { key: "deep", cond: "深賠(浮動賠 >−8%)",        hit: (d.pnl.floatPct <= -8), action: "減碼 20% 控風險" },
     { key: "weak", cond: "浮動賠 + 中期弱(weak/bear_rebound)", hit: (d.pnl.floatPct < 0 && (d.midClass === "weak" || d.midClass === "bear_rebound")), action: "減碼 30% 控損" },
     { key: "win",  cond: "浮動賺 + 中期偏多",         hit: (d.pnl.floatPct > 0 && d.midScore > 0.2 && !d.belowSma60), action: "持股、上移中期止損到 " + Math.max(d.pnl.cost, (d.close != null ? +(d.close * 0.98).toFixed(0) : "—")) + "(max 均價 / 現價−2%)" },
-    { key: "add",  cond: "可加碼(中期強多+浮動賺)",   hit: !!(d.addOn && d.addOn.ok && d.addOn.pct === 30), action: "可加碼 30%、加碼後保本 " + (d.addOn && d.addOn.breakeven != null ? d.addOn.breakeven.toFixed(0) : "—") },
+    { key: "add",  cond: "可加碼(中期強多+浮動賺)",   hit: !!(d.addOn && d.addOn.ok && d.addOn.pct === 30), action: "可加碼 30%、加碼後保本 " + (d.addOn && d.addOn.breakeven != null ? (d.addOn.breakeven!=null?d.addOn.breakeven.toFixed(0):"—") : "—") },
     { key: "addS", cond: "小量加碼(中期偏多)",        hit: !!(d.addOn && d.addOn.ok && d.addOn.pct === 15), action: "可小量加碼 15%、加碼後保本 " + (d.addOn && d.addOn.breakeven != null ? d.addOn.breakeven.toFixed(0) : "—") },
   ] : [
     { key: "sl",   cond: "跌破短線止損(1.5×ATR)",    hit: d.breachedSL, action: "減碼 30%、不抗跌" },
@@ -755,9 +755,9 @@ async function runSell(){
       canAdd = !!(dM40 && dM40.shortScore > 0 && dM40.midScore > 0 && A.close > cost);
       addOnPct = (canAdd && dM40 && dM40.midScore > 0.2) ? 30 : (canAdd ? 15 : 0);
       if (primary.verdict === "hold") {
-        breakevenLine = Math.max(cost, +(A.close * 0.98).toFixed(2));
+        breakevenLine = Math.max(cost, +((A.close||0) * 0.98).toFixed(2));
       }
-      addBreakevenLine = canAdd ? Math.max(cost, +(A.close * 0.95).toFixed(2)) : null;
+      addBreakevenLine = canAdd ? Math.max(cost, +((A.close||0) * 0.95).toFixed(2)) : null;
     }
     const dMid40sl = dMid40 ? (dMid40.slTp ? dMid40.slTp.sl : null) : null; // K 線中期止損參考線(40日)
     const dMid60sl = dMid60 ? (dMid60.slTp ? dMid60.slTp.sl : null) : null;
@@ -941,12 +941,12 @@ function shareSell(){
   const msg =
     "【我的部位決策】" + d.ticker + " " + d.name + "\n" +
     "持股 " + d.shares + " 股、均價 " + d.cost + "、現價 " + (d.close != null ? (d.close != null ? d.close.toFixed(2) : "—") : "—") + "\n" +
-    "浮動損益：" + (d.pnl.float >= 0 ? "+" : "") + d.pnl.float.toFixed(0) + "（" + fmtPct(d.pnl.floatPct) + "）\n" +
+    "浮動損益：" + ((d.pnl.float!=null && d.pnl.float >= 0) ? "+" : "") + (d.pnl.float!=null ? d.pnl.float.toFixed(0) : "—") + "（" + fmtPct(d.pnl.floatPct) + "）\n" +
     "結論（短線）：" + d.tag + "；結論（中期）：" + (d.midTag || "—") + "\n" +
     "短線建議：" + d.advice + "\n" +
     "中期建議：" + (d.midAdvice || "依短線為准") + "\n" +
     "短線止損 " + d.sl + "、止盈 " + d.tp1 + "；40日勝率 " + m40 + "、60日勝率 " + m60 + "\n" +
-    (d.addOn && d.addOn.ok ? "加碼：✅ 可加碼 " + d.addOn.pct + "%（加碼後保本 " + d.addOn.breakeven.toFixed(0) + "、止損 " + d.addOn.sl.toFixed(0) + "）\n"
+    (d.addOn && d.addOn.ok ? "加碼：✅ 可加碼 " + d.addOn.pct + "%（加碼後保本 " + d.addOn.breakeven.toFixed(0) + "、止損 " + (d.addOn.sl!=null?d.addOn.sl.toFixed(0):"—") + "）\n"
       : (d.addOn ? "加碼：🔒 " + d.addOn.reason + "\n" : "")) +
     (d.breakeven != null ? "保本止損 " + (d.breakeven != null ? d.breakeven.toFixed(0) : "—") + "（持股情境止損上移線）\n" : "") +
     "決策依據：" + d.reasons.join("、") + "\n" +
