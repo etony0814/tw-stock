@@ -741,17 +741,33 @@ async function runSell(){
     renderMatrix(primary, "matrixTableShort", "short");
     renderMatrix(dMid40, "matrixTableMid", "mid");
     // K 線
-    const dMid40forChart = dMid40 ? dMid40.slTp.sl : null;
     // 加碼保本線:只在「可加碼」情境才畫,= max(均價, 現價−5%)
     let addBreakevenLine = null;
     if (dShort && dShort.addOn && dShort.addOn.ok) addBreakevenLine = dShort.addOn.breakeven;
     // 保本止損線：只在「持股」(浮動賺+多頭) 情境才畫,= max(均價, 現價−2%)
     let breakevenLine = null;
-    if (primary.verdict === "hold") {
-      breakevenLine = Math.max(cost, +(A.close * 0.98).toFixed(2));
+    let canAdd = false;
+    let addOnPct = 0;
+    if (primary && A.close != null) {
+      const dM40 = dMid40; // decision 物件(非 sl 數字)
+      canAdd = !!(dM40 && dM40.shortScore > 0 && dM40.midScore > 0 && A.close > cost);
+      addOnPct = (canAdd && dM40 && dM40.midScore > 0.2) ? 30 : (canAdd ? 15 : 0);
+      if (primary.verdict === "hold") {
+        breakevenLine = Math.max(cost, +(A.close * 0.98).toFixed(2));
+      }
+      addBreakevenLine = canAdd ? Math.max(cost, +(A.close * 0.95).toFixed(2)) : null;
     }
-    const dMid60sl = dMid60 ? dMid60.slTp.sl : null;
-    drawChart(rows, IND, { cost: cost, sl: primary.slTp.sl, tp1: primary.slTp.tp1, slMid: dMid40forChart, slMid60: dMid60sl, breakeven: breakevenLine, addOn: addBreakevenLine });
+    const dMid40sl = dMid40 ? (dMid40.slTp ? dMid40.slTp.sl : null) : null; // K 線中期止損參考線(40日)
+    const dMid60sl = dMid60 ? (dMid60.slTp ? dMid60.slTp.sl : null) : null;
+    drawChart(rows, IND, {
+      cost: cost,
+      sl: (primary && primary.slTp) ? primary.slTp.sl : null,
+      tp1: (primary && primary.slTp) ? primary.slTp.tp1 : null,
+      slMid: dMid40sl,
+      slMid60: dMid60sl,
+      breakeven: breakevenLine,
+      addOn: addBreakevenLine
+    });
 
     // 分享
     window._sellShare = { ticker: t, name: WNAMES[t] || "", cost: cost, shares: shares, close: A.close, verdict: primary ? primary.verdict : "—", tag: primary ? primary.tag : "—", advice: primary ? primary.advice : "—", reasons: primary ? primary.reasons : [], pnl: primary ? primary.pnl : null, sl: (primary && primary.slTp) ? primary.slTp.sl : null, tp1: (primary && primary.slTp) ? primary.slTp.tp1 : null, breakeven: (primary && primary.verdict === "hold") ? Math.max(cost, +((A.close||0) * 0.98).toFixed(2)) : null, mid40: A.hist_mid40, mid60: A.hist_mid60, midTag: dMid40 ? dMid40.tag : "—", midAdvice: dMid40 ? dMid40.advice : "—", midReasons: (dMid40 && dMid40.reasons) ? dMid40.reasons : [], addOn: (primary && primary.addOn) ? primary.addOn : null };
@@ -762,7 +778,7 @@ async function runSell(){
     const _er = document.getElementById("err");
     if (_er) { _er.textContent = "評估失敗：" + e.message; _er.style.display = "block"; }
     const rb=document.getElementById("retryBtn"); if(rb){ rb.style.display="inline-block"; rb.onclick=function(){ rb.style.display="none"; runSell(); }; }
-    document.getElementById("err").style.display = "block";
+    const _er2=document.getElementById("err"); if(_er2){ _er2.style.display = "block"; }
   } finally {
     document.getElementById("loading").style.display = "none";
     btn.disabled = false; btn.style.opacity = "";
