@@ -345,11 +345,13 @@ async function fetchRows(code, period){
 function buildRows(j, code){
   const res = j.chart && j.chart.result && j.chart.result[0];
   if(!res) throw new Error("查不到 " + code + " 行情");
-  const closes = res.indicators && res.indicators[0] && res.indicators[0].close ? res.indicators[0].close : [];
-  const opens = res.indicators && res.indicators[0] && res.indicators[0].open ? res.indicators[0].open : [];
-  const highs = res.indicators && res.indicators[0] && res.indicators[0].high ? res.indicators[0].high : [];
-  const lows = res.indicators && res.indicators[0] && res.indicators[0].low ? res.indicators[0].low : [];
-  const vols = res.indicators && res.indicators[0] && res.indicators[0].volume ? res.indicators[0].volume : [];
+  // Yahoo chart API 現在用名號 key(res.indicators.quote[0])；舊版是數字 index(res.indicators[0])，兩者都支援
+  const ind = (res.indicators && res.indicators.quote && res.indicators.quote[0]) ? res.indicators.quote[0] : (res.indicators && res.indicators[0]) || {};
+  const closes = ind.close || [];
+  const opens = ind.open || [];
+  const highs = ind.high || [];
+  const lows = ind.low || [];
+  const vols = ind.volume || [];
   const rows = [];
   for (let k = 0; k < res.timestamp.length; k++) {
     const c = closes[k]; if (c == null) continue;
