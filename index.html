@@ -522,9 +522,11 @@ function jinaParse(text){
 async function fetchRows(code, period){
   const qs = "?range=" + period + "&interval=1d";
   const c = code.toUpperCase().replace(/\.TW$/,'').replace(/\.TWO$/,'');
-  const primary = (code === "^TWII" || !/^[34568]\d{3}$/.test(c)) ? (code==="^TWII"?code:toYahoo(c)) : toYahoo(c);
+  // 大盤代理:relay 對 Yahoo 大盤符號 (^TWII/TWII.TW/^TPX) 全數查不到(回 no data),
+  // 改用 0050.TW(元大台灣50 ETF,加權代表)當大盤代理,relay 有真實 K 線。
   const isTaiex = code === "^TWII";
-  const variants = isTaiex ? ["^TWII"] : [toYahoo(c)];
+  const primary = isTaiex ? "0050.TW" : toYahoo(c);
+  const variants = isTaiex ? ["0050.TW"] : [toYahoo(c)];
   // GitHub Pages(https) 下直抓 Yahoo 一定被 CORS 擋,白等 → 跳過;本地(http) 保留
   const isSecure = location.protocol === "https:";
 
@@ -579,7 +581,7 @@ async function fetchRows(code, period){
   };
   if (!isSecure) tasks.push(corsProxyOne(variants[0])); // 本地可用;https 下 corsproxy 也可能被擋、不強加
   // 全部端點 catch 後回 null、Promise.all 等完挑第一支有 chart,
-  // 避免並行端點無害 reject(yahoo 直抓 CORS / allorigins 逾時 / ^TWII 查不到)污染 console。
+  // 避免並行端點無害 reject(yahoo 直抓 CORS / allorigins 逾時)污染 console。
   const settled = await Promise.all(tasks.map(async fn => {
     try { const j = await fn(); if (j && j.chart) return j; return null; }
     catch (e) { return null; }
@@ -780,7 +782,7 @@ async function run(){
 
     const [stockRows, _taiexRows, nmAuto, prec_fund, prec_news] = await Promise.all([
       fetchRows(toYahoo(t), period),
-      fetchRows("^TWII", "1mo").catch(() => null), // 大盤抓不到降級 null,不連帶個股
+      fetchRows("^TWII", "1mo").catch(() => null), // 大盤代理 0050(加權 ETF)抓不到時降級 null,不連帶個股
       fetchStockName(t).catch(() => WNAMES[t] || ''),
       prec_fund_p,
       prec_news_p
@@ -1335,7 +1337,7 @@ function render(A, rows, t){
   setVal('tScore', tx.score, cls(tx.score));
   document.getElementById('tInfo').innerHTML = tx.ok
     ? `加權 <b>${tx.point.toLocaleString()}</b>、${tx.chg_pct>0?'+':''}${tx.chg_pct}%、${tx.direction}${tx.vol20!=null?'、近20日年化波動 '+tx.vol20+'%':''}。<br><span style="font-size:12px;color:var(--muted)">${tx.advice}</span>`
-    : `<span style="color:var(--muted)">大盤資料未取得。</span>`;
+    : `<span style="color:var(--muted)">大盤資料未取得(目前用 0050 加權 ETF 當代理;relay 對 ^TWII 大盤符號查無資料)。</span>`;
 
   // 籌碼
   const ff=A.fund_flow;
