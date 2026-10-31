@@ -385,8 +385,7 @@
     } catch (e) { return []; }
   }
 
-  // 指定日期的 T86
-  async   // 指定日的 T86:走 relay ?fundflow=1&date=YYYYMMDD(8 位)
+  // 指定日的 T86:走 relay ?fundflow=1&date=YYYYMMDD(8 位)
   async function fetchFundFlowDate(ymdstr) {
     if (!ymdstr) return null;
     // 8 位 YYYYMMDD 直接用;4 位 MMDD 補 2026 西元年(民國 115 年)
