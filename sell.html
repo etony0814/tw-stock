@@ -533,9 +533,9 @@ function renderMatrix(d, tableId, view){
     { key: "alert",cond: "中期⚠️強警報(收盤低於 60 日均線)", hit: !!(d.bearAlert && d.bearAlert.level === "strong"), action: "減碼 30% 觀望" },
     { key: "deep", cond: "深賠(浮動賠 >−8%)",        hit: (d.pnl.floatPct <= -8), action: "減碼 20% 控風險" },
     { key: "weak", cond: "浮動賠 + 中期弱(weak/bear_rebound)", hit: (d.pnl.floatPct < 0 && (d.midClass === "weak" || d.midClass === "bear_rebound")), action: "減碼 30% 控損" },
-    { key: "win",  cond: "浮動賺 + 中期偏多",         hit: (d.pnl.floatPct > 0 && d.midScore > 0.2 && !d.belowSma60), action: "持股、上移中期止損到 " + Math.max(d.pnl.cost, (d.close * 0.98).toFixed(0)) + "(max 均價 / 現價−2%)" },
-    { key: "add",  cond: "可加碼(中期強多+浮動賺)",   hit: !!(d.addOn && d.addOn.ok && d.addOn.pct === 30), action: "可加碼 30%、加碼後保本 " + (d.addOn ? d.addOn.breakeven.toFixed(0) : "—") },
-    { key: "addS", cond: "小量加碼(中期偏多)",        hit: !!(d.addOn && d.addOn.ok && d.addOn.pct === 15), action: "可小量加碼 15%、加碼後保本 " + (d.addOn ? d.addOn.breakeven.toFixed(0) : "—") },
+    { key: "win",  cond: "浮動賺 + 中期偏多",         hit: (d.pnl.floatPct > 0 && d.midScore > 0.2 && !d.belowSma60), action: "持股、上移中期止損到 " + Math.max(d.pnl.cost, (d.close != null ? +(d.close * 0.98).toFixed(0) : "—")) + "(max 均價 / 現價−2%)" },
+    { key: "add",  cond: "可加碼(中期強多+浮動賺)",   hit: !!(d.addOn && d.addOn.ok && d.addOn.pct === 30), action: "可加碼 30%、加碼後保本 " + (d.addOn && d.addOn.breakeven != null ? d.addOn.breakeven.toFixed(0) : "—") },
+    { key: "addS", cond: "小量加碼(中期偏多)",        hit: !!(d.addOn && d.addOn.ok && d.addOn.pct === 15), action: "可小量加碼 15%、加碼後保本 " + (d.addOn && d.addOn.breakeven != null ? d.addOn.breakeven.toFixed(0) : "—") },
   ] : [
     { key: "sl",   cond: "跌破短線止損(1.5×ATR)",    hit: d.breachedSL, action: "減碼 30%、不抗跌" },
     { key: "tp2",  cond: "達短線第二檔止盈",          hit: d.hitTP2,     action: "減碼 60%、剩 40% trailing" },
