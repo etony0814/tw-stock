@@ -545,10 +545,10 @@ function renderTicker(rows, IND, i) {
   card.style.display = 'block';
   const num = (x) => (x != null && isFinite(x)) ? Number(x).toLocaleString() : '—';
   const nowPrice = (it.last != null && isFinite(it.last)) ? it.last : null;
-  const prevC = (it.prev_close != null && isFinite(it.prev_close)) ? it.prev_close : null;
   let chgColor = 'var(--muted)', chgTxt = '—', chgAmtTxt = '', dirTxt = '', dirBg = 'var(--card2)';
-  if (nowPrice != null && prevC != null) {
-    const diff = nowPrice - prevC;
+  const openC = (it.open != null && isFinite(it.open)) ? it.open : null;
+  if (nowPrice != null && openC != null) {
+    const diff = nowPrice - openC;
     chgAmtTxt = (diff > 0 ? '+' : diff < 0 ? '' : '') + diff.toFixed(2);
     chgColor = diff > 0 ? 'var(--bull)' : diff < 0 ? 'var(--bear)' : 'var(--muted)';
   }
