@@ -545,7 +545,8 @@ function renderTicker(rows, IND, i) {
       const today = new Date();
       const tDate = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
       const isOpen = (rows[i] && rows[i].date) ? (rows[i].date === tDate) : true;
-      it = { open_display: isOpen ? (rows[i] ? rows[i].open : null) : m.chartPreviousClose,
+      // 開盤格＝當日開盤價（無論開盤中或未開盤都顯示當日開盤）；收盤格＝last
+      it = { open_display: rows[i] ? rows[i].open : null,
              post_display: last, last, prev_close: m.chartPreviousClose, chg_pct: null, data_date: rows[i] ? rows[i].date : null, is_open: isOpen };
     } else return;
   }
