@@ -751,10 +751,10 @@ function render(A, rows, t){
     const num = (x) => (x != null && isFinite(x)) ? Number(x).toLocaleString() : '—';
     // 顏色：漲紅、跌綠、平灰（台股慣例）
     let chgColor = 'var(--muted)', chgTxt = '—', chgAmtTxt = '', dirTxt = '', dirBg = 'var(--card2)';
-    // 漲跌價差：現價 − 前收（intradayFromRows 提供 prev_close）
-    const prevC = (it.prev_close != null && isFinite(it.prev_close)) ? it.prev_close : null;
-    if (nowPrice != null && prevC != null) {
-      const diff = nowPrice - prevC;
+    // 漲跌價差：現價 − 開盤（open）；顏色也看現價 vs 開盤
+    const openC = (it.open != null && isFinite(it.open)) ? it.open : null;
+    if (nowPrice != null && openC != null) {
+      const diff = nowPrice - openC;
       chgAmtTxt = (diff > 0 ? '+' : diff < 0 ? '' : '') + diff.toFixed(2);
       chgColor = diff > 0 ? 'var(--bull)' : diff < 0 ? 'var(--bear)' : 'var(--muted)';
     }
