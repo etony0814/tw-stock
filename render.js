@@ -793,16 +793,20 @@ function render(A, rows, t){
     const noteEl = document.getElementById('tkNote');
     // 前收：開盤中＝上一交易日收盤；未開盤＝當日基準（前日收盤）
     const prevC = (it.prev_close != null && isFinite(it.prev_close)) ? it.prev_close : null;
-    // 開盤格：開盤中＝當日開盤；未開盤＝前收
+    // 開盤格：開盤中＝當日開盤；未開盤＝前日開盤（it.open_display，當日K 的 open）
     const openC = (it.open_display != null && isFinite(it.open_display)) ? it.open_display : null;
-    // 盤後格：開盤中＝目前盤中價；未開盤＝前日收盤（it.last）
+    // 現價：盤中＝即時價（it.now_price）、未開盤（盤前/盤後/假日）＝顯示「—」
+    const nowC = (it.now_price != null && isFinite(it.now_price)) ? it.now_price : null;
+    // 收盤格：開盤中＝目前盤中價；未開盤＝前日收盤（it.post_display=it.last）
     const postC = (it.post_display != null && isFinite(it.post_display)) ? it.post_display : null;
     const num = (x) => (x != null && isFinite(x)) ? Number(x).toLocaleString() : '—';
     // 顏色：漲紅、跌綠、平灰（台股慣例）
     let chgColor = 'var(--muted)', chgTxt = '—', chgAmtTxt = '', dirTxt = '', dirBg = 'var(--card2)';
-    // 漲跌價差：未開盤＝前收 vs 盤後；開盤中＝前收 vs 現價（皆為 postC - prevC）
-    if (postC != null && prevC != null) {
-      const diff = postC - prevC;
+    // 漲跌價差：盤中＝現價−前收；未開盤（盤前/盤後/假日）＝收盤−前收
+    // 依 is_open 決定用「現價」或「收盤」
+    const chgNumerator = (it.is_open !== false) ? nowC : postC;  // 盤中→現價、未開盤→收盤
+    if (chgNumerator != null && prevC != null) {
+      const diff = chgNumerator - prevC;
       chgAmtTxt = (diff > 0 ? '+' : diff < 0 ? '' : '') + diff.toFixed(2);
       chgColor = diff > 0 ? 'var(--bull)' : diff < 0 ? 'var(--bear)' : 'var(--muted)';
     }
@@ -816,6 +820,8 @@ function render(A, rows, t){
     }
     if (prevCloseEl) prevCloseEl.textContent = num(prevC);
     if (openEl) openEl.textContent = num(openC);
+    const nowEl = document.getElementById('tkNow');
+    if (nowEl) { nowEl.textContent = num(nowC); nowEl.style.color = chgColor; }
     if (postEl) { postEl.textContent = num(postC); postEl.style.color = chgColor; }
     if (chgEl) { chgEl.textContent = chgTxt; chgEl.style.color = chgColor; }
     if (chgAmtEl) { chgAmtEl.textContent = chgAmtTxt ? '（' + chgAmtTxt + ' 元）' : ''; chgAmtEl.style.color = chgColor; }
