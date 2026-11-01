@@ -182,6 +182,13 @@
       <div id="matrixMid" style="overflow-x:auto"><div style="font-size:12px;font-weight:700;color:var(--yellow);margin-bottom:6px">📈 中期（2–3 月持有）</div><table class="matrix" id="matrixTableMid"></table></div>
     </div>
 
+    <!-- 類股／大盤對照 -->
+    <div class="card" id="peerCard" style="display:none">
+      <h3>🔍 回測勝率對照（個股 vs 類股 vs 大盤）</h3>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:8px">用同類股中位數與加權大盤，輔助判斷個股 40/60 日勝率是否離群。</div>
+      <div id="peerBody"></div>
+    </div>
+
     <!-- K 線 + 均價/止損/止盈 -->
     <div class="card" id="chartCard">
       <h3>📈 K 線與部位參考線</h3>
@@ -259,6 +266,7 @@ applyMode();
 
 // ── 行情的 toYahoo / fetchRows（同 index.html）────────────────────────────
 function toYahoo(t){
+  if (t.toUpperCase() === "^TWII" || t.toUpperCase() === "^TWII.TW") return "^TWII";
   const c = t.toUpperCase().replace(/\.TW$/,'').replace(/\.TWO$/,'');
   return /^[34568]\d{3}$/.test(c) ? c + ".TWO" : c + ".TW";
 }
@@ -697,6 +705,74 @@ function renderShortBox(d){
     '<div style="margin-top:4px;font-size:11px;color:var(--muted)">白話：短線看 5 日震盪，破 1.5×ATR 止損就減碼，不抗漲不抗跌。</div>';
 }
 
+// 同類股清單（依個股代號挑 3–5 檔同類股，算 40 日勝率中位數當對照組）
+const PEER_MAP = {
+  "2330": ["2303","3037","2317","2326","3008"],   // 半導體
+  "2303": ["2330","3037","2317","3008","2343"],
+  "3037": ["2330","2303","3008","2455","3481"],
+  "0050": ["0056","0058","00620","00941","00942"],
+  "0056": ["0050","0058","00620","00941","00942"],
+};
+// 中位數
+function _median(arr){ if(!arr.length) return null; const s=arr.slice().sort((a,b)=>a-b); const m=Math.floor(s.length/2); return s.length%2? s[m] : (s[m-1]+s[m])/2; }
+// 類股/大盤對照卡：個股 vs 同類股中位數 vs 加權大盤 的 40/60 日勝率
+async function renderPeerCard(t, stockInd40, stockInd60){
+  const card = document.getElementById("peerCard");
+  if(!card) return;
+  const peers = (PEER_MAP[t]||[]).slice(0,3);
+  const jobs = [];
+  // 同類股 40/60 日勝率
+  if(peers.length) jobs.push((async()=>{
+    const outs = await Promise.all(peers.map(async code=>{
+      try{
+        const rows = await fetchRows(toYahoo(code), "1y");
+        const IND = StockCore.computeIndicators(rows);
+        return { code, h40: StockCore.histMid(rows, IND, 180, 40), h60: StockCore.histMid(rows, IND, 180, 60) };
+      }catch(e){ return { code, h40:null, h60:null }; }
+    }));
+    const p40 = outs.map(o=> o.h40 && o.h40.up_rate!=null ? o.h40.up_rate : null).filter(x=>x!=null);
+    const p60 = outs.map(o=> o.h60 && o.h60.up_rate!=null ? o.h60.up_rate : null).filter(x=>x!=null);
+    return { label:"同類股中位數", codes:peers, med40:_median(p40), med60:_median(p60), okCount:outs.filter(o=>o.h40).length };
+  })());
+  // 加權大盤 40/60 日勝率
+  jobs.push((async()=>{
+    try{
+      const rows = await fetchRows("^TWII","1y");
+      const IND = StockCore.computeIndicators(rows);
+      return { label:"加權大盤", code:"^TWII", med40:(StockCore.histMid(rows, IND, 180, 40)||{}).up_rate ?? null, med60:(StockCore.histMid(rows, IND, 180, 60)||{}).up_rate ?? null, okCount:1 };
+    }catch(e){ return { label:"加權大盤", code:"^TWII", med40:null, med60:null, okCount:0 }; }
+  })());
+  const [peerRes, taiRes] = await Promise.all(jobs);
+  const pct = (x)=> x!=null ? x.toFixed(0)+"%" : "—";
+  const delta = (mine, ref)=>{
+    if(mine==null || ref==null) return '<span style="color:var(--muted)">—</span>';
+    const d = mine-ref;
+    const cls = d>1 ? 'var(--bull)' : d<-1 ? 'var(--bear)' : 'var(--muted)';
+    return '<span style="color:'+cls+'">'+(d>0?'+':'')+d.toFixed(0)+' pt</span>';
+  };
+  const s40 = stockInd40 && stockInd40.up_rate!=null ? stockInd40.up_rate : null;
+  const s60 = stockInd60 && stockInd60.up_rate!=null ? stockInd60.up_rate : null;
+  const rows40 = '<tr><td>個股 '+t+'</td><td>'+pct(s40)+'</td></tr>'
+    + '<tr><td>'+peerRes.label+'</td><td>'+pct(peerRes.med40)+'</td><td>'+delta(s40, peerRes.med40)+'</td></tr>'
+    + '<tr><td>'+taiRes.label+'</td><td>'+pct(taiRes.med40)+'</td><td>'+delta(s40, taiRes.med40)+'</td></tr>';
+  const rows60 = '<tr><td>個股 '+t+'</td><td>'+pct(s60)+'</td></tr>'
+    + '<tr><td>'+peerRes.label+'</td><td>'+pct(peerRes.med60)+'</td><td>'+delta(s60, peerRes.med60)+'</td></tr>'
+    + '<tr><td>'+taiRes.label+'</td><td>'+pct(taiRes.med60)+'</td><td>'+delta(s60, taiRes.med60)+'</td></tr>';
+  const verdict = ((mine, ref)=> mine!=null&&ref!=null ? (mine-ref>=3?'偏強':(ref-mine>=3?'偏弱':'接近')) : '' )(s40, peerRes.med40);
+  card.style.display = 'block';
+  document.getElementById("peerBody").innerHTML =
+    '<div style="font-size:12px;line-height:1.7;color:var(--text);margin-bottom:8px">' +
+    '<b>40 日勝率對照</b>（個股照做 40 日內多頭方向的中位勝率）<br>' +
+    '<table style="border-collapse:collapse;margin-top:6px;font-size:12px">' +
+    '<tr style="border-bottom:1px solid var(--border)"><th style="text-align:left;padding:3px 12px 3px 0">對照組</th><th style="text-align:left;padding:3px 12px">勝率</th><th style="text-align:left;padding:3px">vs 個股</th></tr>' + rows40 + '</table>' +
+    '<b style="margin-top:8px;display:block">60 日勝率對照</b><br>' +
+    '<table style="border-collapse:collapse;margin-top:6px;font-size:12px">' +
+    '<tr style="border-bottom:1px solid var(--border)"><th style="text-align:left;padding:3px 12px 3px 0">對照組</th><th style="text-align:left;padding:3px 12px">勝率</th><th style="text-align:left;padding:3px">vs 個股</th></tr>' + rows60 + '</table>' +
+    (verdict ? '<div style="margin-top:8px;font-size:12px;color:var(--muted)">個股 40 日勝率 vs 同類股：'+verdict+'（差 3pt 以上才判偏強/偏弱）。</div>' : '') +
+    '<div style="margin-top:6px;font-size:11px;color:var(--muted)">對照組取同類股中位數與加權大盤；勝率＝過去 1 年照做該方向、該期內正確的比例。僅供判斷個股勝率是否離群，不構成投資建議。</div>' +
+    '</div>';
+}
+
 function renderMidBox(d, h40, h60){
   const el = document.getElementById("midDetail");
   const cls = d.midScore >= 0.2 ? "var(--bull)" : d.midScore <= -0.2 ? "var(--bear)" : "var(--muted)";
@@ -745,10 +821,10 @@ async function runSell(){
 
   let rows, demo = false;
   try {
-    // 6mo(~126 根)已足夠 40/60 日勝率;比 1y 輕量、relay 回傳更快。
+    // 1y(~252 根)讓 40/60 日勝率分母更大、統計更穩;relay 回傳稍慢但可接受。
     // 並加 22s 總 timeout(給 relay 冷啟動 20s 空間);超時 → 明確重試,不干等。
     rows = await Promise.race([
-      fetchRows(toYahoo(t), "6mo"),
+      fetchRows(toYahoo(t), "1y"),
       new Promise((_, rej) => setTimeout(() => rej(new Error("22s 逾時")), 22000))
     ]);
   } catch (e) {
@@ -866,6 +942,9 @@ async function runSell(){
       breakeven: breakevenLine,
       addOn: addBreakevenLine
     });
+
+    // 類股/大盤對照卡（非阻塞：抓 3 檔同類股 + 加權指算 40/60 日勝率對照）
+    renderPeerCard(t, A.hist_mid40, A.hist_mid60).catch(()=>{});
 
     // 分享
     window._sellShare = { ticker: t, name: WNAMES[t] || "", cost: cost, shares: shares, close: A.close, verdict: primary ? primary.verdict : "—", tag: primary ? primary.tag : "—", advice: primary ? primary.advice : "—", reasons: primary ? primary.reasons : [], pnl: primary ? primary.pnl : null, sl: (primary && primary.slTp) ? primary.slTp.sl : null, tp1: (primary && primary.slTp) ? primary.slTp.tp1 : null, breakeven: (primary && primary.verdict === "hold") ? Math.max(cost, +((A.close||0) * 0.98).toFixed(2)) : null, mid40: A.hist_mid40, mid60: A.hist_mid60, midTag: dMid40 ? dMid40.tag : "—", midAdvice: dMid40 ? dMid40.advice : "—", midReasons: (dMid40 && dMid40.reasons) ? dMid40.reasons : [], addOn: (primary && primary.addOn) ? primary.addOn : null };
