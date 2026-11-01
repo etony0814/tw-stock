@@ -1183,7 +1183,8 @@ function drawChart(rows, IND, lines){
   const plotW = W - pad.l - pad.r, plotH = H - pad.t - pad.b;
   let hi = -Infinity, lo = Infinity;
   showRows.forEach(r => { hi = Math.max(hi, r.high); lo = Math.min(lo, r.low); });
-  [lines.cost, lines.sl, lines.tp1, lines.slMid, lines.slMid60, lines.breakeven, lines.addOn].forEach(v => { if (v != null) { hi = Math.max(hi, v); lo = Math.min(lo, v); } });
+  [lines.cost, lines.sl, lines.tp1, lines.slMid, lines.slMid60, lines.breakeven, lines.addOn].forEach(v => { if (typeof v === 'number' && isFinite(v)) { hi = Math.max(hi, v); lo = Math.min(lo, v); } });
+  if (!isFinite(hi) || !isFinite(lo)) { hi = 1; lo = 0; }
   const y = v => pad.t + (hi - v) / (hi - lo) * plotH;
   const x = i => pad.l + i * (plotW / n);
 
