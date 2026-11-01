@@ -265,6 +265,10 @@
             <div id="tkOpen" style="font-size:20px;font-weight:800;line-height:1.1;color:var(--text)">—</div>
           </div>
           <div>
+            <div style="font-size:11px;color:var(--muted)">現價</div>
+            <div id="tkNow" style="font-size:20px;font-weight:800;line-height:1.1;color:var(--text)">—</div>
+          </div>
+          <div>
             <div style="font-size:11px;color:var(--muted)">收盤</div>
             <div id="tkPost" style="font-size:24px;font-weight:800;line-height:1.05;color:var(--text)">—</div>
           </div>
@@ -551,9 +555,10 @@ async function fetchRows(code, period){
   const isSecure = location.protocol === "https:";
 
   // 各來源並行取法(誰先回 chart 誰贏),大幅降低串列拖慢
+  // 加逾時中斷器:逾時 reject 讓 Promise.any 不等慢端點,誰先回誰贏
   const relayOne = async (v) => {
     if (!QUOTE_RELAY) throw new Error("no relay");
-    const r = await fetch(QUOTE_RELAY + "?ticker=" + encodeURIComponent(v) + "&range=" + encodeURIComponent(period) + "&interval=1d");
+    const r = await withTimeout(QUOTE_RELAY + "?ticker=" + encodeURIComponent(v) + "&range=" + encodeURIComponent(period) + "&interval=1d", 12000, "relay");
     if (!r.ok) throw new Error("relay HTTP " + r.status);
     const j = await r.json();
     if (j && j.chart) return j;
@@ -600,15 +605,14 @@ async function fetchRows(code, period){
     throw new Error("corsproxy 無 chart");
   };
   if (!isSecure) tasks.push(corsProxyOne(variants[0])); // 本地可用;https 下 corsproxy 也可能被擋、不強加
-  // 全部端點 catch 後回 null、Promise.all 等完挑第一支有 chart,
-  // 避免並行端點無害 reject(yahoo 直抓 CORS / allorigins 逾時)污染 console。
-  const settled = await Promise.all(tasks.map(async fn => {
-    try { const j = await fn(); if (j && j.chart) return j; return null; }
-    catch (e) { return null; }
-  }));
-  const winner = settled.find(j => j && j.chart);
-  if (winner) return buildRows(winner, code);
-  // 全端點無 chart → 對「個股主變體 relay」再試一次(冷啟動/抖動容錯),再失敗才真 throw
+  // 誰先回 chart 誰贏（Promise.any 早離），避免 Promise.all 等最慢端點拖慢整體
+  // 全端點 reject 才降級：對「個股主變體 relay」再試一次(冷啟動/抖動容錯),再失敗才真 throw
+  try {
+    const winner = await Promise.any(tasks);
+    if (winner && winner.chart) return buildRows(winner, code);
+  } catch (e) {
+    // Promise.any 全 reject 才走這，保留原 relayRetry 兜底
+  }
   if (QUOTE_RELAY && !/^\.?TWII/.test(code)) {
     try {
       const rr = await withTimeout(QUOTE_RELAY + "?ticker=" + encodeURIComponent(variants[0]) + "&range=" + encodeURIComponent(period) + "&interval=1d", 10000, "relayRetry");
