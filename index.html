@@ -314,6 +314,12 @@
         <div id="plainRead" style="font-size:13px;color:var(--text);line-height:1.55;margin:8px 0 0;padding:8px 10px;background:var(--card2);border:1px solid var(--border);border-radius:8px;display:none"></div>
       </div>
 
+      <!-- 📐 短線 5 日決策矩陣（跟賣頁同構，不需部位、畫短線進出紀律 7 格） -->
+      <div style="margin-top:10px">
+        <div class="sec-title">📐 短線 5 日決策矩陣（進出紀律）</div>
+        <div id="shortMatrix" style="display:none;margin-top:4px"></div>
+      </div>
+
       <hr class="sec-divider">
 
       <!-- ② 風險管理（止損/止盈） -->
@@ -893,10 +899,26 @@ async function fillPeerVerdict(t, all, taiexRows){
     '<tr style="border-bottom:1px solid var(--border)"><td style="padding:4px 6px 4px 0"><b>40 日線</b> 雙月線</td><td style="padding:4px 6px;font-size:11px">跌破月線但收在40日線上（洗盤）</td><td style="padding:4px 6px">'+featOk(wash40,'✓ 洗盤')+'</td><td style="text-align:right;padding:4px">'+pct(s40)+'</td></tr>' +
     '<tr><td style="padding:4px 6px 4px 0"><b>60 日線</b> 季線</td><td style="padding:4px 6px;font-size:11px">近5日高低幅&lt;3%＋SMA60上揚（法人）</td><td style="padding:4px 6px">'+featOk(season60,'✓ 支撐')+'</td><td style="text-align:right;padding:4px">'+pct(s60)+'</td></tr>' +
     '</table>' +
+    // 個股 vs 大盤差值（40 日勝率對照，標出個股是否跑贏大盤）
+    (function(){
+      if(!taiexRows) return '';
+      try {
+        const ti = StockCore.computeIndicators(taiexRows);
+        const t40 = (StockCore.histMid(taiexRows, ti, 180, 40)||{}).up_rate ?? null;
+        if(s40==null || t40==null) return '';
+        const diff40 = s40 - t40;
+        const verdict40 = diff40 >= 3 ? '偏強' : diff40 <= -3 ? '偏弱' : '接近';
+        const vColor = diff40 >= 3 ? 'var(--bull)' : diff40 <= -3 ? 'var(--bear)' : 'var(--muted)';
+        return '<div style="margin-top:8px;padding:8px 10px;background:var(--card2);border:1px solid var(--border);border-radius:8px;font-size:12px;line-height:1.7">' +
+          '🔍 <b>個股 vs 加權大盤（40 日勝率）</b><br>' +
+          '個股 '+pct(s40)+'、加權大盤 '+pct(t40)+' → <span style="color:'+vColor+';font-weight:700">'+verdict40+'（差 '+(diff40>0?'+':'')+diff40.toFixed(0)+' pt）</span>。' +
+          '</div>';
+      } catch(e){ return ''; }
+    })() +
     '<div style="margin-top:8px;padding:8px 10px;background:var(--card2);border:1px solid var(--border);border-radius:8px;font-size:13px;line-height:1.6">' +
       '<b style="color:'+verdictColor+'">綜合判定：'+verdict+'</b>　<span style="color:var(--text);font-size:12px">'+verdictText+'</span>' +
     '</div>' +
-    '<div style="margin-top:6px;font-size:11px;color:var(--muted);line-height:1.5">週期控盤資金：5日＝當沖/極短線、20日＝投信波段、40日＝內資大戶、60日＝外資/壽險/國家隊。勝率＝過去1年照做該方向、該期內正確的比例。僅供判斷，不構成投資建議。</div>';
+    '<div style="margin-top:6px;font-size:11px;color:var(--muted);line-height:1.5">週期控盤資金：5日＝當沖/極短線、20日＝投信波段、40日＝內資大戶、60日＝外資/壽險/國家隊。勝率＝過去1年照做該方向、該期內正確的比例。個股 vs 大盤差 3pt 以上才判偏強/偏弱。僅供判斷，不構成投資建議。</div>';
   el.innerHTML = oneLiner;
   el.style.display = 'block';
   window._peerCompare = { s5, s20, s40, s60, attack5, month20, wash40, season60, verdict, verdictText, volRatio, range5Pct };
