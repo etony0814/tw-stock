@@ -362,13 +362,21 @@ function render(A, rows, t){
         : midScore <= -0.2 ? '中期偏空：建議觀望、等右側確認再進場。'
         : '中期方向不明，維持中性觀望。';
     } else midActionText = '中期訊號暫缺。';
-    // ④ 風險（止損/止盈 一兩行白話）
+    // ④ 風險（短線 5 日 1.5×ATR 止損/止盈 + 中期 40 日 4×ATR 止損/止盈）
     const lastInd = A.indicators ? A.indicators.ATR14 ? A.indicators.ATR14[A.indicators.ATR14.length-1] : null : null;
     const sl = (lastClose != null && lastInd != null) ? lastClose - 1.5*lastInd : null;
     const tp1 = (lastClose != null && lastInd != null) ? lastClose + 1*lastInd : null;
-    const riskLine = (sl != null && tp1 != null)
-      ? '短線止損 ' + sl.toFixed(0) + '、止盈 ' + tp1.toFixed(0) + '；跌破止損即減碼，不抗漲不抗跌。'
-      : '止損/止盈暫缺（資料不足），建議以「跌破 5 日線、放量長黑 K」作短線減碼紀律。';
+    // 中期 40 日：4×ATR（跟賣頁 slTpForHorizon mid40 一致）
+    const slMid = (lastClose != null && lastInd != null) ? lastClose - 4*lastInd : null;
+    const tpMid = (lastClose != null && lastInd != null) ? lastClose + 4*lastInd : null;
+    let riskLine;
+    if (sl != null && tp1 != null) {
+      riskLine = '📉 短線（5 日）：止損 ' + sl.toFixed(0) + '、止盈 ' + tp1.toFixed(0) +
+        (slMid != null ? '；<br>📈 中期（40 日）：止損 ' + slMid.toFixed(0) + '、止盈 ' + tpMid.toFixed(0) + '。' : '') +
+        '　跌破對應止損即減碼、不抗漲不抗跌。';
+    } else {
+      riskLine = '止損/止盈暫缺（資料不足），建議以「跌破 5 日線、放量長黑 K」作短線減碼紀律。';
+    }
     // 綜合判定：今天「現在」做什麼
     let nowAction, nowColor;
     if (c >= 0.2) { nowAction = '整體偏多，可逢低布局。'; nowColor = 'var(--bull)'; }
@@ -378,7 +386,7 @@ function render(A, rows, t){
       '<div style="margin-bottom:6px">🎯 <b>現在做什麼：</b><span style="color:'+nowColor+'">'+nowAction+'</span></div>' +
       '<div style="margin-bottom:6px">📉 <b>短線（5 日）：</b><span style="color:'+colorOf(cShort)+'">'+cShort+'</span>　'+af+'</div>' +
       '<div style="margin-bottom:6px">📈 <b>中期（2–3 月）：</b><span style="color:'+colorOf(cMid)+'">'+cMid+'</span>　'+midActionText+'</div>' +
-      '<div>⚠️ <b>風險紀律：</b>'+riskLine+'</div>' +
+      '<div>⚠️ <b>風險紀律：</b><div style="margin-top:4px">'+riskLine+'</div></div>' +
       '<div style="margin-top:6px;font-size:11px;color:var(--muted);border-top:1px solid var(--border);padding-top:6px">📅 時段：'+(ms.label||'')+(ms.hhmm!=null?(' '+Math.floor(ms.hhmm/100)+':'+String(ms.hhmm%100).padStart(2,'0')):'')+'。僅供參考、不構成投資建議。</div>';
     card.style.display = 'block';
   })();
@@ -997,6 +1005,56 @@ function render(A, rows, t){
   drawMACD(rows, A.indicators);
   drawRSI(rows, A.indicators);
   drawVolChart(rows, A.indicators);
+  // 📐 短線 5 日決策矩陣（不需部位，畫進出紀律 7 格，跟賣頁同構）
+  const sm = document.getElementById('shortMatrix');
+  if (sm && A && A.indicators && A._stockRows) {
+    const lastRow2 = A._stockRows[A._stockRows.length-1];
+    const atrV2 = A.indicators.ATR14 ? A.indicators.ATR14[A.indicators.ATR14.length-1] : null;
+    const close2 = lastRow2 ? lastRow2.close : null;
+    const shortScore = A.final ? A.final.combined_score : null;
+    if (close2 != null && atrV2 != null) {
+      const sl = close2 - 1.5*atrV2;
+      const tp1 = close2 + 1*atrV2;
+      const tp2 = close2 + 2*atrV2;
+      const m40v = A._slTp && A._slTp.slMid != null ? A._slTp.slMid : null;
+      // 7 格：跌破止損、達止盈 1、達止盈 2、短線偏空、浮動賺+偏多、可加碼、小量加碼
+      const volRatioNow = A.intraday ? A.intraday.vol_ratio : null;
+      const rows7 = [
+        { key:"sl",   cond:"跌破短線止損("+sl.toFixed(0)+")", hit:close2<sl, action:"減碼 30%、不抗跌" },
+        { key:"tp2",  cond:"達短線第二檔止盈("+tp2.toFixed(0)+")", hit:close2>=tp2, action:"減碼 60%、剩 40% trailing" },
+        { key:"tp1",  cond:"達短線第一檔止盈("+tp1.toFixed(0)+")", hit:close2>=tp1 && close2<tp2, action:"減碼 1/3 鎖利" },
+        { key:"short",cond:"短線偏空(分數 ≤−0.15)", hit:shortScore!=null && shortScore<=-0.15, action:"減碼 20%、等短線翻多再說" },
+        { key:"win",  cond:"浮動賺＋短線偏多", hit:shortScore!=null && shortScore>=0.15, action:"持股、破短線止損 "+sl.toFixed(0)+" 即減" },
+        { key:"add",  cond:"可加碼(短線強多＋量比放大)", hit:shortScore!=null && shortScore>=0.25 && volRatioNow!=null && volRatioNow>1.5, action:"可加碼 30%、加碼後保本 " + (close2!=null ? Math.max(0,(close2*0.97).toFixed(0)) : "—") },
+        { key:"addS", cond:"小量加碼(短線偏多)", hit:shortScore!=null && shortScore>=0.15 && shortScore<0.25, action:"可小量加碼 15%、加碼後保本 " + (close2!=null ? Math.max(0,(close2*0.98).toFixed(0)) : "—") },
+      ];
+      const hit7 = rows7.find(r=>r.hit) || null;
+      const isMobile = window.innerWidth<=700;
+      let topHtml;
+      if (hit7) {
+        const cColor = (hit7.key==="win"||hit7.key==="add"||hit7.key==="addS") ? "var(--bull)" : (hit7.key==="short") ? "var(--yellow)" : "var(--bear)";
+        topHtml = '<div style="padding:10px 12px;background:rgba(56,189,248,.10);border:1px solid var(--accent);border-radius:10px;margin-bottom:10px">'+
+          '<div style="font-size:11px;color:var(--muted);margin-bottom:4px">📍 短線視角(5 日):你目前落在</div>'+
+          '<div style="font-size:16px;font-weight:800;color:'+cColor+'">'+hit7.cond+'</div>'+
+          '<div style="font-size:13px;margin-top:4px;color:var(--text)">→ '+hit7.action+'</div></div>';
+      } else {
+        topHtml = '<div style="padding:10px 12px;background:var(--card2);border:1px solid var(--border);border-radius:10px;margin-bottom:10px">'+
+          '<div style="font-size:11px;color:var(--muted);margin-bottom:4px">📍 短線視角(5 日):你目前落在</div>'+
+          '<div style="font-size:16px;font-weight:800;color:var(--accent)">未觸發減碼條件(中性觀望)</div>'+
+          '<div style="font-size:13px;margin-top:4px;color:var(--text)">未破短線止損、未達短線止盈、未短線空頭 — 依短線紀律觀望</div></div>';
+      }
+      let tbl = '<table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr><th style="text-align:left;padding:6px 8px 6px 0;border-bottom:2px solid var(--border)">短線 5 日情境</th><th style="text-align:left;padding:6px 8px;border-bottom:2px solid var(--border)">建議動作</th></tr></thead><tbody>';
+      rows7.forEach(r=>{
+        tbl += '<tr style="border-bottom:1px solid var(--border)'+(r.hit?';background:rgba(56,189,248,.08)':'')+'"><td style="padding:6px 8px 6px 0;'+(r.hit?'font-weight:700;color:var(--accent)':'color:var(--text)')+'">'+(r.hit?'📍 ':'')+r.cond+'</td><td style="padding:6px 8px;color:var(--muted)">'+r.action+'</td></tr>';
+      });
+      tbl += '</tbody></table>';
+      sm.innerHTML = topHtml +
+        '<details style="margin-top:4px'+(!isMobile?';display:none':'')+'">'+
+        '<summary style="cursor:pointer;font-size:12px;color:var(--muted);list-style:none;padding:4px 0">▸ 展開短線 5 日全部情境對照('+rows7.length+' 格)</summary>'+
+        '<div style="overflow-x:auto;margin-top:6px">'+tbl+'</div></details>';
+      sm.style.display = 'block';
+    }
+  }
   window._lastRows = rows;
   window._lastIND = A.indicators;
 }
