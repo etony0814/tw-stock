@@ -683,34 +683,50 @@ function demoTaiexRows(){
 // 自動帶出股票名稱：先查內建表，再查 Yahoo meta（Jina 代理）
 async function fetchStockName(t){
   if (WNAMES[t]) return WNAMES[t];
+  // 表外代號：先讀 localStorage 暫存（之前抓過一次就記下，不用再花網路）
+  try {
+    const cached = JSON.parse(localStorage.getItem('tonyStockNames') || '{}');
+    if (cached[t]) return cached[t];
+  } catch(e){}
+  let found = "";
   // 1) relay ?name=代號（worker 直抓 Yahoo meta 的中文名;抓不到才走下層）
   if (QUOTE_RELAY) {
     try {
       const r = await fetch(QUOTE_RELAY + "/?name=" + encodeURIComponent(t));
       if (r.ok) {
         const j = await r.json();
-        if (j && j.ok && j.name && j.name.length) return j.name;
+        if (j && j.ok && j.name && j.name.length) found = j.name;
       }
     } catch(e){}
   }
   // 2) Jina 抓 Yahoo meta（回退）
-  try {
-    const target = "https://query2.finance.yahoo.com/v8/finance/chart/" + toYahoo(t) + "?range=1d&interval=1d";
-    const r = await fetch("https://r.jina.ai/" + target, { headers: { "Accept": "text/plain" } });
-    const text = await r.text();
-    const idx = text.indexOf("Markdown Content:");
-    let body = idx >= 0 ? text.slice(idx + "Markdown Content:".length).trim() : text;
-    const o = body.indexOf("{"); if (o >= 0) body = body.slice(o);
-    const j = JSON.parse(body);
-    const meta = j.chart && j.chart.result && j.chart.result[0] && j.chart.result[0].meta;
-    if (meta && meta.shortName) {
-      const nm = meta.shortName;
-      if (/[a-zA-Z]/.test(nm) && !/[\u4e00-\u9fff]/.test(nm)) return nm;
-      return nm;
-    }
-  } catch(e){}
+  if (!found) {
+    try {
+      const target = "https://query2.finance.yahoo.com/v8/finance/chart/" + toYahoo(t) + "?range=1d&interval=1d";
+      const r = await fetch("https://r.jina.ai/" + target, { headers: { "Accept": "text/plain" } });
+      const text = await r.text();
+      const idx = text.indexOf("Markdown Content:");
+      let body = idx >= 0 ? text.slice(idx + "Markdown Content:".length).trim() : text;
+      const o = body.indexOf("{"); if (o >= 0) body = body.slice(o);
+      const j = JSON.parse(body);
+      const meta = j.chart && j.chart.result && j.chart.result[0] && j.chart.result[0].meta;
+      if (meta && meta.shortName) {
+        const nm = meta.shortName;
+        if (/[a-zA-Z]/.test(nm) && !/[\u4e00-\u9fff]/.test(nm)) found = nm;
+        else found = nm;
+      }
+    } catch(e){}
+  }
+  // 表外代號：抓到新名稱就暫存到 localStorage，讓它慢慢自我補齊
+  if (found) {
+    try {
+      const cached = JSON.parse(localStorage.getItem('tonyStockNames') || '{}');
+      cached[t] = found;
+      localStorage.setItem('tonyStockNames', JSON.stringify(cached));
+    } catch(e){}
+  }
   // 3) fallback：只回代號本身（讓 showResultTitle 顯示純代號）
-  return "";
+  return found || "";
 }
 
 // 顯示「代號＋名稱」與自選按鈕狀態
