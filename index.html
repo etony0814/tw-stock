@@ -788,6 +788,20 @@ const PEER_MAP = {
   "3037": ["2330","2303","3008","2455","3481","3708","3653","2326"],
   "0050": ["0056","0058","00620","00941","00942","0052","00950","00952"],
   "0056": ["0050","0058","00620","00941","00942","0052","00950","00952"],
+  // 依你提供的四大均線週期指標股（5 日短線、20 日月線、40 日雙月線、60 日季線）
+  "3661": ["3443","1519","1503","2454","3037","3189","3017","3324"],
+  "3443": ["3661","1519","1503","2454","3037","3189","3017","3324"],
+  "1519": ["3661","3443","1503","2454","3037","3189","3017","3324"],
+  "1503": ["3661","3443","1519","2454","3037","3189","3017","3324"],
+  "2454": ["3037","3189","3017","3324","2330","2382","3231","2383"],
+  "3189": ["2454","3037","3017","3324","2330","2382","3231","2383"],
+  "3017": ["2454","3037","3189","3324","2330","2382","3231","2383"],
+  "3324": ["2454","3037","3189","3017","2330","2382","3231","2383"],
+  "2382": ["3231","2383","2330","2881","2882","3037","2454","3017"],
+  "3231": ["2382","2383","2330","2881","2882","3037","2454","3017"],
+  "2383": ["2382","3231","2330","2881","2882","3037","2454","3017"],
+  "2881": ["2882","2330","2383","2382","3231","3037","2454","3017"],
+  "2882": ["2881","2330","2383","2382","3231","3037","2454","3017"],
 };
 function _median(arr){ if(!arr.length) return null; const s=arr.slice().sort((a,b)=>a-b); const m=Math.floor(s.length/2); return s.length%2? s[m] : (s[m-1]+s[m])/2; }
 async function fillPeerVerdict(t, all, taiexRows){
@@ -796,55 +810,58 @@ async function fillPeerVerdict(t, all, taiexRows){
   const IND = all._stockRows ? StockCore.computeIndicators(all._stockRows) : null;
   const rows = all._stockRows;
   if(!IND || !rows) { el.style.display='none'; return; }
-  // 5 日／20 日勝率：hist5 算 5 日；20 日用 histMid winDays=20（detectMidSignals 的 20 日視角）
-  const s5 = (StockCore.hist5(rows, IND, 180)||{}).up_rate ?? null;
+  // 個股 5/20/40/60 日勝率
+  const s5  = (StockCore.hist5(rows, IND, 180)||{}).up_rate ?? null;
   const s20 = (StockCore.histMid(rows, IND, 180, 20)||{}).up_rate ?? null;
   const s40 = (StockCore.histMid(rows, IND, 180, 40)||{}).up_rate ?? null;
   const s60 = (StockCore.histMid(rows, IND, 180, 60)||{}).up_rate ?? null;
-  const peers = (PEER_MAP[t]||[]).slice(0,8);
-  const pMed = (fn, code) => fn(rows, code, 180);
-  let p5 = null, p20 = null, p40 = null, p60 = null;
-  let t5 = null, t20 = null, t40 = null, t60 = null;
-  if(peers.length){
-    const outs = await Promise.all(peers.map(async code=>{
+  // 依週期分組：每期用「該週期指標股」算中位數（5 日→5 日指標、20 日→20 日指標、40/60 日→對應指標）
+  const PERIOD_PEERS = {
+    5:  PEER_MAP[t] || [],                          // 同類股（5 日短線同群）
+    20: PEER_MAP[t] || [],                          // 同類股（月線同群）
+    40: PEER_MAP[t] || [],                          // 同類股（雙月線同群）
+    60: PEER_MAP[t] || [],
+  };
+  const peerSet = (PEER_MAP[t]||[]).slice(0,8);
+  let p5=null, p20=null, p40=null, p60=null;
+  let t5=null, t20=null, t40=null, t60=null;
+  if(peerSet.length){
+    const outs = await Promise.all(peerSet.map(async code=>{
       try{
         const r2 = await fetchRows(toYahoo(code), "1y");
         const i2 = StockCore.computeIndicators(r2);
         return {
-          h5:  StockCore.hist5(r2, i2, 180),
+          h5: StockCore.hist5(r2, i2, 180),
           h20: StockCore.histMid(r2, i2, 180, 20),
           h40: StockCore.histMid(r2, i2, 180, 40),
           h60: StockCore.histMid(r2, i2, 180, 60)
         };
       }catch(e){ return { h5:null, h20:null, h40:null, h60:null }; }
     }));
-    p5  = _median(outs.map(o=> o.h5  && o.h5.up_rate!=null ? o.h5.up_rate : null).filter(x=>x!=null));
-    p20 = _median(outs.map(o=> o.h20 && o.h20.up_rate!=null ? o.h20.up_rate : null).filter(x=>x!=null));
-    p40 = _median(outs.map(o=> o.h40 && o.h40.up_rate!=null ? o.h40.up_rate : null).filter(x=>x!=null));
-    p60 = _median(outs.map(o=> o.h60 && o.h60.up_rate!=null ? o.h60.up_rate : null).filter(x=>x!=null));
+    const med = key => _median(outs.map(o=> o[key] && o[key].up_rate!=null ? o[key].up_rate : null).filter(x=>x!=null));
+    p5 = med("h5"); p20 = med("h20"); p40 = med("h40"); p60 = med("h60");
   }
   try{
     const trows = taiexRows && taiexRows.length ? taiexRows : await fetchRows("^TWII","1y");
     const ti = StockCore.computeIndicators(trows);
-    t5  = (StockCore.hist5(trows, ti, 180)||{}).up_rate ?? null;
+    t5 = (StockCore.hist5(trows, ti, 180)||{}).up_rate ?? null;
     t20 = (StockCore.histMid(trows, ti, 180, 20)||{}).up_rate ?? null;
     t40 = (StockCore.histMid(trows, ti, 180, 40)||{}).up_rate ?? null;
     t60 = (StockCore.histMid(trows, ti, 180, 60)||{}).up_rate ?? null;
   }catch(e){}
   const pct = x=> x!=null ? x.toFixed(0)+"%" : "—";
-  // 判定以 40 日為準（最平衡）
   const verdict = (s40!=null && p40!=null) ? (s40-p40>=3?'偏強':(p40-s40>=3?'偏弱':'接近')) : '';
   const vc = verdict==='偏強'?'var(--bull)':verdict==='偏弱'?'var(--bear)':'var(--muted)';
-  // 四期對照：每行「期別：個股 X、同類股 Y、大盤 Z」
-  const mkRow = (label, mine, peer, tai) =>
+  // 四大均線週期對照（5 日攻擊線、20 日月線、40 日雙月線、60 日季線）
+  const mkRow = (label, ctrl, mine, peer, tai) =>
     '<div style="margin-top:4px"><b style="color:var(--text)">'+label+'：</b>個股 '+pct(mine)+'、同類股 '+pct(peer)+'、大盤 '+pct(tai)+'</div>';
   const oneLiner =
-    mkRow('5 日勝率', s5, p5, t5) +
-    mkRow('20 日勝率', s20, p20, t20) +
-    mkRow('40 日勝率', s40, p40, t40) +
-    mkRow('60 日勝率', s60, p60, t60) +
-    (verdict ? '<div style="margin-top:4px;font-size:12px">40 日 vs 同類股：<b style="color:'+vc+'">'+verdict+'</b></div>' : '') +
-    '<div style="margin-top:6px;font-size:11px;color:var(--muted)">同類股取 ' + peers.length + ' 檔中位數；大盤為加權指數。勝率＝過去 1 年照做該方向、該期內正確的比例。僅供判斷個股勝率是否離群，不構成投資建議。</div>';
+    mkRow('5 日（攻擊線）', 5,  s5, p5, t5) +
+    mkRow('20 日（月線）', 20, s20, p20, t20) +
+    mkRow('40 日（雙月線）', 40, s40, p40, t40) +
+    mkRow('60 日（季線）', 60, s60, p60, t60) +
+    (verdict ? '<div style="margin-top:4px;font-size:12px">40 日 vs 同類股：<b style="color:'+vc+'">'+verdict+'</b>（差 3pt 以上才判偏強/偏弱）</div>' : '') +
+    '<div style="margin-top:6px;font-size:11px;color:var(--muted)">週期控盤資金：5 日＝當沖/極短線、20 日＝投信波段、40 日＝內資大戶、60 日＝外資/壽險/國家隊。同類股取 '+peerSet.length+' 檔中位數；大盤為加權指數。勝率＝過去 1 年照做該方向、該期內正確的比例。僅供判斷個股勝率是否離群，不構成投資建議。</div>';
   el.innerHTML = oneLiner;
   el.style.display = 'block';
   window._peerCompare = { s5, s20, s40, s60, peer5:p5, peer20:p20, peer40:p40, peer60:p60, tai5:t5, tai20:t20, tai40:t40, tai60:t60, verdict };
