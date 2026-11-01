@@ -716,6 +716,20 @@ const PEER_MAP = {
   "3037": ["2330","2303","3008","2455","3481","3708","3653","2326"],
   "0050": ["0056","0058","00620","00941","00942","0052","00950","00952"],
   "0056": ["0050","0058","00620","00941","00942","0052","00950","00952"],
+  // 依四大均線週期指標股（5 日短線、20 日月線、40 日雙月線、60 日季線）
+  "3661": ["3443","1519","1503","2454","3037","3189","3017","3324"],
+  "3443": ["3661","1519","1503","2454","3037","3189","3017","3324"],
+  "1519": ["3661","3443","1503","2454","3037","3189","3017","3324"],
+  "1503": ["3661","3443","1519","2454","3037","3189","3017","3324"],
+  "2454": ["3037","3189","3017","3324","2330","2382","3231","2383"],
+  "3189": ["2454","3037","3017","3324","2330","2382","3231","2383"],
+  "3017": ["2454","3037","3189","3324","2330","2382","3231","2383"],
+  "3324": ["2454","3037","3189","3017","2330","2382","3231","2383"],
+  "2382": ["3231","2383","2330","2881","2882","3037","2454","3017"],
+  "3231": ["2382","2383","2330","2881","2882","3037","2454","3017"],
+  "2383": ["2382","3231","2330","2881","2882","3037","2454","3017"],
+  "2881": ["2882","2330","2383","2382","3231","3037","2454","3017"],
+  "2882": ["2881","2330","2383","2382","3231","3037","2454","3017"],
 };
 // 中位數
 function _median(arr){ if(!arr.length) return null; const s=arr.slice().sort((a,b)=>a-b); const m=Math.floor(s.length/2); return s.length%2? s[m] : (s[m-1]+s[m])/2; }
@@ -764,11 +778,11 @@ async function renderPeerCard(t, IND, rows){
   const verdict=((m,r)=> m!=null&&r!=null? (m-r>=3?'偏強':(r-m>=3?'偏弱':'接近')):'')(s40, peerRes.med40);
   const vc=verdict==='偏強'?'var(--bull)':verdict==='偏弱'?'var(--bear)':'var(--muted)';
   const oneLiner =
-    '<div style="font-weight:700;color:var(--text)">5 日勝率：</div>個股 '+pct(s5)+'、同類股 '+pct(peerRes.med5)+'、大盤 '+pct(taiRes.med5)+
-    '<div style="font-weight:700;color:var(--text);margin-top:4px">20 日勝率：</div>個股 '+pct(s20)+'、同類股 '+pct(peerRes.med20)+'、大盤 '+pct(taiRes.med20)+
-    '<div style="font-weight:700;color:var(--text);margin-top:4px">40 日勝率：</div>個股 '+pct(s40)+'、同類股 '+pct(peerRes.med40)+'、大盤 '+pct(taiRes.med40)+(verdict? ('；個股 vs 類股 → <b style="color:'+vc+'">'+verdict+'</b>'):'')+
-    '<div style="font-weight:700;color:var(--text);margin-top:4px">60 日勝率：</div>個股 '+pct(s60)+'、同類股 '+pct(peerRes.med60)+'、大盤 '+pct(taiRes.med60)+
-    '<div style="margin-top:6px;font-size:11px;color:var(--muted)">同類股取 '+peers.length+' 檔中位數；大盤為加權指數。勝率＝過去 1 年照做該方向、該期內正確的比例。僅供判斷個股勝率是否離群，不構成投資建議。</div>';
+    '<div style="font-weight:700;color:var(--text)">5 日（攻擊線）：</div>個股 '+pct(s5)+'、同類股 '+pct(peerRes.med5)+'、大盤 '+pct(taiRes.med5)+
+    '<div style="font-weight:700;color:var(--text);margin-top:4px">20 日（月線）：</div>個股 '+pct(s20)+'、同類股 '+pct(peerRes.med20)+'、大盤 '+pct(taiRes.med20)+
+    '<div style="font-weight:700;color:var(--text);margin-top:4px">40 日（雙月線）：</div>個股 '+pct(s40)+'、同類股 '+pct(peerRes.med40)+'、大盤 '+pct(taiRes.med40)+(verdict? ('；個股 vs 類股 → <b style="color:'+vc+'">'+verdict+'</b>'):'')+
+    '<div style="font-weight:700;color:var(--text);margin-top:4px">60 日（季線）：</div>個股 '+pct(s60)+'、同類股 '+pct(peerRes.med60)+'、大盤 '+pct(taiRes.med60)+
+    '<div style="margin-top:6px;font-size:11px;color:var(--muted)">週期控盤資金：5 日＝當沖/極短線、20 日＝投信波段、40 日＝內資大戶、60 日＝外資/壽險/國家隊。同類股取 '+peers.length+' 檔中位數；大盤為加權指數。勝率＝過去 1 年照做該方向、該期內正確的比例。僅供判斷個股勝率是否離群，不構成投資建議。</div>';
   window._peerCompare = { s5,s20,s40,s60, peer5:peerRes.med5, peer20:peerRes.med20, peer40:peerRes.med40, peer60:peerRes.med60, tai5:taiRes.med5, tai20:taiRes.med20, tai40:taiRes.med40, tai60:taiRes.med60, verdict, oneLiner };
   const verdictEl=document.getElementById("peerVerdict");
   if(verdictEl){ verdictEl.innerHTML = oneLiner || '對照資料不足，請稍後再試。'; verdictEl.style.display='block'; }
