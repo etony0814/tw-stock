@@ -282,6 +282,8 @@
         <div id="tkNote" style="font-size:11px;color:var(--muted);margin-top:6px"></div>
       </div>
       <div class="final-text" id="finalText">—</div>
+      <!-- 對照結論（個股 vs 同類股 vs 大盤 的 40/60 日勝率一行簡結論） -->
+      <div id="peerVerdict" style="display:none;margin-top:8px;font-size:12px;line-height:1.6;color:var(--muted);background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:8px 10px"></div>
 
       <!-- ① 結論區 -->
       <div style="margin-top:10px">
@@ -778,6 +780,55 @@ function toggleAccordion(kind){
   }
 }
 
+// 同類股清單（個股代號→3 檔同類股）與對照結論：個股 vs 同類股中位數 vs 加權大盤 的 40/60 日勝率
+const PEER_MAP = {
+  "2330": ["2303","3037","2317","2326","3008"],
+  "2303": ["2330","3037","2317","3008","2343"],
+  "3037": ["2330","2303","3008","2455","3481"],
+  "0050": ["0056","0058","00620","00941","00942"],
+  "0056": ["0050","0058","00620","00941","00942"],
+};
+function _median(arr){ if(!arr.length) return null; const s=arr.slice().sort((a,b)=>a-b); const m=Math.floor(s.length/2); return s.length%2? s[m] : (s[m-1]+s[m])/2; }
+async function fillPeerVerdict(t, all, taiexRows){
+  const el = document.getElementById('peerVerdict');
+  if(!el) return;
+  const IND = all._stockRows ? StockCore.computeIndicators(all._stockRows) : null;
+  const rows = all._stockRows;
+  if(!IND || !rows) { el.style.display='none'; return; }
+  const s40 = (StockCore.histMid(rows, IND, 180, 40)||{}).up_rate ?? null;
+  const s60 = (StockCore.histMid(rows, IND, 180, 60)||{}).up_rate ?? null;
+  const peers = (PEER_MAP[t]||[]).slice(0,3);
+  let p40 = null, p60 = null;
+  if(peers.length){
+    const outs = await Promise.all(peers.map(async code=>{
+      try{
+        const r2 = await fetchRows(toYahoo(code), "1y");
+        const i2 = StockCore.computeIndicators(r2);
+        return { h40: StockCore.histMid(r2, i2, 180, 40), h60: StockCore.histMid(r2, i2, 180, 60) };
+      }catch(e){ return { h40:null, h60:null }; }
+    }));
+    p40 = _median(outs.map(o=> o.h40 && o.h40.up_rate!=null ? o.h40.up_rate : null).filter(x=>x!=null));
+    p60 = _median(outs.map(o=> o.h60 && o.h60.up_rate!=null ? o.h60.up_rate : null).filter(x=>x!=null));
+  }
+  let t40 = null, t60 = null;
+  try{
+    const trows = taiexRows && taiexRows.length ? taiexRows : await fetchRows("^TWII","1y");
+    const ti = StockCore.computeIndicators(trows);
+    t40 = (StockCore.histMid(trows, ti, 180, 40)||{}).up_rate ?? null;
+    t60 = (StockCore.histMid(trows, ti, 180, 60)||{}).up_rate ?? null;
+  }catch(e){}
+  const pct = x=> x!=null ? x.toFixed(0)+"%" : "—";
+  const verdict = (s40!=null && p40!=null) ? (s40-p40>=3?'偏強':(p40-s40>=3?'偏弱':'接近')) : '';
+  const vc = verdict==='偏強'?'var(--bull)':verdict==='偏弱'?'var(--bear)':'var(--muted)';
+  const oneLiner =
+    '40 日勝率：個股 ' + pct(s40) + '、同類股 ' + pct(p40) + '、大盤 ' + pct(t40) +
+    (verdict ? ('；個股 vs 類股 → <b style="color:'+vc+'">'+verdict+'</b>') : '') +
+    '<br><span style="font-size:11px;color:var(--muted)">勝率＝過去 1 年照做該方向、該期內正確的比例。僅供判斷個股勝率是否離群，不構成投資建議。</span>';
+  el.innerHTML = oneLiner;
+  el.style.display = 'block';
+  window._peerCompare = { s40, s60, peer40:p40, peer60:p60, tai40:t40, tai60:t60, verdict };
+}
+
 async function run(){
   const t=document.getElementById('ticker').value.trim();
   const nm=document.getElementById('ticker').value.trim(); // 代號；名稱稍後自動帶出
@@ -831,6 +882,9 @@ async function run(){
     all.relative = StockCore.relativeStrength(stockRows, taiexRows, 20);
     all._stockRows = stockRows;
     all._taiexRows = taiexRows;
+
+    // 對照結論：個股 vs 同類股中位數 vs 加權大盤 的 40/60 日勝率（非阻塞、填入 peerVerdict）
+    fillPeerVerdict(t, all, taiexRows).catch(()=>{});
 
     document.getElementById('results').style.display='block';
     document.getElementById('demoBanner').style.display='none';
