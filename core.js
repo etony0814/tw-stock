@@ -463,7 +463,9 @@
     // 前收（上一交易日收盤）：有 meta.chartPreviousClose 用之，否則用日K 前一筆 close
     const prevClose = (rows.meta && rows.meta.chartPreviousClose != null) ? rows.meta.chartPreviousClose : prev;
     // 漲跌幅＝現價 vs 開盤（開盤日內漲跌），不用前收（前收跨日、語意不同）
-    const chg = open ? (last - open) / open * 100 : null;
+    // 未開盤時「開盤」應該顯示前收（前一日收盤），而非當日開盤價
+    const open_display = (is_open || !prev) ? open : prev;
+    const chg = open_display ? (last - open_display) / open_display * 100 : null;
     // 量比
     let vol_ratio = null;
     if (i >= 20) {
@@ -495,10 +497,10 @@
       : score >= 0.1 ? "盤面略偏強，量能尚可，可小量試水。"
       : score <= -0.1 ? "盤面略偏弱，建議謹慎。"
       : "盤面方向不明，等盤中確認再動作。";
-    return { open, last, prev_close: prevClose, chg_pct: chg != null ? Math.round(chg * 100) / 100 : null,
+    return { open: open_display, last, prev_close: prevClose, chg_pct: chg != null ? Math.round(chg * 100) / 100 : null,
       vol_ratio, vs_sma20: vs20, sma20, vs_sma60: vs60, sma60,
       price_state: state, advice, score, label,
-      data_date, is_open, prev_close_raw: prev };
+      data_date, is_open, prev_close_raw: prev, open_raw: open };
   }
 
   // ─────────────────────────────────────────────────────────
