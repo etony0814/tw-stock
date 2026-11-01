@@ -462,7 +462,8 @@
     }
     // 前收（上一交易日收盤）：有 meta.chartPreviousClose 用之，否則用日K 前一筆 close
     const prevClose = (rows.meta && rows.meta.chartPreviousClose != null) ? rows.meta.chartPreviousClose : prev;
-    const chg = prev ? (last - prev) / prev * 100 : null;
+    // 漲跌幅＝現價 vs 開盤（開盤日內漲跌），不用前收（前收跨日、語意不同）
+    const chg = open ? (last - open) / open * 100 : null;
     // 量比
     let vol_ratio = null;
     if (i >= 20) {
