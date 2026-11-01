@@ -293,8 +293,10 @@ function withTimeout(promise, ms, label){
 async function raceFetch(code, period){
   const qs = "?range=" + period + "&interval=1d";
   // 跟第一頁同構:同代號兩字尾(.TW/.TWO)全端點並行 settled、誰先回有 chart 誰贏。
+  // 加權指 ^TWII 不展開 .TW/.TWO（會查無資料），只用 ["^TWII"]
   const c = code.toUpperCase().replace(/\.TW$/,'').replace(/\.TWO$/,'');
-  const variants = Array.from(new Set([c + ".TW", c + ".TWO"]));
+  const isTaiex = (c === "^TWII");
+  const variants = isTaiex ? ["^TWII"] : Array.from(new Set([c + ".TW", c + ".TWO"]));
   const isSecure = location.protocol === "https:";
 
   const relayOne = (v, isPrimary) =>
@@ -761,12 +763,18 @@ async function renderPeerCard(t, stockInd40, stockInd60){
     + '<tr><td>'+taiRes.label+'</td><td>'+pct(taiRes.med60)+'</td><td>'+delta(s60, taiRes.med60)+'</td></tr>';
   const verdict = ((mine, ref)=> mine!=null&&ref!=null ? (mine-ref>=3?'偏強':(ref-mine>=3?'偏弱':'接近')) : '' )(s40, peerRes.med40);
   const verdictColor = verdict==='偏強' ? 'var(--bull)' : verdict==='偏弱' ? 'var(--bear)' : 'var(--muted)';
-  // 結論卡用的一行簡結論（給一般使用者看，不用翻對照表）
+  // 結論卡用的一行簡結論（給一般使用者看，不用翻對照表）：40 日＋60 日都顯示
   const oneLiner =
-    (s40!=null ? ('個股 40 日勝率 ' + s40.toFixed(0) + '%') : '') +
+    '<div style="font-weight:700;color:var(--text)">40 日勝率：</div>' +
+    (s40!=null ? ('個股 ' + s40.toFixed(0) + '%') : '') +
     (peerRes.med40!=null ? ('、同類股 ' + peerRes.med40.toFixed(0) + '%') : '') +
     (taiRes.med40!=null ? ('、大盤 ' + taiRes.med40.toFixed(0) + '%') : '') +
-    (verdict ? ('；個股 vs 類股 → <b style="color:' + verdictColor + '">' + verdict + '</b>') : '');
+    (verdict ? ('；個股 vs 類股 → <b style="color:' + verdictColor + '">' + verdict + '</b>') : '') +
+    '<div style="font-weight:700;color:var(--text);margin-top:4px">60 日勝率：</div>' +
+    (s60!=null ? ('個股 ' + s60.toFixed(0) + '%') : '') +
+    (peerRes.med60!=null ? ('、同類股 ' + peerRes.med60.toFixed(0) + '%') : '') +
+    (taiRes.med60!=null ? ('、大盤 ' + taiRes.med60.toFixed(0) + '%') : '') +
+    '<div style="font-size:11px;color:var(--muted);margin-top:4px">勝率＝過去 1 年照做該方向、該期內正確的比例。僅供判斷個股勝率是否離群，不構成投資建議。</div>';
   // 存下供結論卡/分享用
   window._peerCompare = { s40, s60, peer40:peerRes.med40, peer60:peerRes.med60, tai40:taiRes.med40, tai60:taiRes.med60, verdict, oneLiner };
   const verdictEl = document.getElementById("peerVerdict");
