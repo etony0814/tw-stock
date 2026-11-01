@@ -460,8 +460,10 @@
       const tDate = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
       is_open = (data_date === tDate);
     }
-    // 前收（上一交易日收盤）：有 meta.chartPreviousClose 用之，否則用日K 前一筆 close
-    const prevClose = (rows.meta && rows.meta.chartPreviousClose != null) ? rows.meta.chartPreviousClose : prev;
+    // 前收（上一交易日收盤）：用「日K 前一筆收盤」（rows[i-1].close）＝上一交易日收盤，最準確。
+    // 不用 meta.chartPreviousClose：Yahoo 回傳的 chartPreviousClose 是 chart 期間第一根 K 的前收，
+    // 長期間（6mo/1y）會拿到很舊的值，跟「當日的前收」對不上。
+    const prevClose = prev;
     // 四格「前收／開盤／現價／收盤」：
     // 前收＝上一交易日收盤、開盤＝當日開盤（未開盤時=前日開盤，但顯示的就是當日K 的 open）
     // 現價：開盤中＝盤中即時價（meta.regularMarketPrice）、未開盤（盤前/盤後/假日）＝顯示「—」
