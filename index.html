@@ -496,6 +496,7 @@ const QUOTE_RELAY = (typeof global !== "undefined" && global.SELF_RELY_URL) || "
 (function warmRelay(){ if (QUOTE_RELAY && location.protocol === "https:") fetch(QUOTE_RELAY + "?ticker=2330.TW&range=5d&interval=1d").catch(function(){}); })();
 function toYahoo(t){
   const c = t.toUpperCase().replace(/\.TW$/,'').replace(/\.TWO$/,'');
+  if (c === "^TWII") return "^TWII";
   // 上櫃股（3/4/5/6/8 字頭，如 3105 穩懋、4979 華星光、6182 合晶、8299 群聯）Yahoo 用 .TWO；
   // 上市/ETF（0/1/2 字頭，如 2330 台積電、0050 大S50）用 .TW
   return /^[34568]\d{3}$/.test(c) ? c + '.TWO' : c + '.TW';
@@ -821,8 +822,11 @@ async function fillPeerVerdict(t, all, taiexRows){
   const verdict = (s40!=null && p40!=null) ? (s40-p40>=3?'偏強':(p40-s40>=3?'偏弱':'接近')) : '';
   const vc = verdict==='偏強'?'var(--bull)':verdict==='偏弱'?'var(--bear)':'var(--muted)';
   const oneLiner =
-    '40 日勝率：個股 ' + pct(s40) + '、同類股 ' + pct(p40) + '、大盤 ' + pct(t40) +
+    '<div style="font-weight:700;color:var(--text)">40 日勝率：</div>' +
+    '個股 ' + pct(s40) + '、同類股 ' + pct(p40) + '、大盤 ' + pct(t40) +
     (verdict ? ('；個股 vs 類股 → <b style="color:'+vc+'">'+verdict+'</b>') : '') +
+    '<div style="font-weight:700;color:var(--text);margin-top:4px">60 日勝率：</div>' +
+    '個股 ' + pct(s60) + '、同類股 ' + pct(p60) + '、大盤 ' + pct(t60) +
     '<br><span style="font-size:11px;color:var(--muted)">勝率＝過去 1 年照做該方向、該期內正確的比例。僅供判斷個股勝率是否離群，不構成投資建議。</span>';
   el.innerHTML = oneLiner;
   el.style.display = 'block';
