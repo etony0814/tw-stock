@@ -562,16 +562,18 @@ function renderTicker(rows, IND, i) {
   let it = null;
   try { it = StockCore.intradayFromRows(rows, IND, i); } catch (e) { it = null; }
   if (!it) {
-    // 拿不到 intraday 也至少把 meta 前收放上去
+    // 拿不到 intraday 也至少把「日K 前一筆收盤」當前收放上去（最準確的上一交易日收盤）
+    // meta.chartPreviousClose 只作兜底：Yahoo 回傳的是 chart 期間首根 K 的前收，長期間會跟當日對不上
     const m = rows.meta || {};
-    if (m.chartPreviousClose != null) {
-      const last = rows[i] ? rows[i].close : null;
+    const last = rows[i] ? rows[i].close : null;
+    const prevClose = (i > 0 && rows[i - 1] && rows[i - 1].close != null) ? rows[i - 1].close : (m.chartPreviousClose != null ? m.chartPreviousClose : null);
+    if (prevClose != null) {
       const today = new Date();
       const tDate = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
       const isOpen = (rows[i] && rows[i].date) ? (rows[i].date === tDate) : true;
-      // 開盤格＝當日開盤價（無論開盤中或未開盤都顯示當日開盤）；收盤格＝last
+      // 開盤格＝當日開盤價（無論開盤中或未開盤都顯示當日開盤）；收盤格＝last；前收＝日K 前一筆收盤
       it = { open_display: rows[i] ? rows[i].open : null,
-             post_display: last, last, prev_close: m.chartPreviousClose, chg_pct: null, data_date: rows[i] ? rows[i].date : null, is_open: isOpen };
+             post_display: last, last, prev_close: prevClose, chg_pct: null, data_date: rows[i] ? rows[i].date : null, is_open: isOpen };
     } else return;
   }
   card.style.display = 'block';
