@@ -462,10 +462,10 @@
     }
     // 前收（上一交易日收盤）：有 meta.chartPreviousClose 用之，否則用日K 前一筆 close
     const prevClose = (rows.meta && rows.meta.chartPreviousClose != null) ? rows.meta.chartPreviousClose : prev;
-    // 三格「前收／開盤／盤後」與漲跌幅（依未開盤/開盤中分別用不同基準）
-    // 台交所無盤後交易：開盤中「盤後」＝目前盤中價（會持續更新）；未開盤「盤後」＝前日收盤
-    const openDisplay = is_open ? open : prevClose;        // 開盤格：開盤中=當日開盤、未開盤=前收
-    const postDisplay = last;                               // 盤後格：開盤中=盤中價、未開盤=前日收盤（皆為 last）
+    // 三格「前收／開盤／收盤」：開盤格＝當日開盤（無論未開盤或開盤中，都顯示當日開盤價）
+    // 收盤格：開盤中＝盤中價、未開盤＝前日收盤（皆為 last）
+    const openDisplay = open;                                // 開盤格：始終是當日開盤價
+    const postDisplay = last;                               // 收盤格：開盤中=盤中價、未開盤=前日收盤
     // 漲跌幅：未開盤＝前收 vs 盤後；開盤中＝前收 vs 現價（兩者都以前收為基準）
     const chgBase = prevClose;
     const chg = (chgBase != null && postDisplay != null && chgBase !== 0) ? (postDisplay - chgBase) / chgBase * 100 : null;
