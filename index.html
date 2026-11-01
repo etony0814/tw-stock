@@ -253,16 +253,20 @@
         <h2 style="margin:0">🎯 綜合評論（今天要不要買賣）</h2>
         <button id="modeToggle" onclick="toggleMode()" style="background:var(--card2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:5px 10px;font-size:12px;cursor:pointer;white-space:nowrap">⚙️ 專業模式</button>
       </div>
-      <!-- 行情醒目橫條：開盤、現價、前收＋資料日期＋未開盤提示 -->
+      <!-- 行情醒目橫條：前收、開盤、盤後＋資料日期＋未開盤提示 -->
       <div id="todayTicker" style="display:none;margin-top:10px;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:10px 12px">
         <div style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap">
+          <div>
+            <div style="font-size:11px;color:var(--muted)">前收</div>
+            <div id="tkPrevClose" style="font-size:20px;font-weight:800;line-height:1.1;color:var(--text)">—</div>
+          </div>
           <div>
             <div style="font-size:11px;color:var(--muted)">開盤</div>
             <div id="tkOpen" style="font-size:20px;font-weight:800;line-height:1.1;color:var(--text)">—</div>
           </div>
           <div>
-            <div style="font-size:11px;color:var(--muted)">現價</div>
-            <div id="tkNow" style="font-size:24px;font-weight:800;line-height:1.05;color:var(--text)">—</div>
+            <div style="font-size:11px;color:var(--muted)">盤後</div>
+            <div id="tkPost" style="font-size:24px;font-weight:800;line-height:1.05;color:var(--text)">—</div>
           </div>
           <div>
             <div style="font-size:11px;color:var(--muted)">今日漲跌</div>
