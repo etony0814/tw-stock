@@ -253,16 +253,20 @@
         <h2 style="margin:0">🎯 綜合評論（今天要不要買賣）</h2>
         <button id="modeToggle" onclick="toggleMode()" style="background:var(--card2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:5px 10px;font-size:12px;cursor:pointer;white-space:nowrap">⚙️ 專業模式</button>
       </div>
-      <!-- 當日行情醒目橫條：現價、開盤、漲跌幅 -->
+      <!-- 行情醒目橫條：開盤、現價、前收＋資料日期＋未開盤提示 -->
       <div id="todayTicker" style="display:none;margin-top:10px;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:10px 12px">
-        <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
-          <div>
-            <div style="font-size:11px;color:var(--muted)">今日現價</div>
-            <div id="tkNow" style="font-size:28px;font-weight:800;line-height:1;color:var(--text)">—</div>
-          </div>
+        <div style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap">
           <div>
             <div style="font-size:11px;color:var(--muted)">開盤</div>
-            <div id="tkOpen" style="font-size:16px;font-weight:700;line-height:1.2;color:var(--text)">—</div>
+            <div id="tkOpen" style="font-size:20px;font-weight:800;line-height:1.1;color:var(--text)">—</div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:var(--muted)">現價</div>
+            <div id="tkNow" style="font-size:24px;font-weight:800;line-height:1.05;color:var(--text)">—</div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:var(--muted)">前收</div>
+            <div id="tkPrevClose" style="font-size:20px;font-weight:800;line-height:1.1;color:var(--text)">—</div>
           </div>
           <div>
             <div style="font-size:11px;color:var(--muted)">今日漲跌</div>
@@ -270,6 +274,10 @@
             <div id="tkChgAmt" style="font-size:12px;font-weight:600;line-height:1.1;margin-top:2px;color:var(--muted)">—</div>
           </div>
           <div id="tkDir" style="font-size:12px;font-weight:700;padding:2px 8px;border-radius:8px;display:none"></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:6px">
+          <div id="tkDate" style="font-size:11px;font-weight:700;color:var(--muted)">—</div>
+          <div id="tkStatusTag" style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:6px;display:none"></div>
         </div>
         <div id="tkNote" style="font-size:11px;color:var(--muted);margin-top:6px"></div>
       </div>
@@ -614,6 +622,13 @@ function buildRows(j, code){
       low:q.low[k], close:q.close[k], volume:q.volume[k]||0 });
   }
   if(!rows.length) throw new Error("查不到 " + code + " 行情（無資料）");
+  // 把 Yahoo meta（前收、即時價、是否盤後資料）附到 rows 上，供橫條「開盤/現價/前收＋日期」用
+  const m = res.meta || {};
+  rows.meta = {
+    chartPreviousClose: m.chartPreviousClose != null ? m.chartPreviousClose : null,
+    regularMarketPrice: m.regularMarketPrice != null ? m.regularMarketPrice : null,
+    hasPrePostMarketData: !!m.hasPrePostMarketData
+  };
   return rows;
 }
 
