@@ -360,9 +360,9 @@
       <div id="scoreSec">
         <div class="sec-title">五方分數與拆解</div>
         <!-- 技術面摘要（看多/看空理由數 + 籌碼/消息 note）-->
-        <div id="adviceSummary" style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:10px"></div>
+        <div id="adviceSummary" style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:10px;display:none"></div>
         <!-- 五方分數明細 -->
-        <div class="bd" id="finalBd"></div>
+        <div class="bd" id="finalBd" style="display:none"></div>
         <!-- 綜合分數拆解（關連到下方各面向）-->
         <div id="compBreak" style="display:none;margin-top:10px"></div>
       </div>
@@ -394,7 +394,7 @@
         <div id="hist5" style="margin:0;padding:8px 10px;font-size:12px;line-height:1.6;color:var(--muted);background:var(--card2);border:1px solid var(--border);border-radius:8px"></div>
       </div>
       <!-- 術語小辭典（收折，給一般使用者看白話解釋）-->
-      <div class="card" id="glossary" style="margin-top:14px;border:1px solid var(--border);border-radius:8px">
+      <div class="card" id="glossary" style="margin-top:14px;border:1px solid var(--border);border-radius:8px;display:none">
         <h3 style="cursor:pointer;user-select:none;font-size:13px;margin:0;padding:10px 12px" onclick="togglePanel('glossary')"><span>📖 看不懂的英文術語？点这里看白話解釋</span> <span class="pArrow" style="float:right;color:var(--muted)">▸</span></h3>
         <div class="pBody" id="glossaryBody" style="display:none;padding:0 12px 12px;font-size:12px;line-height:1.7;color:var(--muted)">
           <dl style="margin:0">
