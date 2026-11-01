@@ -740,7 +740,6 @@ function render(A, rows, t){
     tk.style.display = 'block';
     const nowEl = document.getElementById('tkNow');
     const openEl = document.getElementById('tkOpen');
-    const prevCloseEl = document.getElementById('tkPrevClose');
     const chgEl = document.getElementById('tkChg');
     const chgAmtEl = document.getElementById('tkChgAmt');
     const dirEl = document.getElementById('tkDir');
@@ -769,7 +768,6 @@ function render(A, rows, t){
     }
     if (nowEl) { nowEl.textContent = num(nowPrice); nowEl.style.color = chgColor; }
     if (openEl) openEl.textContent = num(it.open);
-    if (prevCloseEl) prevCloseEl.textContent = num(prevC);
     if (chgEl) { chgEl.textContent = chgTxt; chgEl.style.color = chgColor; }
     if (chgAmtEl) { chgAmtEl.textContent = chgAmtTxt ? '（' + chgAmtTxt + ' 元）' : ''; chgAmtEl.style.color = chgColor; }
     if (dirEl) {
