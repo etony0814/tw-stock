@@ -1038,7 +1038,8 @@ async function runSell(){
       const cShort = shortScoreNum >= 0.15 ? '偏多' : shortScoreNum <= -0.15 ? '偏空' : '中性';
       const cMid = midScoreNum >= 0.2 ? '偏多' : midScoreNum <= -0.2 ? '偏空' : '中性';
       const colorOf = (s) => s === '偏多' ? 'var(--bull)' : s === '偏空' ? 'var(--bear)' : 'var(--muted)';
-      const af = StockCore.actionForScore(c, ms.code);
+      const cScore = (A.final && A.final.combined_score != null) ? A.final.combined_score : 0;
+      const af = StockCore.actionForScore(cScore, ms.code);
       let midActionText;
       if (dMid40S.advice) midActionText = dMid40S.advice;
       else if (midScoreNum != null) {
@@ -1061,8 +1062,8 @@ async function runSell(){
         riskLine = '止損/止盈暫缺（資料不足），建議以「跌破 5 日線、放量長黑 K」作短線減碼紀律。';
       }
       let nowAction, nowColor;
-      if (c >= 0.2) { nowAction = '整體偏多，可逢低布局。'; nowColor = 'var(--bull)'; }
-      else if (c <= -0.2) { nowAction = '整體偏空，建議觀望或減碼。'; nowColor = 'var(--bear)'; }
+      if (cScore >= 0.2) { nowAction = '整體偏多，可逢低布局。'; nowColor = 'var(--bull)'; }
+      else if (cScore <= -0.2) { nowAction = '整體偏空，建議觀望或減碼。'; nowColor = 'var(--bear)'; }
       else { nowAction = '整體中性，方向不明確，可先觀望。'; nowColor = 'var(--muted)'; }
       let pnlLine = '';
       if (primary && primary.pnl) {
