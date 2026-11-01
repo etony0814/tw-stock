@@ -462,13 +462,18 @@
     }
     // 前收（上一交易日收盤）：有 meta.chartPreviousClose 用之，否則用日K 前一筆 close
     const prevClose = (rows.meta && rows.meta.chartPreviousClose != null) ? rows.meta.chartPreviousClose : prev;
-    // 三格「前收／開盤／收盤」：開盤格＝當日開盤（無論未開盤或開盤中，都顯示當日開盤價）
-    // 收盤格：開盤中＝盤中價、未開盤＝前日收盤（皆為 last）
-    const openDisplay = open;                                // 開盤格：始終是當日開盤價
-    const postDisplay = last;                               // 收盤格：開盤中=盤中價、未開盤=前日收盤
-    // 漲跌幅：未開盤＝前收 vs 盤後；開盤中＝前收 vs 現價（兩者都以前收為基準）
+    // 四格「前收／開盤／現價／收盤」：
+    // 前收＝上一交易日收盤、開盤＝當日開盤（未開盤時=前日開盤，但顯示的就是當日K 的 open）
+    // 現價：開盤中＝盤中即時價（meta.regularMarketPrice）、未開盤（盤前/盤後/假日）＝顯示「—」
+    // 收盤：開盤中＝目前盤中價（會持續更新）、未開盤＝前日收盤
+    const openDisplay = open;                                // 開盤格：當日開盤價
+    const nowPrice = (rows.meta && rows.meta.regularMarketPrice != null) ? rows.meta.regularMarketPrice : null;
+    const postDisplay = last;                                 // 收盤格：開盤中=盤中價、未開盤=前日收盤
+    // 漲跌幅：未開盤（盤前/盤後/假日）＝收盤−前收；盤中＝現價−前收
+    // 盤中用「現價」（nowPrice，即時），未開盤用「收盤」（postDisplay=前日收盤）
+    const chgPrice = is_open ? nowPrice : postDisplay;        // 盤中→現價、未開盤→收盤
     const chgBase = prevClose;
-    const chg = (chgBase != null && postDisplay != null && chgBase !== 0) ? (postDisplay - chgBase) / chgBase * 100 : null;
+    const chg = (chgBase != null && chgPrice != null && chgBase !== 0) ? (chgPrice - chgBase) / chgBase * 100 : null;
     // 量比
     let vol_ratio = null;
     if (i >= 20) {
@@ -500,7 +505,7 @@
       : score >= 0.1 ? "盤面略偏強，量能尚可，可小量試水。"
       : score <= -0.1 ? "盤面略偏弱，建議謹慎。"
       : "盤面方向不明，等盤中確認再動作。";
-    return { open: openDisplay, open_display: openDisplay, post_display: postDisplay, last, prev_close: prevClose, chg_pct: chg != null ? Math.round(chg * 100) / 100 : null,
+    return { open: openDisplay, open_display: openDisplay, now_price: (is_open ? nowPrice : null), post_display: postDisplay, last, prev_close: prevClose, chg_pct: chg != null ? Math.round(chg * 100) / 100 : null,
       vol_ratio, vs_sma20: vs20, sma20, vs_sma60: vs60, sma60,
       price_state: state, advice, score, label,
       data_date, is_open, prev_close_raw: prev, open_raw: open };
