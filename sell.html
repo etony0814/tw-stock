@@ -154,10 +154,11 @@
 
     <!-- 行情橫條：開盤、現價、前收＋資料日期＋未開盤提示（與首頁一致） -->
     <div class="card" id="todayTickerCard" style="display:none">
-      <h3>📊 行情速覽（開盤／現價）</h3>
+      <h3>📊 行情速覽（前收／開盤／盤後）</h3>
       <div style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap">
+        <div><div style="font-size:11px;color:var(--muted)">前收</div><div id="tkPrevClose" style="font-size:20px;font-weight:800;line-height:1.1;color:var(--text)">—</div></div>
         <div><div style="font-size:11px;color:var(--muted)">開盤</div><div id="tkOpen" style="font-size:20px;font-weight:800;line-height:1.1;color:var(--text)">—</div></div>
-        <div><div style="font-size:11px;color:var(--muted)">現價</div><div id="tkNow" style="font-size:24px;font-weight:800;line-height:1.05;color:var(--text)">—</div></div>
+        <div><div style="font-size:11px;color:var(--muted)">盤後</div><div id="tkPost" style="font-size:24px;font-weight:800;line-height:1.05;color:var(--text)">—</div></div>
         <div><div style="font-size:11px;color:var(--muted)">今日漲跌</div><div id="tkChg" style="font-size:18px;font-weight:800;line-height:1.1">—</div><div id="tkChgAmt" style="font-size:12px;font-weight:600;line-height:1.1;margin-top:2px;color:var(--muted)">—</div></div>
         <div id="tkDir" style="font-size:12px;font-weight:700;padding:2px 8px;border-radius:8px;display:none"></div>
       </div>
@@ -529,26 +530,34 @@ function sellDecision(A, IND, cost, shares, horizon){
 function fmt2(x){ return x == null ? "—" : Number(x).toLocaleString(undefined, { maximumFractionDigits: 2 }); }
 function fmtPct(x){ return x == null ? "—" : (x >= 0 ? "+" : "") + (x != null ? x.toFixed(1) : "—") + "%"; }
 
-// 行情橫條（開盤/現價/前收＋資料日期＋未開盤提示）：與首頁同語意
+// 行情橫條（前收/開盤/盤後＋資料日期＋未開盤提示）：與首頁同語意
 function renderTicker(rows, IND, i) {
   const card = document.getElementById('todayTickerCard');
   if (!card) return;
-  // intradayFromRows 提供 open/last/prev_close/chg_pct/data_date/is_open（prev_close 優先用 meta.chartPreviousClose）
+  // intradayFromRows 提供 open_display/post_display/prev_close/chg_pct/data_date/is_open
   let it = null;
   try { it = StockCore.intradayFromRows(rows, IND, i); } catch (e) { it = null; }
   if (!it) {
     // 拿不到 intraday 也至少把 meta 前收放上去
     const m = rows.meta || {};
-    if (m.chartPreviousClose != null) it = { open: rows[i] ? rows[i].open : null, last: rows[i] ? rows[i].close : null, prev_close: m.chartPreviousClose, chg_pct: null, data_date: rows[i] ? rows[i].date : null, is_open: null };
-    else return;
+    if (m.chartPreviousClose != null) {
+      const last = rows[i] ? rows[i].close : null;
+      const today = new Date();
+      const tDate = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
+      const isOpen = (rows[i] && rows[i].date) ? (rows[i].date === tDate) : true;
+      it = { open_display: isOpen ? (rows[i] ? rows[i].open : null) : m.chartPreviousClose,
+             post_display: last, last, prev_close: m.chartPreviousClose, chg_pct: null, data_date: rows[i] ? rows[i].date : null, is_open: isOpen };
+    } else return;
   }
   card.style.display = 'block';
   const num = (x) => (x != null && isFinite(x)) ? Number(x).toLocaleString() : '—';
-  const nowPrice = (it.last != null && isFinite(it.last)) ? it.last : null;
+  const prevC = (it.prev_close != null && isFinite(it.prev_close)) ? it.prev_close : null;
+  const openC = (it.open_display != null && isFinite(it.open_display)) ? it.open_display : null;
+  const postC = (it.post_display != null && isFinite(it.post_display)) ? it.post_display : null;
   let chgColor = 'var(--muted)', chgTxt = '—', chgAmtTxt = '', dirTxt = '', dirBg = 'var(--card2)';
-  const openC = (it.open != null && isFinite(it.open)) ? it.open : null;
-  if (nowPrice != null && openC != null) {
-    const diff = nowPrice - openC;
+  // 漲跌價差：未開盤＝前收 vs 盤後；開盤中＝前收 vs 現價（皆為 postC - prevC）
+  if (postC != null && prevC != null) {
+    const diff = postC - prevC;
     chgAmtTxt = (diff > 0 ? '+' : diff < 0 ? '' : '') + diff.toFixed(2);
     chgColor = diff > 0 ? 'var(--bull)' : diff < 0 ? 'var(--bear)' : 'var(--muted)';
   }
@@ -561,8 +570,9 @@ function renderTicker(rows, IND, i) {
     else { dirTxt = '◆ 盤整'; }
   }
   const set = (id, txt, color) => { const el = document.getElementById(id); if (el) { el.textContent = txt; if (color != null) el.style.color = color; } };
-  set('tkNow', num(nowPrice), chgColor);
-  set('tkOpen', num(it.open));
+  set('tkPrevClose', num(prevC));
+  set('tkOpen', num(openC));
+  set('tkPost', num(postC), chgColor);
   set('tkChg', chgTxt, chgColor);
   set('tkChgAmt', chgAmtTxt ? '（' + chgAmtTxt + ' 元）' : '', chgColor);
   const dirEl = document.getElementById('tkDir');
@@ -580,8 +590,8 @@ function renderTicker(rows, IND, i) {
   }
   const noteEl = document.getElementById('tkNote');
   if (noteEl) noteEl.textContent = !openToday
-    ? '⚠️ 今日未開盤（盤前／盤後／假日），以下為前日收盤資料。開盤、現價、前收均為前一日資訊，僅供參考。'
-    : '⚠️ 僅供參考，不構成投資建議。開盤、現價、前收以券商或 Yahoo 金融即時價為準。';
+    ? '⚠️ 今日未開盤（盤前／盤後／假日），以下為前日收盤資料。前收、開盤、盤後均為前一日資訊，僅供參考。'
+    : '⚠️ 僅供參考，不構成投資建議。前收、開盤、盤後以券商或 Yahoo 金融即時價為準。';
 }
 
 function renderPnl(p){
