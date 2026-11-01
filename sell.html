@@ -709,87 +709,77 @@ function renderShortBox(d){
 }
 
 // 同類股清單（依個股代號挑 3–5 檔同類股，算 40 日勝率中位數當對照組）
+// 同類股清單（依個股代號挑 8 檔同類股，算 5/20/40/60 日勝率中位數當對照組）
 const PEER_MAP = {
-  "2330": ["2303","3037","2317","2326","3008"],   // 半導體
-  "2303": ["2330","3037","2317","3008","2343"],
-  "3037": ["2330","2303","3008","2455","3481"],
-  "0050": ["0056","0058","00620","00941","00942"],
-  "0056": ["0050","0058","00620","00941","00942"],
+  "2330": ["2303","3037","2317","2326","3008","2343","2449","3532"],   // 半導體
+  "2303": ["2330","3037","2317","3008","2343","2449","3532","3008"],
+  "3037": ["2330","2303","3008","2455","3481","3708","3653","2326"],
+  "0050": ["0056","0058","00620","00941","00942","0052","00950","00952"],
+  "0056": ["0050","0058","00620","00941","00942","0052","00950","00952"],
 };
 // 中位數
 function _median(arr){ if(!arr.length) return null; const s=arr.slice().sort((a,b)=>a-b); const m=Math.floor(s.length/2); return s.length%2? s[m] : (s[m-1]+s[m])/2; }
-// 類股/大盤對照卡：個股 vs 同類股中位數 vs 加權大盤 的 40/60 日勝率
-async function renderPeerCard(t, stockInd40, stockInd60){
+// 類股/大盤對照卡：個股 vs 同類股中位數 vs 加權大盤 的 5/20/40/60 日勝率
+async function renderPeerCard(t, IND, rows){
   const card = document.getElementById("peerCard");
   if(!card) return;
-  const peers = (PEER_MAP[t]||[]).slice(0,3);
+  const s5  = (StockCore.hist5(rows, IND, 180)||{}).up_rate ?? null;
+  const s20 = (StockCore.histMid(rows, IND, 180, 20)||{}).up_rate ?? null;
+  const s40 = (StockCore.histMid(rows, IND, 180, 40)||{}).up_rate ?? null;
+  const s60 = (StockCore.histMid(rows, IND, 180, 60)||{}).up_rate ?? null;
+  const peers = (PEER_MAP[t]||[]).slice(0,8);
   const jobs = [];
-  // 同類股 40/60 日勝率
   if(peers.length) jobs.push((async()=>{
     const outs = await Promise.all(peers.map(async code=>{
       try{
-        const rows = await fetchRows(toYahoo(code), "1y");
-        const IND = StockCore.computeIndicators(rows);
-        return { code, h40: StockCore.histMid(rows, IND, 180, 40), h60: StockCore.histMid(rows, IND, 180, 60) };
-      }catch(e){ return { code, h40:null, h60:null }; }
+        const r2 = await fetchRows(toYahoo(code), "1y");
+        const i2 = StockCore.computeIndicators(r2);
+        return { h5:StockCore.hist5(r2,i2,180), h20:StockCore.histMid(r2,i2,180,20), h40:StockCore.histMid(r2,i2,180,40), h60:StockCore.histMid(r2,i2,180,60) };
+      }catch(e){ return { h5:null,h20:null,h40:null,h60:null }; }
     }));
-    const p40 = outs.map(o=> o.h40 && o.h40.up_rate!=null ? o.h40.up_rate : null).filter(x=>x!=null);
-    const p60 = outs.map(o=> o.h60 && o.h60.up_rate!=null ? o.h60.up_rate : null).filter(x=>x!=null);
-    return { label:"同類股中位數", codes:peers, med40:_median(p40), med60:_median(p60), okCount:outs.filter(o=>o.h40).length };
+    const med=(k)=>_median(outs.map(o=>o[k]&&o[k].up_rate!=null?o[k].up_rate:null).filter(x=>x!=null));
+    return { label:"同類股中位數", codes:peers, med5:med("h5"), med20:med("h20"), med40:med("h40"), med60:med("h60"), okCount:outs.filter(o=>o.h40).length };
   })());
-  // 加權大盤 40/60 日勝率
   jobs.push((async()=>{
     try{
-      const rows = await fetchRows("^TWII","1y");
-      const IND = StockCore.computeIndicators(rows);
-      return { label:"加權大盤", code:"^TWII", med40:(StockCore.histMid(rows, IND, 180, 40)||{}).up_rate ?? null, med60:(StockCore.histMid(rows, IND, 180, 60)||{}).up_rate ?? null, okCount:1 };
-    }catch(e){ return { label:"加權大盤", code:"^TWII", med40:null, med60:null, okCount:0 }; }
+      const r2 = await fetchRows("^TWII","1y");
+      const i2 = StockCore.computeIndicators(r2);
+      return { label:"加權大盤", code:"^TWII",
+        med5:(StockCore.hist5(r2,i2,180)||{}).up_rate??null,
+        med20:(StockCore.histMid(r2,i2,180,20)||{}).up_rate??null,
+        med40:(StockCore.histMid(r2,i2,180,40)||{}).up_rate??null,
+        med60:(StockCore.histMid(r2,i2,180,60)||{}).up_rate??null, okCount:1 };
+    }catch(e){ return { label:"加權大盤", code:"^TWII", med5:null,med20:null,med40:null,med60:null, okCount:0 }; }
   })());
   const [peerRes, taiRes] = await Promise.all(jobs);
-  const pct = (x)=> x!=null ? x.toFixed(0)+"%" : "—";
-  const delta = (mine, ref)=>{
-    if(mine==null || ref==null) return '<span style="color:var(--muted)">—</span>';
-    const d = mine-ref;
-    const cls = d>1 ? 'var(--bull)' : d<-1 ? 'var(--bear)' : 'var(--muted)';
-    return '<span style="color:'+cls+'">'+(d>0?'+':'')+d.toFixed(0)+' pt</span>';
-  };
-  const s40 = stockInd40 && stockInd40.up_rate!=null ? stockInd40.up_rate : null;
-  const s60 = stockInd60 && stockInd60.up_rate!=null ? stockInd60.up_rate : null;
-  const rows40 = '<tr><td>個股 '+t+'</td><td>'+pct(s40)+'</td></tr>'
-    + '<tr><td>'+peerRes.label+'</td><td>'+pct(peerRes.med40)+'</td><td>'+delta(s40, peerRes.med40)+'</td></tr>'
-    + '<tr><td>'+taiRes.label+'</td><td>'+pct(taiRes.med40)+'</td><td>'+delta(s40, taiRes.med40)+'</td></tr>';
-  const rows60 = '<tr><td>個股 '+t+'</td><td>'+pct(s60)+'</td></tr>'
-    + '<tr><td>'+peerRes.label+'</td><td>'+pct(peerRes.med60)+'</td><td>'+delta(s60, peerRes.med60)+'</td></tr>'
-    + '<tr><td>'+taiRes.label+'</td><td>'+pct(taiRes.med60)+'</td><td>'+delta(s60, taiRes.med60)+'</td></tr>';
-  const verdict = ((mine, ref)=> mine!=null&&ref!=null ? (mine-ref>=3?'偏強':(ref-mine>=3?'偏弱':'接近')) : '' )(s40, peerRes.med40);
-  const verdictColor = verdict==='偏強' ? 'var(--bull)' : verdict==='偏弱' ? 'var(--bear)' : 'var(--muted)';
-  // 結論卡用的一行簡結論（給一般使用者看，不用翻對照表）：40 日＋60 日都顯示
+  const pct=(x)=> x!=null? x.toFixed(0)+"%":"—";
+  const delta=(mine,ref)=>{ if(mine==null||ref==null) return '<span style="color:var(--muted)">—</span>'; const d=mine-ref; const c=d>1?'var(--bull)':d<-1?'var(--bear)':'var(--muted)'; return '<span style="color:'+c+'">'+(d>0?'+':'')+d.toFixed(0)+' pt</span>'; };
+  const mkTable=(s,p,ta,label)=>
+    '<div style="margin-top:6px"><b>'+label+'</b></div>' +
+    '<table style="border-collapse:collapse;margin-top:4px;font-size:12px">' +
+    '<tr style="border-bottom:1px solid var(--border)"><th style="text-align:left;padding:3px 12px 3px 0">對照組</th><th style="text-align:left;padding:3px 12px">勝率</th><th style="text-align:left;padding:3px">vs 個股</th></tr>' +
+    '<tr><td>個股 '+t+'</td><td>'+pct(s)+'</td><td>—</td></tr>' +
+    '<tr><td>'+peerRes.label+'</td><td>'+pct(p)+'</td><td>'+delta(s,p)+'</td></tr>' +
+    '<tr><td>'+taiRes.label+'</td><td>'+pct(ta)+'</td><td>'+delta(s,ta)+'</td></tr></table>';
+  const verdict=((m,r)=> m!=null&&r!=null? (m-r>=3?'偏強':(r-m>=3?'偏弱':'接近')):'')(s40, peerRes.med40);
+  const vc=verdict==='偏強'?'var(--bull)':verdict==='偏弱'?'var(--bear)':'var(--muted)';
   const oneLiner =
-    '<div style="font-weight:700;color:var(--text)">40 日勝率：</div>' +
-    (s40!=null ? ('個股 ' + s40.toFixed(0) + '%') : '') +
-    (peerRes.med40!=null ? ('、同類股 ' + peerRes.med40.toFixed(0) + '%') : '') +
-    (taiRes.med40!=null ? ('、大盤 ' + taiRes.med40.toFixed(0) + '%') : '') +
-    (verdict ? ('；個股 vs 類股 → <b style="color:' + verdictColor + '">' + verdict + '</b>') : '') +
-    '<div style="font-weight:700;color:var(--text);margin-top:4px">60 日勝率：</div>' +
-    (s60!=null ? ('個股 ' + s60.toFixed(0) + '%') : '') +
-    (peerRes.med60!=null ? ('、同類股 ' + peerRes.med60.toFixed(0) + '%') : '') +
-    (taiRes.med60!=null ? ('、大盤 ' + taiRes.med60.toFixed(0) + '%') : '') +
-    '<div style="font-size:11px;color:var(--muted);margin-top:4px">勝率＝過去 1 年照做該方向、該期內正確的比例。僅供判斷個股勝率是否離群，不構成投資建議。</div>';
-  // 存下供結論卡/分享用
-  window._peerCompare = { s40, s60, peer40:peerRes.med40, peer60:peerRes.med60, tai40:taiRes.med40, tai60:taiRes.med60, verdict, oneLiner };
-  const verdictEl = document.getElementById("peerVerdict");
-  if (verdictEl) { verdictEl.innerHTML = oneLiner || '對照資料不足，請稍後再試。'; verdictEl.style.display = 'block'; }
-  card.style.display = 'block';
+    '<div style="font-weight:700;color:var(--text)">5 日勝率：</div>個股 '+pct(s5)+'、同類股 '+pct(peerRes.med5)+'、大盤 '+pct(taiRes.med5)+
+    '<div style="font-weight:700;color:var(--text);margin-top:4px">20 日勝率：</div>個股 '+pct(s20)+'、同類股 '+pct(peerRes.med20)+'、大盤 '+pct(taiRes.med20)+
+    '<div style="font-weight:700;color:var(--text);margin-top:4px">40 日勝率：</div>個股 '+pct(s40)+'、同類股 '+pct(peerRes.med40)+'、大盤 '+pct(taiRes.med40)+(verdict? ('；個股 vs 類股 → <b style="color:'+vc+'">'+verdict+'</b>'):'')+
+    '<div style="font-weight:700;color:var(--text);margin-top:4px">60 日勝率：</div>個股 '+pct(s60)+'、同類股 '+pct(peerRes.med60)+'、大盤 '+pct(taiRes.med60)+
+    '<div style="margin-top:6px;font-size:11px;color:var(--muted)">同類股取 '+peers.length+' 檔中位數；大盤為加權指數。勝率＝過去 1 年照做該方向、該期內正確的比例。僅供判斷個股勝率是否離群，不構成投資建議。</div>';
+  window._peerCompare = { s5,s20,s40,s60, peer5:peerRes.med5, peer20:peerRes.med20, peer40:peerRes.med40, peer60:peerRes.med60, tai5:taiRes.med5, tai20:taiRes.med20, tai40:taiRes.med40, tai60:taiRes.med60, verdict, oneLiner };
+  const verdictEl=document.getElementById("peerVerdict");
+  if(verdictEl){ verdictEl.innerHTML = oneLiner || '對照資料不足，請稍後再試。'; verdictEl.style.display='block'; }
+  card.style.display='block';
   document.getElementById("peerBody").innerHTML =
-    '<div style="font-size:12px;line-height:1.7;color:var(--text);margin-bottom:8px">' +
-    '<b>40 日勝率對照</b>（個股照做 40 日內多頭方向的中位勝率）<br>' +
-    '<table style="border-collapse:collapse;margin-top:6px;font-size:12px">' +
-    '<tr style="border-bottom:1px solid var(--border)"><th style="text-align:left;padding:3px 12px 3px 0">對照組</th><th style="text-align:left;padding:3px 12px">勝率</th><th style="text-align:left;padding:3px">vs 個股</th></tr>' + rows40 + '</table>' +
-    '<b style="margin-top:8px;display:block">60 日勝率對照</b><br>' +
-    '<table style="border-collapse:collapse;margin-top:6px;font-size:12px">' +
-    '<tr style="border-bottom:1px solid var(--border)"><th style="text-align:left;padding:3px 12px 3px 0">對照組</th><th style="text-align:left;padding:3px 12px">勝率</th><th style="text-align:left;padding:3px">vs 個股</th></tr>' + rows60 + '</table>' +
-    (verdict ? '<div style="margin-top:8px;font-size:12px;color:var(--muted)">個股 40 日勝率 vs 同類股：'+verdict+'（差 3pt 以上才判偏強/偏弱）。</div>' : '') +
-    '<div style="margin-top:6px;font-size:11px;color:var(--muted)">對照組取同類股中位數與加權大盤；勝率＝過去 1 年照做該方向、該期內正確的比例。僅供判斷個股勝率是否離群，不構成投資建議。</div>' +
+    '<div style="font-size:12px;line-height:1.7;color:var(--text)">' +
+    mkTable(s5,peerRes.med5,taiRes.med5,'5 日勝率對照')+
+    mkTable(s20,peerRes.med20,taiRes.med20,'20 日勝率對照')+
+    mkTable(s40,peerRes.med40,taiRes.med40,'40 日勝率對照')+
+    mkTable(s60,peerRes.med60,taiRes.med60,'60 日勝率對照')+
+    (verdict? '<div style="margin-top:8px;font-size:12px;color:var(--muted)">個股 40 日勝率 vs 同類股：<b style="color:'+vc+'">'+verdict+'</b>（差 3pt 以上才判偏強/偏弱）。</div>':'')+
     '</div>';
 }
 
@@ -963,8 +953,8 @@ async function runSell(){
       addOn: addBreakevenLine
     });
 
-    // 類股/大盤對照卡（非阻塞：抓 3 檔同類股 + 加權指算 40/60 日勝率對照）
-    renderPeerCard(t, A.hist_mid40, A.hist_mid60).catch(()=>{});
+    // 類股/大盤對照卡（非阻塞：抓 8 檔同類股 + 加權指算 5/20/40/60 日勝率對照）
+    renderPeerCard(t, IND, rows).catch(()=>{});
 
     // 分享
     window._sellShare = { ticker: t, name: WNAMES[t] || "", cost: cost, shares: shares, close: A.close, verdict: primary ? primary.verdict : "—", tag: primary ? primary.tag : "—", advice: primary ? primary.advice : "—", reasons: primary ? primary.reasons : [], pnl: primary ? primary.pnl : null, sl: (primary && primary.slTp) ? primary.slTp.sl : null, tp1: (primary && primary.slTp) ? primary.slTp.tp1 : null, breakeven: (primary && primary.verdict === "hold") ? Math.max(cost, +((A.close||0) * 0.98).toFixed(2)) : null, mid40: A.hist_mid40, mid60: A.hist_mid60, midTag: dMid40 ? dMid40.tag : "—", midAdvice: dMid40 ? dMid40.advice : "—", midReasons: (dMid40 && dMid40.reasons) ? dMid40.reasons : [], addOn: (primary && primary.addOn) ? primary.addOn : null };
