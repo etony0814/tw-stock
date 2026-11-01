@@ -140,6 +140,7 @@
         <div id="finalText" class="final-text">—</div>
         <span id="verdictTag" class="verdict-tag vt-hold" style="display:none">—</span>
       </div>
+      <div id="peerVerdict" style="display:none;margin-top:8px;font-size:12px;line-height:1.6;color:var(--muted);background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:8px 10px"></div>
       <div id="adviceLine" class="box" style="margin-top:10px"></div>
       <div id="shortBox" class="box short" style="margin-top:10px;display:none">
         <div class="box-title">📉 短線視角（5 日）</div>
@@ -759,6 +760,17 @@ async function renderPeerCard(t, stockInd40, stockInd60){
     + '<tr><td>'+peerRes.label+'</td><td>'+pct(peerRes.med60)+'</td><td>'+delta(s60, peerRes.med60)+'</td></tr>'
     + '<tr><td>'+taiRes.label+'</td><td>'+pct(taiRes.med60)+'</td><td>'+delta(s60, taiRes.med60)+'</td></tr>';
   const verdict = ((mine, ref)=> mine!=null&&ref!=null ? (mine-ref>=3?'偏強':(ref-mine>=3?'偏弱':'接近')) : '' )(s40, peerRes.med40);
+  const verdictColor = verdict==='偏強' ? 'var(--bull)' : verdict==='偏弱' ? 'var(--bear)' : 'var(--muted)';
+  // 結論卡用的一行簡結論（給一般使用者看，不用翻對照表）
+  const oneLiner =
+    (s40!=null ? ('個股 40 日勝率 ' + s40.toFixed(0) + '%') : '') +
+    (peerRes.med40!=null ? ('、同類股 ' + peerRes.med40.toFixed(0) + '%') : '') +
+    (taiRes.med40!=null ? ('、大盤 ' + taiRes.med40.toFixed(0) + '%') : '') +
+    (verdict ? ('；個股 vs 類股 → <b style="color:' + verdictColor + '">' + verdict + '</b>') : '');
+  // 存下供結論卡/分享用
+  window._peerCompare = { s40, s60, peer40:peerRes.med40, peer60:peerRes.med60, tai40:taiRes.med40, tai60:taiRes.med60, verdict, oneLiner };
+  const verdictEl = document.getElementById("peerVerdict");
+  if (verdictEl) { verdictEl.innerHTML = oneLiner || '對照資料不足，請稍後再試。'; verdictEl.style.display = 'block'; }
   card.style.display = 'block';
   document.getElementById("peerBody").innerHTML =
     '<div style="font-size:12px;line-height:1.7;color:var(--text);margin-bottom:8px">' +
