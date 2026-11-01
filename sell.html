@@ -164,6 +164,7 @@
       <div style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap">
         <div><div style="font-size:11px;color:var(--muted)">前收</div><div id="tkPrevClose" style="font-size:20px;font-weight:800;line-height:1.1;color:var(--text)">—</div></div>
         <div><div style="font-size:11px;color:var(--muted)">開盤</div><div id="tkOpen" style="font-size:20px;font-weight:800;line-height:1.1;color:var(--text)">—</div></div>
+        <div><div style="font-size:11px;color:var(--muted)">現價</div><div id="tkNow" style="font-size:20px;font-weight:800;line-height:1.1;color:var(--text)">—</div></div>
         <div><div style="font-size:11px;color:var(--muted)">收盤</div><div id="tkPost" style="font-size:24px;font-weight:800;line-height:1.05;color:var(--text)">—</div></div>
         <div><div style="font-size:11px;color:var(--muted)">今日漲跌</div><div id="tkChg" style="font-size:18px;font-weight:800;line-height:1.1">—</div><div id="tkChgAmt" style="font-size:12px;font-weight:600;line-height:1.1;margin-top:2px;color:var(--muted)">—</div></div>
         <div id="tkDir" style="font-size:12px;font-weight:700;padding:2px 8px;border-radius:8px;display:none"></div>
@@ -337,8 +338,15 @@ async function raceFetch(code, period){
   variants.forEach(v => pmap.push(allOrigins(v)));
   variants.forEach(v => pmap.push(codeTabs(v)));
   if (yahooDirect) variants.forEach(v => pmap.push(yahooDirect(v)));
-  const settled = await Promise.all(pmap.map(p => p.then(j => (j && j.chart ? j : null)).catch(() => null)));
-  const winner = settled.find(j => j && j.chart);
+  // 誰先回 chart 誰贏（Promise.any 早離），避免 Promise.all 等最慢端點拖慢整體
+  // 端點 promise 原封不動送入 Promise.any：任一成功就早離、不用等最慢端點；全 reject 才降級 relayRetry
+  let winner = null;
+  try {
+    winner = await Promise.any(pmap);
+  } catch (e) {
+    winner = null; // 全端點 reject → 走下方 relayRetry 兜底
+  }
+  if (winner && winner.chart) return winner;
   if (winner) return winner;
   // 全端點無 chart → 對第一變體 relay 再試一次(冷啟動/抖動容錯),再失敗才真 throw
   try {
@@ -570,11 +578,14 @@ function renderTicker(rows, IND, i) {
   const num = (x) => (x != null && isFinite(x)) ? Number(x).toLocaleString() : '—';
   const prevC = (it.prev_close != null && isFinite(it.prev_close)) ? it.prev_close : null;
   const openC = (it.open_display != null && isFinite(it.open_display)) ? it.open_display : null;
+  // 現價：盤中＝即時價（it.now_price）、未開盤＝「—」
+  const nowC = (it.now_price != null && isFinite(it.now_price)) ? it.now_price : null;
   const postC = (it.post_display != null && isFinite(it.post_display)) ? it.post_display : null;
   let chgColor = 'var(--muted)', chgTxt = '—', chgAmtTxt = '', dirTxt = '', dirBg = 'var(--card2)';
-  // 漲跌價差：未開盤＝前收 vs 盤後；開盤中＝前收 vs 現價（皆為 postC - prevC）
-  if (postC != null && prevC != null) {
-    const diff = postC - prevC;
+  // 漲跌價差：盤中＝現價−前收；未開盤（盤前/盤後/假日）＝收盤−前收
+  const chgNumerator = (it.is_open !== false) ? nowC : postC;  // 盤中→現價、未開盤→收盤
+  if (chgNumerator != null && prevC != null) {
+    const diff = chgNumerator - prevC;
     chgAmtTxt = (diff > 0 ? '+' : diff < 0 ? '' : '') + diff.toFixed(2);
     chgColor = diff > 0 ? 'var(--bull)' : diff < 0 ? 'var(--bear)' : 'var(--muted)';
   }
@@ -589,6 +600,7 @@ function renderTicker(rows, IND, i) {
   const set = (id, txt, color) => { const el = document.getElementById(id); if (el) { el.textContent = txt; if (color != null) el.style.color = color; } };
   set('tkPrevClose', num(prevC));
   set('tkOpen', num(openC));
+  set('tkNow', num(nowC), chgColor);
   set('tkPost', num(postC), chgColor);
   set('tkChg', chgTxt, chgColor);
   set('tkChgAmt', chgAmtTxt ? '（' + chgAmtTxt + ' 元）' : '', chgColor);
