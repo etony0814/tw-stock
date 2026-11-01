@@ -252,13 +252,13 @@ function toggleMode(){
   localStorage.setItem(MODE_KEY, isPro() ? "simple" : "pro");
   applyMode();
 }
-// 賣出頁:專家模式才顯示的細節(簡易=只看結論+損益+K線;專家=加決策矩陣/短中期分數框/完整理由)
-const PRO_ONLY = ["shortBox", "midBox", "reasonList", "matrixCard"];
+// 賣出頁:專家模式才顯示的細節(簡易=只看結論+損益+K線;專家=加決策矩陣/短中期分數框/完整理由/對照表)
+const PRO_ONLY = ["shortBox", "midBox", "reasonList", "matrixCard", "peerVerdict"];
 function applyMode(){
   const pro = isPro();
   const btn = document.getElementById("modeToggle");
   if (btn) {
-    btn.textContent = pro ? "⚙️ 專業模式（點回簡易）" : "⚙️ 專業模式";
+    btn.textContent = pro ? "📊 專業（點回簡易）" : "📊 專業模式";
     const results = document.getElementById("results");
     if (results && results.style.display === "block") btn.style.display = "block";
   }
