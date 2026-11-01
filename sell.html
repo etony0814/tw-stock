@@ -154,11 +154,11 @@
 
     <!-- 行情橫條：開盤、現價、前收＋資料日期＋未開盤提示（與首頁一致） -->
     <div class="card" id="todayTickerCard" style="display:none">
-      <h3>📊 行情速覽（前收／開盤／盤後）</h3>
+      <h3>📊 行情速覽（前收／開盤／收盤）</h3>
       <div style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap">
         <div><div style="font-size:11px;color:var(--muted)">前收</div><div id="tkPrevClose" style="font-size:20px;font-weight:800;line-height:1.1;color:var(--text)">—</div></div>
         <div><div style="font-size:11px;color:var(--muted)">開盤</div><div id="tkOpen" style="font-size:20px;font-weight:800;line-height:1.1;color:var(--text)">—</div></div>
-        <div><div style="font-size:11px;color:var(--muted)">盤後</div><div id="tkPost" style="font-size:24px;font-weight:800;line-height:1.05;color:var(--text)">—</div></div>
+        <div><div style="font-size:11px;color:var(--muted)">收盤</div><div id="tkPost" style="font-size:24px;font-weight:800;line-height:1.05;color:var(--text)">—</div></div>
         <div><div style="font-size:11px;color:var(--muted)">今日漲跌</div><div id="tkChg" style="font-size:18px;font-weight:800;line-height:1.1">—</div><div id="tkChgAmt" style="font-size:12px;font-weight:600;line-height:1.1;margin-top:2px;color:var(--muted)">—</div></div>
         <div id="tkDir" style="font-size:12px;font-weight:700;padding:2px 8px;border-radius:8px;display:none"></div>
       </div>
@@ -590,8 +590,8 @@ function renderTicker(rows, IND, i) {
   }
   const noteEl = document.getElementById('tkNote');
   if (noteEl) noteEl.textContent = !openToday
-    ? '⚠️ 今日未開盤（盤前／盤後／假日），以下為前日收盤資料。前收、開盤、盤後均為前一日資訊，僅供參考。'
-    : '⚠️ 僅供參考，不構成投資建議。前收、開盤、盤後以券商或 Yahoo 金融即時價為準。';
+    ? '⚠️ 今日未開盤（盤前／盤後／假日），以下為前日收盤資料。前收、開盤、收盤均為前一日資訊，僅供參考。'
+    : '⚠️ 僅供參考，不構成投資建議。前收、開盤、收盤以券商或 Yahoo 金融即時價為準。';
 }
 
 function renderPnl(p){
