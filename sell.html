@@ -140,6 +140,11 @@
         <div id="finalText" class="final-text">—</div>
         <span id="verdictTag" class="verdict-tag vt-hold" style="display:none">—</span>
       </div>
+      <!-- ⚡ 今天怎麼做：一頁看完白話行動卡（部位損益＋短線＋中期＋風險 四件事） -->
+      <div id="todayActionCard" style="display:none;margin-top:10px;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:10px 12px">
+        <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:6px">⚡ 今天怎麼做（一頁看完）</div>
+        <div id="todayActionBody" style="font-size:12px;line-height:1.7;color:var(--text)"></div>
+      </div>
       <div id="peerVerdict" style="display:none;margin-top:8px;font-size:12px;line-height:1.6;color:var(--muted);background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:8px 10px"></div>
       <div id="adviceLine" class="box" style="margin-top:10px"></div>
       <div id="shortBox" class="box short" style="margin-top:10px;display:none">
@@ -956,6 +961,56 @@ async function runSell(){
     renderShortBox(Object.assign({}, dShortS, { atr: A.atr }));
     renderMidBox(Object.assign({}, dMid40S, { atr: A.atr, midScore: dMid40S.midScore, midClass: dMid40S.midClass, bearAlert: dMid40S.bearAlert, belowSma60: dMid40S.belowSma60 }), A.hist_mid40, A.hist_mid60);
     // shortBox/midBox 顯示由 applyMode 依專業模式決定(簡易不顯示,專家顯示)
+
+    // ⚡ 今天怎麼做：一頁看完白話行動卡（部位損益＋短線＋中期＋風險）
+    (function fillSellTodayAction(){
+      const card = document.getElementById('todayActionCard');
+      const body = document.getElementById('todayActionBody');
+      if(!card || !body) return;
+      const ms = StockCore.marketSession();
+      const lastClose = A.close;
+      const shortScoreNum = (dShortS.shortScore != null) ? dShortS.shortScore : 0;
+      const midScoreNum = (dMid40S.shortScore != null) ? dMid40S.shortScore : 0;
+      const cShort = shortScoreNum >= 0.15 ? '偏多' : shortScoreNum <= -0.15 ? '偏空' : '中性';
+      const cMid = midScoreNum >= 0.2 ? '偏多' : midScoreNum <= -0.2 ? '偏空' : '中性';
+      const colorOf = (s) => s === '偏多' ? 'var(--bull)' : s === '偏空' ? 'var(--bear)' : 'var(--muted)';
+      const af = StockCore.actionForScore(c, ms.code);
+      let midActionText;
+      if (dMid40S.advice) midActionText = dMid40S.advice;
+      else if (midScoreNum != null) {
+        midActionText = midScoreNum >= 0.2 ? '中期偏多：可考慮分批佈局、讓獲利奔跑。'
+          : midScoreNum <= -0.2 ? '中期偏空：建議觀望、等右側確認再進場。'
+          : '中期方向不明，維持中性觀望。';
+      } else midActionText = '中期訊號暫缺。';
+      const lastInd = A.atr != null ? A.atr : null;
+      const sl = (lastClose != null && lastInd != null) ? lastClose - 1.5*lastInd : null;
+      const tp1 = (lastClose != null && lastInd != null) ? lastClose + 1*lastInd : null;
+      const riskLine = (sl != null && tp1 != null)
+        ? '短線止損 ' + sl.toFixed(0) + '、止盈 ' + tp1.toFixed(0) + '；跌破止損即減碼，不抗漲不抗跌。'
+        : '止損/止盈暫缺（資料不足），建議以「跌破 5 日線、放量長黑 K」作短線減碼紀律。';
+      let nowAction, nowColor;
+      if (c >= 0.2) { nowAction = '整體偏多，可逢低布局。'; nowColor = 'var(--bull)'; }
+      else if (c <= -0.2) { nowAction = '整體偏空，建議觀望或減碼。'; nowColor = 'var(--bear)'; }
+      else { nowAction = '整體中性，方向不明確，可先觀望。'; nowColor = 'var(--muted)'; }
+      let pnlLine = '';
+      if (primary && primary.pnl) {
+        const p = primary.pnl;
+        const fPct = p.floatPct != null ? p.floatPct.toFixed(1) : '—';
+        const fAmt = p.float != null ? p.float.toFixed(0) : '—';
+        pnlLine = '<div style="margin-bottom:6px">💰 <b>你的部位：</b>' +
+          (p.float >= 0 ? '<span style="color:var(--bull)">浮盈 ' + fAmt + ' 元（+' + fPct + '%）</span>'
+           : '<span style="color:var(--bear)">浮虧 ' + Math.abs(+fAmt) + ' 元（' + fPct + '%）</span>') +
+          '，均價 ' + p.cost + '、現價 ' + (lastClose != null ? lastClose.toFixed(0) : '—') + '。</div>';
+      }
+      body.innerHTML =
+        pnlLine +
+        '<div style="margin-bottom:6px">🎯 <b>現在做什麼：</b><span style="color:'+nowColor+'">'+nowAction+'</span></div>' +
+        '<div style="margin-bottom:6px">📉 <b>短線（5 日）：</b><span style="color:'+colorOf(cShort)+'">'+cShort+'</span>　'+(dShortS.advice || af)+'</div>' +
+        '<div style="margin-bottom:6px">📈 <b>中期（2–3 月）：</b><span style="color:'+colorOf(cMid)+'">'+cMid+'</span>　'+midActionText+'</div>' +
+        '<div>⚠️ <b>風險紀律：</b>'+riskLine+'</div>' +
+        '<div style="margin-top:6px;font-size:11px;color:var(--muted);border-top:1px solid var(--border);padding-top:6px">📅 時段：'+(ms.label||'')+(ms.hhmm!=null?(' '+Math.floor(ms.hhmm/100)+':'+String(ms.hhmm%100).padStart(2,'0')):'')+'。僅供參考、不構成投資建議。</div>';
+      card.style.display = 'block';
+    })();
 
     // 理由清單
     const rl = document.getElementById("reasonList");
