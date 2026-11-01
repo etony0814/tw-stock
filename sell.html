@@ -393,6 +393,43 @@ function buildRows(j, code){
   };
   return rows;
 }
+// 表外代號名稱自我補齊：WNAMES 只有 5 筆、賣頁獨立開也抓全名
+// 抓到新名稱就暫存到 localStorage（tonyStockNames），下次直接讀、不再花網路
+async function fetchStockName(t){
+  if (WNAMES[t]) return WNAMES[t];
+  try {
+    const cached = JSON.parse(localStorage.getItem('tonyStockNames') || '{}');
+    if (cached[t]) return cached[t];
+  } catch(e){}
+  let found = "";
+  if (QUOTE_RELAY) {
+    try {
+      const r = await fetch(QUOTE_RELAY + "/?name=" + encodeURIComponent(t));
+      if (r.ok) { const j = await r.json(); if (j && j.ok && j.name && j.name.length) found = j.name; }
+    } catch(e){}
+  }
+  if (!found) {
+    try {
+      const target = "https://query2.finance.yahoo.com/v8/finance/chart/" + toYahoo(t) + "?range=1d&interval=1d";
+      const r = await fetch("https://r.jina.ai/" + target, { headers: { "Accept": "text/plain" } });
+      const text = await r.text();
+      const idx = text.indexOf("Markdown Content:");
+      let body = idx >= 0 ? text.slice(idx + "Markdown Content:".length).trim() : text;
+      const o = body.indexOf("{"); if (o >= 0) body = body.slice(o);
+      const j = JSON.parse(body);
+      const meta = j.chart && j.chart.result && j.chart.result[0] && j.chart.result[0].meta;
+      if (meta && meta.shortName) found = meta.shortName;
+    } catch(e){}
+  }
+  if (found) {
+    try {
+      const cached = JSON.parse(localStorage.getItem('tonyStockNames') || '{}');
+      cached[t] = found;
+      localStorage.setItem('tonyStockNames', JSON.stringify(cached));
+    } catch(e){}
+  }
+  return found || "";
+}
 function demoRows(code){
   // 依代號給合理基準價(避免 0050/0056 這種 ETF 跟 2330 差不多價、失真);固定 seed、不抖動,演示穩定
   const base = { "2330": 2370, "2303": 65, "0050": 165, "0056": 22, "3037": 110 }[code] || 100;
