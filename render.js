@@ -734,21 +734,28 @@ function render(A, rows, t){
     `漲跌 ${it.chg_pct!=null?(it.chg_pct>0?'+':'')+it.chg_pct+'%':'—'}、量比 ${it.vol_ratio!=null?it.vol_ratio:'—'}；<br>`+
     `<span style="font-size:12px;color:var(--muted)">${it.price_state}；20日均線${it.vs_sma20}、60日${it.vs_sma60}。${it.advice}</span>`;
 
-  // 當日行情醒目橫條（現價、開盤、漲跌幅、漲跌價差）
+  // 行情橫條（開盤、現價、前收＋資料日期＋未開盤提示）
   const tk = document.getElementById('todayTicker');
   if (tk && it) {
     tk.style.display = 'block';
     const nowEl = document.getElementById('tkNow');
     const openEl = document.getElementById('tkOpen');
+    const prevCloseEl = document.getElementById('tkPrevClose');
     const chgEl = document.getElementById('tkChg');
     const chgAmtEl = document.getElementById('tkChgAmt');
     const dirEl = document.getElementById('tkDir');
+    const dateEl = document.getElementById('tkDate');
+    const statusTag = document.getElementById('tkStatusTag');
     const noteEl = document.getElementById('tkNote');
+    // 現價：開盤中＝日K 最後收盤（或 Yahoo 即時）；未開盤＝前日收盤（同 last）
+    const nowPrice = (it.last != null && isFinite(it.last)) ? it.last : null;
+    const num = (x) => (x != null && isFinite(x)) ? Number(x).toLocaleString() : '—';
     // 顏色：漲紅、跌綠、平灰（台股慣例）
     let chgColor = 'var(--muted)', chgTxt = '—', chgAmtTxt = '', dirTxt = '', dirBg = 'var(--card2)';
     // 漲跌價差：現價 − 前收（intradayFromRows 提供 prev_close）
-    if (it.last != null && isFinite(it.last) && it.prev_close != null && isFinite(it.prev_close)) {
-      const diff = it.last - it.prev_close;
+    const prevC = (it.prev_close != null && isFinite(it.prev_close)) ? it.prev_close : null;
+    if (nowPrice != null && prevC != null) {
+      const diff = nowPrice - prevC;
       chgAmtTxt = (diff > 0 ? '+' : diff < 0 ? '' : '') + diff.toFixed(2);
       chgColor = diff > 0 ? 'var(--bull)' : diff < 0 ? 'var(--bear)' : 'var(--muted)';
     }
@@ -760,15 +767,37 @@ function render(A, rows, t){
       else if (c < 0) { dirTxt = '▼ 下跌'; dirBg = 'rgba(34,197,94,.15)'; }
       else { dirTxt = '◆ 盤整'; }
     }
-    if (nowEl) nowEl.textContent = (it.last != null && isFinite(it.last)) ? Number(it.last).toLocaleString() : '—';
-    if (openEl) openEl.textContent = (it.open != null && isFinite(it.open)) ? Number(it.open).toLocaleString() : '—';
+    if (nowEl) { nowEl.textContent = num(nowPrice); nowEl.style.color = chgColor; }
+    if (openEl) openEl.textContent = num(it.open);
+    if (prevCloseEl) prevCloseEl.textContent = num(prevC);
     if (chgEl) { chgEl.textContent = chgTxt; chgEl.style.color = chgColor; }
     if (chgAmtEl) { chgAmtEl.textContent = chgAmtTxt ? '（' + chgAmtTxt + ' 元）' : ''; chgAmtEl.style.color = chgColor; }
     if (dirEl) {
       if (dirTxt) { dirEl.textContent = dirTxt; dirEl.style.display = 'inline-block'; dirEl.style.background = dirBg; dirEl.style.color = chgColor; }
       else dirEl.style.display = 'none';
     }
-    if (noteEl) noteEl.textContent = '⚠️ 僅供參考，不構成投資建議。盤中數據為收盤估算，即時價請以券商或 Yahoo 金融為準。';
+    // 資料日期 + 未開盤標記
+    const openToday = (it.is_open !== false);
+    if (dateEl) {
+      if (it.data_date) { dateEl.textContent = '資料日期 ' + it.data_date; dateEl.style.display = ''; }
+      else dateEl.style.display = 'none';
+    }
+    if (statusTag) {
+      if (!openToday) {
+        statusTag.textContent = '未開盤・前日收盤';
+        statusTag.style.display = 'inline-block';
+        statusTag.style.background = 'rgba(148,163,184,.18)';
+        statusTag.style.color = 'var(--muted)';
+      } else {
+        statusTag.textContent = '開盤中';
+        statusTag.style.display = 'inline-block';
+        statusTag.style.background = 'rgba(34,197,94,.15)';
+        statusTag.style.color = 'var(--bull)';
+      }
+    }
+    if (noteEl) noteEl.textContent = !openToday
+      ? '⚠️ 今日未開盤（盤前／盤後／假日），以下為前日收盤資料。開盤、現價、前收均為前一日資訊，僅供參考。'
+      : '⚠️ 僅供參考，不構成投資建議。開盤、現價、前收以券商或 Yahoo 金融即時價為準。';
   }
 
   // 大盤
