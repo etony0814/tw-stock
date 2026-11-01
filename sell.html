@@ -95,7 +95,7 @@
     <button class="theme-toggle" onclick="toggleTheme()" id="themeToggle">🌗 換色</button>
   </div>
 
-  <div id="guideCard" class="card" style="margin-bottom:14px;border-left:4px solid var(--yellow)">
+  <div id="guideCard" class="card" style="margin-bottom:14px;border-left:4px solid var(--yellow)"><button onclick="this.parentElement.style.display='none';localStorage.tonyHideGuide=1" style="float:right;background:none;border:none;color:var(--muted);cursor:pointer;font-size:11px">隱藏 ✕</button>
     <div style="font-size:12px;font-weight:700;color:var(--yellow);margin-bottom:4px">🧭 這兩頁差在哪？</div>
     <div style="font-size:12px;line-height:1.6;color:var(--text)">
       <div style="margin-bottom:6px"><b>💼 我的部位決策（本頁）</b>：已持有，回答「<b>我手上這批（均價×持股數）該減幾成、加幾成、保本線拉多高</b>」— 含損益、止損/止盈、加碼/減碼、決策矩陣。</div>
@@ -190,6 +190,7 @@ const COSTS_KEY = "tony_costs_web";
 const WNAMES = {"2330":"台積電","0050":"元大台灣50","0056":"元大高股息","2303":"聯電","3037":"欣興"};
 
 // ── 跳回綜合分析:帶 restore=1 + 代號,index.html 會從 sessionStorage 還原上次結果、不重跑 ──
+if(localStorage.tonyHideGuide){var _gc=document.getElementById("guideCard");if(_gc)_gc.style.display="none";}
 function goBackToAnalysis(){
   const t = document.getElementById("ticker").value.trim().toUpperCase();
   let href = "index.html";
@@ -570,9 +571,13 @@ function renderMatrix(d, tableId, view){
     tbl += '<tr class="' + (r.hit ? "hit" : "") + '"><td>' + (r.hit ? '📍 ' : '') + r.cond + '</td><td>' + r.action + '</td></tr>';
   });
   tbl += "</tbody></table>";
-  wrap.innerHTML = topHtml +
-    '<details style="margin-top:4px">' +
-    '<summary style="cursor:pointer;font-size:12px;color:var(--muted);list-style:none;padding:4px 0">▸ 展開' + viewTitle + '全部情境對照(' + rows.length + ' 格)</summary>' +
+  // 手機版：預設折合、只顯示命中格；專業模式展開時才顯示全部
+const isMobile = window.innerWidth <= 700;
+wrap.innerHTML = topHtml +
+    '<details style="margin-top:4px' + (!isMobile ? ';display:none' : '') + '">' +
+    '<summary style="cursor:pointer;font-size:12px;color:var(--muted);list-style:none;padding:4px 0">' +
+      (isMobile ? '▸ 展開全部情境對照(' + rows.length + ' 格，專業模式)' : '▸ 展開' + viewTitle + '全部情境對照(' + rows.length + ' 格)') +
+    '</summary>' +
     '<div style="overflow-x:auto;margin-top:6px">' + tbl + '</div>' +
     '</details>';
 }
@@ -647,7 +652,7 @@ async function runSell(){
   document.getElementById("loading").style.display = "block";
   document.getElementById("err").style.display = "none";
   btn.disabled = true; btn.textContent = "評估中…"; btn.style.opacity = "0.6";
-  const loadMsg = document.getElementById("loadingMsg"); if (loadMsg) loadMsg.textContent = "正在抓 " + t + " 行情…（並行 relay / Jina / allorigins）";
+  const loadMsg = document.getElementById("loadingMsg"); if (loadMsg) loadMsg.textContent = "① 正在抓 " + t + " 行情…（並行多端點）";
 
   let rows, demo = false;
   try {
@@ -661,14 +666,14 @@ async function runSell(){
     // 全端點失敗/逾時:不掉 demo、不算分數、不 .toFixed(null);明確提示重試。
     document.getElementById("results").style.display = "none";
     document.getElementById("loading").style.display = "none";
-    document.getElementById("err").textContent = "取不到 " + t + " 行情（" + e.message + "），請稍後「重試一次」。";
+    document.getElementById("err").textContent = "目前取不到 " + t + " 的行情，請點「重試一次」或稍後再試。";
     document.getElementById("err").style.display = "block";
     btn.disabled = false; btn.textContent = "重試一次"; btn.style.opacity = "1";
     return;
   }
 
   try {
-    if (loadMsg) loadMsg.textContent = "計算訊號與決策中…";
+    if (loadMsg) loadMsg.textContent = "② 計算訊號與部位決策中…";
     const IND = StockCore.computeIndicators(rows);
     const i = rows.length - 1;
     const signals = StockCore.detectSignals(IND, i);
@@ -776,9 +781,9 @@ async function runSell(){
     const _sb = document.getElementById("shareBtn"); if (_sb) _sb.style.display = "";
   } catch (e) {
     const _em = document.getElementById("errMsg");
-    if (_em) { _em.textContent = "評估失敗：" + e.message; _em.style.display = "block"; }
+    if (_em) { _em.textContent = "評估時遇到問題，請點「重試一次」。"; _em.style.display = "block"; }
     const _er = document.getElementById("err");
-    if (_er) { _er.textContent = "評估失敗：" + e.message; _er.style.display = "block"; }
+    if (_er) { _er.textContent = "評估時遇到問題，請點「重試一次」。"; _er.style.display = "block"; }
     const rb=document.getElementById("retryBtn"); if(rb){ rb.style.display="inline-block"; rb.onclick=function(){ rb.style.display="none"; runSell(); }; }
     const _er2=document.getElementById("err"); if(_er2){ _er2.style.display = "block"; }
   } finally {
