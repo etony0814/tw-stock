@@ -450,6 +450,18 @@
     const r = rows[i];
     const last = r.close, open = r.open;
     const prev = i > 0 ? rows[i - 1].close : null;
+    // 資料日期＝最後一筆日K 日期；未開盤時這筆其實是「前日收盤」
+    const data_date = r.date || null;
+    // 判斷當日是否開盤中：最後一筆日K 日期 == 今天（本地日期）。
+    // 未開盤（盤前／盤後／假日）時 data_date 會是前一交易日，is_open=false → 顯示「未開盤、前日收盤」
+    let is_open = true;
+    if (data_date) {
+      const today = new Date();
+      const tDate = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
+      is_open = (data_date === tDate);
+    }
+    // 前收（上一交易日收盤）：有 meta.chartPreviousClose 用之，否則用日K 前一筆 close
+    const prevClose = (rows.meta && rows.meta.chartPreviousClose != null) ? rows.meta.chartPreviousClose : prev;
     const chg = prev ? (last - prev) / prev * 100 : null;
     // 量比
     let vol_ratio = null;
@@ -482,9 +494,10 @@
       : score >= 0.1 ? "盤面略偏強，量能尚可，可小量試水。"
       : score <= -0.1 ? "盤面略偏弱，建議謹慎。"
       : "盤面方向不明，等盤中確認再動作。";
-    return { open, last, prev_close: prev, chg_pct: chg != null ? Math.round(chg * 100) / 100 : null,
+    return { open, last, prev_close: prevClose, chg_pct: chg != null ? Math.round(chg * 100) / 100 : null,
       vol_ratio, vs_sma20: vs20, sma20, vs_sma60: vs60, sma60,
-      price_state: state, advice, score, label };
+      price_state: state, advice, score, label,
+      data_date, is_open, prev_close_raw: prev };
   }
 
   // ─────────────────────────────────────────────────────────
