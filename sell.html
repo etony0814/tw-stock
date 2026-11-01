@@ -1127,7 +1127,14 @@ async function runSell(){
     });
 
     // 類股/大盤對照卡（非阻塞：抓 8 檔同類股 + 加權指算 5/20/40/60 日勝率對照）
-    renderPeerCard(t, IND, rows).catch(()=>{});
+    renderPeerCard(t, IND, rows).then(() => {
+      // 對照卡填完再補一次 applyMode,讓「填內容→收折」順序正確
+      // （簡易模式:短Box/中Box/理由/矩陣/對照表 全收;專業模式:全展開）
+      applyMode();
+    }).catch(()=>{ applyMode(); });
+
+    // 同步再補一次 applyMode（renderPeerCard 是 async,上面的 then/catch 是延後）
+    applyMode();
 
     // 分享
     window._sellShare = { ticker: t, name: WNAMES[t] || "", cost: cost, shares: shares, close: A.close, verdict: primary ? primary.verdict : "—", tag: primary ? primary.tag : "—", advice: primary ? primary.advice : "—", reasons: primary ? primary.reasons : [], pnl: primary ? primary.pnl : null, sl: (primary && primary.slTp) ? primary.slTp.sl : null, tp1: (primary && primary.slTp) ? primary.slTp.tp1 : null, breakeven: (primary && primary.verdict === "hold") ? Math.max(cost, +((A.close||0) * 0.98).toFixed(2)) : null, mid40: A.hist_mid40, mid60: A.hist_mid60, midTag: dMid40 ? dMid40.tag : "—", midAdvice: dMid40 ? dMid40.advice : "—", midReasons: (dMid40 && dMid40.reasons) ? dMid40.reasons : [], addOn: (primary && primary.addOn) ? primary.addOn : null };
