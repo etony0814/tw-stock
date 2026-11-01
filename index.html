@@ -1283,13 +1283,25 @@ function toggleMode(){
   localStorage.setItem(MODE_KEY, cur==='pro' ? 'simple' : 'pro');
   applyMode();
 }
-// 綜合卡內：哪些元素只在專業模式顯示
-const PRO_ONLY=[['plainRead','block'],['histSec','block'],['adviceSummary','block'],['finalBd','block'],['compBreak','block'],['statGrid','grid'],['dataFreshness','inline-block'],['glossary','block']];
+// 綜合卡內：哪些元素只在專業模式顯示（簡易＝只看結論＋短線/中期行動框；專業＝加五方分數長條、拆解、5日勝率、對照表、決策矩陣）
+const PRO_ONLY=[
+  ['todayActionCard','block'],
+  ['peerVerdict','block'],
+  ['shortMatrix','block'],
+  ['plainRead','block'],
+  ['histSec','block'],
+  ['adviceSummary','block'],
+  ['finalBd','block'],
+  ['compBreak','block'],
+  ['statGrid','grid'],
+  ['dataFreshness','inline-block'],
+  ['glossary','block']
+];
 function applyMode(){
   const pro=isPro();
-  // 開關按鈕文字
+  // 開關按鈕文字：簡易=「專業模式」（點進專業）、專業=「簡易模式」（點回簡易）
   const btn=document.getElementById('modeToggle');
-  if(btn) btn.textContent = pro ? '⚙️ 專業模式（點回簡易）' : '⚙️ 專業模式';
+  if(btn) btn.textContent = pro ? '📊 簡易模式（點專業）' : '📊 專業模式';
   // 綜合卡內細節
   PRO_ONLY.forEach(([id,dis])=>{
     const el=document.getElementById(id);
