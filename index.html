@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
 <meta charset="UTF-8">
@@ -7,75 +7,75 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='18' fill='%230f1419'/%3E%3Ctext x='50' y='62' font-size='48' text-anchor='middle' fill='%2338bdf8'%3E%F0%9F%93%88%3C/text%3E%3C/svg%3E">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="?啗??">
-<title>Tony ?啗?銵???撠鼠??/title>
+<meta name="apple-mobile-web-app-title" content="台股分析">
+<title>Tony 台股技術分析 小幫手</title>
 <link rel="stylesheet" href="style.css">
 <style>
   /* design tokens via style.css */
   /* light tokens via style.css */
   html{scroll-behavior:smooth;}
   .theme-toggle{background:var(--card2);color:var(--text);border:1px solid var(--border);border-radius:8px;
-    padding:8px 12px;font-size:15px;cursor:pointer;}
-  .share-btn{background:var(--accent);color:#0f1419;border:none;border-radius:8px;padding:8px 14px;font-size:15px;font-weight:700;cursor:pointer;margin-top:8px;width:100%;}
+    padding:8px 12px;font-size: 15px;cursor:pointer;}
+  .share-btn{background:var(--accent);color:#0f1419;border:none;border-radius:8px;padding:8px 14px;font-size: 15px;font-weight:700;cursor:pointer;margin-top:8px;width:100%;}
   *{box-sizing:border-box;margin:0;padding:0;}
   body{font-family:-apple-system,"Segoe UI","Microsoft JhengHei",sans-serif;
     background:var(--bg);color:var(--text);min-height:100vh;padding:16px;}
   .wrap{max-width:1080px;margin:0 auto;}
   .header h1{font-size:20px;font-weight:700;}
   .header h1 span{color:var(--accent);}
-  .header .sub{font-size:15px;color:var(--muted);margin-top:4px;}
+  .header .sub{font-size: 15px;color:var(--muted);margin-top:4px;}
   .controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;background:var(--card);
     padding:14px;border-radius:12px;border:1px solid var(--border);margin:16px 0;}
-  .controls label{font-size:15px;color:var(--muted);}
+  .controls label{font-size: 15px;color:var(--muted);}
   .controls input,.controls select{background:var(--card2);color:var(--text);
-    border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:16px;}
+    border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size: 16px;}
   .controls input{width:90px;}
   .controls button{background:var(--accent);color:#0f1419;border:none;border-radius:8px;
-    padding:9px 20px;font-size:16px;font-weight:700;cursor:pointer;}
-  .controls .hint{font-size:14px;color:var(--muted);}
+    padding:9px 20px;font-size: 16px;font-weight:700;cursor:pointer;}
+  .controls .hint{font-size: 14px;color:var(--muted);}
   .card{background:var(--card);border:1px solid var(--border);border-radius:14px;
     padding:18px;margin-bottom:18px;}
-  .card h3{font-size:16px;color:var(--muted);margin-bottom:12px;}
+  .card h3{font-size: 16px;color:var(--muted);margin-bottom:12px;}
   .final{border:1px solid var(--accent);background:var(--card);}
   :root[data-theme="light"] .final{background:linear-gradient(135deg,#f0f7ff,#f8fafc);}
-  .final h2{font-size:17px;color:var(--accent);margin-bottom:8px;}
-  /* ?箏???嚗?瘥?憿??函?獢?憿??? */
+  .final h2{font-size: 17px;color:var(--accent);margin-bottom:8px;}
+  /* 区块隔絕：讓每個分類有獨立框、標題與間距 */
   .sec-divider{border:none;border-top:1px solid var(--border);margin:14px 0;}
-  .sec-title{font-size:13px;font-weight:700;color:var(--accent);letter-spacing:.5px;margin:2px 0 8px;text-transform:uppercase;}
+  .sec-title{font-size: 13px;font-weight:700;color:var(--accent);letter-spacing:.5px;margin:2px 0 8px;text-transform:uppercase;}
   .box{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:8px;}
-  .box .box-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:6px;}
+  .box .box-title{font-size: 14px;font-weight:700;color:var(--text);margin-bottom:6px;}
   .final-text{font-size:19px;font-weight:700;line-height:1.5;}
   .final-text.pos{color:var(--green);} .final-text.neg{color:var(--red);} .final-text.neu{color:var(--yellow);}
   .bd{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}
-  .bd .it{background:var(--card2);border-radius:8px;padding:7px 12px;font-size:14px;color:var(--muted);}
-  .bd .it b{color:var(--text);font-size:16px;margin-left:4px;}
+  .bd .it{background:var(--card2);border-radius:8px;padding:7px 12px;font-size: 14px;color:var(--muted);}
+  .bd .it b{color:var(--text);font-size: 16px;margin-left:4px;}
   .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
   .score-row{display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap;}
   .badge{display:inline-block;min-width:44px;height:24px;border-radius:6px;display:flex;
-    align-items:center;justify-content:center;font-size:13px;font-weight:700;}
+    align-items:center;justify-content:center;font-size: 13px;font-weight:700;}
   .badge.buy{background:rgba(239,68,68,.15);color:var(--bull);}
   .badge.sell{background:rgba(34,197,94,.15);color:var(--bear);}
   .badge.neutral{background:rgba(245,158,11,.15);color:var(--yellow);}
-  .sig{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--border);font-size:15px;}
+  .sig{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--border);font-size: 15px;}
   .sig:last-child{border-bottom:none;}
-  .sig .d{color:var(--muted);font-size:14px;}
+  .sig .d{color:var(--muted);font-size: 14px;}
   .score-box{background:var(--card2);border-radius:10px;padding:10px 14px;min-width:150px;}
-  .score-box .lbl{font-size:14px;color:var(--muted);}
+  .score-box .lbl{font-size: 14px;color:var(--muted);}
   .score-box .val{font-size:24px;font-weight:800;}
   .val.pos{color:var(--green);} .val.neg{color:var(--red);} .val.neu{color:var(--yellow);}
   canvas{width:100%;display:block;}
   .two{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
-  .msg{font-size:15px;color:var(--muted);line-height:1.6;}
+  .msg{font-size: 15px;color:var(--muted);line-height:1.6;}
   .stat-mini{background:var(--card2);border-radius:8px;padding:8px 10px;min-width:0;}
-  .sm-lbl{font-size:12px;color:var(--muted);margin-bottom:3px;line-height:1.3;}
+  .sm-lbl{font-size: 12px;color:var(--muted);margin-bottom:3px;line-height:1.3;}
   .sm-val{font-size:18px;font-weight:800;color:var(--text);}
-  .sm-val.sm-sm{font-size:15px;font-weight:600;}
+  .sm-val.sm-sm{font-size: 15px;font-weight:600;}
   .sm-val.pos{color:var(--green);} .sm-val.neg{color:var(--red);} .sm-val.neu{color:var(--yellow);}
-  .news-item{padding:6px 0;border-bottom:1px solid var(--border);font-size:14px;line-height:1.5;}
+  .news-item{padding:6px 0;border-bottom:1px solid var(--border);font-size: 14px;line-height:1.5;}
   .news-item:last-child{border-bottom:none;}
   .news-item .nt{color:var(--text);font-weight:600;}
-  .news-item .nd{color:var(--muted);font-size:13px;margin-top:2px;}
-  .flow-item{display:flex;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);font-size:14px;align-items:flex-start;}
+  .news-item .nd{color:var(--muted);font-size: 13px;margin-top:2px;}
+  .flow-item{display:flex;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);font-size: 14px;align-items:flex-start;}
   .flow-item:last-child{border-bottom:none;}
   .flow-item .fn{flex:1;color:var(--text);}
   .flow-item .fv{font-weight:700;min-width:60px;text-align:right;}
@@ -84,85 +84,85 @@
   .spin{width:30px;height:30px;border:3px solid var(--border);border-top-color:var(--accent);
     border-radius:50%;animation:sp .8s linear infinite;margin:0 auto 10px;}
   @keyframes sp{to{transform:rotate(360deg);}}
-  .disclaimer{text-align:center;font-size:14px;color:var(--muted);margin-top:16px;line-height:1.6;}
+  .disclaimer{text-align:center;font-size: 14px;color:var(--muted);margin-top:16px;line-height:1.6;}
   @media(max-width:700px){
     body{padding:8px;}
     .wrap{max-width:100%;}
     .header h1{font-size:17px;}
-    .header .sub{font-size:14px;line-height:1.4;}
-    /* ?????冽??? */
+    .header .sub{font-size: 14px;line-height:1.4;}
+    /* 操作列：全欄堆疊 */
     .controls{flex-direction:column;align-items:stretch;gap:8px;padding:12px;}
-    .controls label{font-size:14px;}
-    .controls input{width:100%;font-size:17px;padding:10px 12px;}
-    .controls select{width:100%;font-size:17px;padding:10px 12px;}
-    .controls button{width:100%;padding:11px;font-size:17px;font-weight:700;}
-    .controls .hint{font-size:13px;display:flex;align-items:center;gap:4px;}
-    /* ?∠? */
+    .controls label{font-size: 14px;}
+    .controls input{width:100%;font-size: 17px;padding:10px 12px;}
+    .controls select{width:100%;font-size: 17px;padding:10px 12px;}
+    .controls button{width:100%;padding:11px;font-size: 17px;font-weight:700;}
+    .controls .hint{font-size: 13px;display:flex;align-items:center;gap:4px;}
+    /* 卡片 */
     .card{padding:14px;margin-bottom:12px;border-radius:10px;}
-    .card h3{font-size:15px;margin-bottom:8px;font-weight:700;}
-    /* 蝬?閰? */
+    .card h3{font-size: 15px;margin-bottom:8px;font-weight:700;}
+    /* 綜合評論 */
     .final{padding:14px;}
-    .final h2{font-size:16px;margin-bottom:6px;}
-    .final-text{font-size:17px;line-height:1.5;}
+    .final h2{font-size: 16px;margin-bottom:6px;}
+    .final-text{font-size: 17px;line-height:1.5;}
     .bd{gap:5px;}
-    .bd .it{padding:5px 8px;font-size:13px;flex:1 1 calc(50% - 5px);text-align:center;border-radius:6px;}
-    .bd .it b{font-size:15px;margin-left:2px;}
-    /* ?隤芣?嚗銝???嚗??詨撌艾牧?撖砍?喉? */
+    .bd .it{padding:5px 8px;font-size: 13px;flex:1 1 calc(50% - 5px);text-align:center;border-radius:6px;}
+    .bd .it b{font-size: 15px;margin-left:2px;}
+    /* 分數說明：改上下堆疊（分數在左、說明全寬在右） */
     .grid{grid-template-columns:1fr;gap:12px;}
     .two{grid-template-columns:1fr;gap:12px;}
     .score-box{min-width:0;width:100%;padding:8px 12px;
       display:flex;align-items:center;justify-content:space-between;gap:8px;
       border-radius:8px;}
-    .score-box .lbl{font-size:14px;white-space:nowrap;}
+    .score-box .lbl{font-size: 14px;white-space:nowrap;}
     .score-box .val{font-size:22px;min-width:52px;text-align:right;}
-    /* ????牧??摮??孵??銝 */
+    /* 分數旁邊的說明文字：改堆疊在下方 */
     .grid > .card > div[style*="display:flex"]{flex-direction:column;align-items:stretch;gap:8px;}
-    .grid > .card > div[style*="display:flex"] .msg{min-width:0 !important;flex:auto !important;font-size:15px;}
-    /* 閮??”嚗?澆撠?嚗?蝔?閰單??典祝 */
-    .sig{padding:8px 0;font-size:15px;flex-wrap:nowrap;gap:8px;}
+    .grid > .card > div[style*="display:flex"] .msg{min-width:0 !important;flex:auto !important;font-size: 15px;}
+    /* 訊號列表：數值右對齊，名稱+詳情全寬 */
+    .sig{padding:8px 0;font-size: 15px;flex-wrap:nowrap;gap:8px;}
     .sig:last-child{border-bottom:none;}
-    .sig .d{color:var(--muted);font-size:14px;flex:1 1 100%;margin-top:2px;}
-    .badge{min-width:36px;height:22px;font-size:12px;flex-shrink:0;}
-    /* 閮??詨澆??*/
-    #sigList .sig div:last-child{min-width:60px;text-align:right;font-size:15px;font-weight:700;color:var(--text);flex-shrink:0;}
-    /* ?”嚗蝺迤撣賊?摨佗?MACD/RSI 頛嚗撠撥摨虫葉蝑?*/
+    .sig .d{color:var(--muted);font-size: 14px;flex:1 1 100%;margin-top:2px;}
+    .badge{min-width:36px;height:22px;font-size: 12px;flex-shrink:0;}
+    /* 訊號數值右側 */
+    #sigList .sig div:last-child{min-width:60px;text-align:right;font-size: 15px;font-weight:700;color:var(--text);flex-shrink:0;}
+    /* 圖表：K線正常高度，MACD/RSI 較矮，相對強度中等 */
     #chart{height:240px !important;}
     #macdChart{height:110px !important;}
     #rsiChart{height:110px !important;}
     #rsChart{display:none !important;}
-    /* ???敹怨汗嚗?x2 蝬脫 */
+    /* 關鍵指標快覽：2x2 網格 */
     #statGrid{grid-template-columns:repeat(2,1fr) !important;}
     .sm-val{font-size:16px;}
-    .sm-val.sm-sm{font-size:14px;}
-    /* ?隤芣?嚗??貉????典祝?? */
+    .sm-val.sm-sm{font-size: 14px;}
+    /* 分數說明：分數與文字全寬堆疊 */
     .score-row{flex-direction:column;gap:8px;}
     .score-row .msg{min-width:0 !important;}
-    /* 蝐Ⅳ璁皜 */
-    .flow-item{font-size:13px;padding:4px 0;}
-    .flow-item .fv{font-size:14px;min-width:50px;}
-    /* ?啗?皜 */
-    .news-item{font-size:13px;}
-    /* ??/?征? */
+    /* 籌碼榜單清單 */
+    .flow-item{font-size: 13px;padding:4px 0;}
+    .flow-item .fv{font-size: 14px;min-width:50px;}
+    /* 新聞清單 */
+    .news-item{font-size: 13px;}
+    /* 看多/看空理由 */
     #bullBox,#bearBox{margin-top:8px;}
-    #bullReasons,#bearReasons{font-size:14px;line-height:1.65;}
+    #bullReasons,#bearReasons{font-size: 14px;line-height:1.65;}
     #bullReasons li,#bearReasons li{margin-bottom:3px;}
-    /* ?◢?湔????3 璇誑憭? li ?梯? */
+    /* 手風琴收折：前 3 條以外的 li 隱藏 */
     #bullReasons.collapsed li:nth-child(n+4),#bearReasons.collapsed li:nth-child(n+4){display:none;}
-    /* ?芷?⊥???*/
+    /* 自選股按鈕 */
     #watchBtns{gap:6px;}
-    #watchBtns button{font-size:14px;padding:5px 10px;white-space:nowrap;}
-    /* 蝯?璅? */
+    #watchBtns button{font-size: 14px;padding:5px 10px;white-space:nowrap;}
+    /* 結果標題 */
     #rtName{font-size:16px !important;}
-    #rtWatch{font-size:14px !important;padding:5px 10px !important;white-space:nowrap;}
+    #rtWatch{font-size: 14px !important;padding:5px 10px !important;white-space:nowrap;}
     /* disclaimer */
-    .disclaimer{font-size:13px;line-height:1.5;margin-top:12px;}
+    .disclaimer{font-size: 13px;line-height:1.5;margin-top:12px;}
   }
   @media(max-width:400px){
     .bd .it{flex:1 1 100%;text-align:left;}
-    .final-text{font-size:16px;}
+    .final-text{font-size: 16px;}
     .score-box .val{font-size:20px;min-width:44px;}
   }
-</style>
+</style></style>
 <style>
 :root{--font-scale:1;}
 html{zoom:var(--font-scale);}
@@ -175,251 +175,253 @@ html{zoom:var(--font-scale);}
 <body>
 <div class="wrap">
   <div class="header">
-    <h1>?? Tony ?啗<span>?銵???/span> 撠鼠??/h1>
-    <div class="sub">頛詨?∠巨隞??嚗?甈∠? ?銵?蝐Ⅳ嚗??荔??日嚗之??鈭????摮貊?嚗?瑽???撱箄降嚗?/div>
+    <h1>📈 Tony 台股<span>技術分析</span> 小幫手</h1>
+    <div class="sub">輸入股票代號，一次看 技術＋籌碼＋消息＋盤面＋大盤 五個面向（僅供學習，不構成投資建議）</div>
   </div>
 
-  <div id="guideCard" class="card" style="margin-bottom:14px;border-left:4px solid var(--accent)"><button onclick="this.parentElement.style.display='none';localStorage.tonyHideGuide=1" style="float:right;background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px">?梯? ??/button>
-    <div style="font-size:14px;font-weight:700;color:var(--accent);margin-bottom:4px">?妣 ??榆?典嚗?/div>
-    <div style="font-size:14px;line-height:1.6;color:var(--text)">
-      <div style="margin-bottom:6px"><b>?? 蝬???嚗??</b>嚗征???歹?????b>隞予?閰脖?閰脰眺/鞈?/b>??鈭蝬? + ?剔?(5??/銝剜?(2??????閫?+ 40/60?亙???/div>
-      <div><b>? ???其?瘙箇?</b>嚗歇??嚗?蝑?b>??銝嚗??嘔??⊥嚗府皜嗾??撟暹????祉???擃?/b>???急??迫??甇Ｙ???蝣?皜Ⅳ?捱蝑???/div>
+  <div id="guideCard" class="card" style="margin-bottom:14px;border-left:4px solid var(--accent)"><button onclick="this.parentElement.style.display='none';localStorage.tonyHideGuide=1" style="float:right;background:none;border:none;color:var(--muted);cursor:pointer;font-size: 13px">隱藏 ✕</button>
+    <div style="font-size: 14px;font-weight:700;color:var(--accent);margin-bottom:4px">🧭 這兩頁差在哪？</div>
+    <div style="font-size: 14px;line-height:1.6;color:var(--text)">
+      <div style="margin-bottom:6px"><b>📊 綜合分析（本頁）</b>：空手看盤，回答「<b>今天這支該不該買/賣</b>」— 五方綜合 + 短線(5日)/中期(2–3月)雙視角 + 40/60日勝率。</div>
+      <div><b>💼 我的部位決策</b>：已持有，回答「<b>我手上這批（均價×持股數）該減幾成、加幾成、保本線拉多高</b>」— 含損益、止損/止盈、加碼/減碼、決策矩陣。</div>
     </div>
-    <a class="share-btn" id="guideBtn" style="width:auto;margin-top:8px;padding:7px 14px;font-size:14px;display:inline-block;text-align:center;text-decoration:none" onclick="jumpToSell()">? ??蝞⊥?銝??其? ???颯??雿捱蝑?/a>
+    <a class="share-btn" id="guideBtn" style="width:auto;margin-top:8px;padding:7px 14px;font-size: 14px;display:inline-block;text-align:center;text-decoration:none" onclick="jumpToSell()">💼 我要管手上的部位 → 去「我的部位決策」</a>
   </div>
 
   <div class="controls">
-    <label>隞??</label>
-    <input id="ticker" value="2330" placeholder="隞??">
-    <label>??銋?/label>
+    <label>代號</label>
+    <input id="ticker" value="2330" placeholder="代號">
+    <label>看多久</label>
     <select id="period">
-      <option value="1mo">1??/option><option value="3mo">3??/option>
-      <option value="6mo" selected>6??/option><option value="1y">1撟?/option><option value="2y">2撟?/option>
+      <option value="1mo">1月</option><option value="3mo">3月</option>
+      <option value="6mo" selected>6月</option><option value="1y">1年</option><option value="2y">2年</option>
     </select>
-    <button id="btn" onclick="run()">????</button>
-    <label class="hint"><input type="checkbox" id="ckNews" checked style="width:auto;vertical-align:middle"> 瘨??/label>
-    <label class="hint">?啗?</label>
-    <select id="newsDays" style="background:var(--card2);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:6px 8px;font-size:15px">
-      <option value="3">餈?3 憭?/option>
-      <option value="7" selected>餈?7 憭?/option>
-      <option value="14">餈?14 憭?/option>
-      <option value="30">餈?30 憭?/option>
+    <button id="btn" onclick="run()">開始分析</button>
+    <label class="hint"><input type="checkbox" id="ckNews" checked style="width:auto;vertical-align:middle"> 消息面</label>
+    <label class="hint">新聞</label>
+    <select id="newsDays" style="background:var(--card2);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:6px 8px;font-size: 15px">
+      <option value="3">近 3 天</option>
+      <option value="7" selected>近 7 天</option>
+      <option value="14">近 14 天</option>
+      <option value="30">近 30 天</option>
     </select>
-    <label class="hint"><input type="checkbox" id="ckFund" checked style="width:auto;vertical-align:middle"> 蝐Ⅳ??/label>
-    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="??瘛梧?瘛箄">?? 瘛梯</button>
-    <span class="hint">靘?2330??303??050嚗?蝔望??芸?撣嗅嚗?/span>
+    <label class="hint"><input type="checkbox" id="ckFund" checked style="width:auto;vertical-align:middle"> 籌碼面</label>
+    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="切換深／淺色">🌙 深色</button>
+    <span class="hint">例：2330、2303、0050（名稱會自動帶出）</span>
+  
     <span class="fs-group">
-      <button class="fs-btn" id="fsMinus" onclick="changeFontScale(-1)">A−</button>
-      <button class="fs-btn" id="fsPlus" onclick="changeFontScale(1)">A＋</button>
+      <button class="fs-btn" onclick="changeFontScale(-1)">A−</button>
+      <button class="fs-btn" onclick="changeFontScale(1)">A＋</button>
     </span>
-  </div>
+</div>
 
-  <!-- ??蝯?璅?嚗誨???迂嚗? ?芷?? -->
+  <!-- 分析結果標題（代號＋名稱）＋ 自選按鈕 -->
   <div id="resultTitle" class="card" style="display:none">
     <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-      <b id="rtName" style="font-size:18px">??/b>
+      <b id="rtName" style="font-size:18px">—</b>
       <button id="rtWatch" onclick="rtWatchToggle()"
-        style="background:var(--card2);color:var(--accent);border:1px solid var(--accent);border-radius:8px;padding:6px 12px;font-size:15px;cursor:pointer">嚗???芷</button>
-      <button class="share-btn" id="shareBtn" onclick="shareAnalysis()" style="display:none;width:auto;margin-top:0">? ?澈蝯?</button>
-      <button id="portBtn" onclick="openPortfolioForm()" style="display:none;width:auto;margin-top:0;background:var(--card2);color:var(--text);border:1px solid var(--yellow);border-radius:8px;padding:8px 14px;font-size:15px;font-weight:700;cursor:pointer">? ???其?瘙箇?</button>
+        style="background:var(--card2);color:var(--accent);border:1px solid var(--accent);border-radius:8px;padding:6px 12px;font-size: 15px;cursor:pointer">＋ 加入自選</button>
+      <button class="share-btn" id="shareBtn" onclick="shareAnalysis()" style="display:none;width:auto;margin-top:0">📤 分享結果</button>
+      <button id="portBtn" onclick="openPortfolioForm()" style="display:none;width:auto;margin-top:0;background:var(--card2);color:var(--text);border:1px solid var(--yellow);border-radius:8px;padding:8px 14px;font-size: 15px;font-weight:700;cursor:pointer">💼 我的部位決策</button>
     </div>
-    <!-- 15b. ???其? ?撠”???誨 prompt / ?湔頝唾?) -->
+    <!-- 15b. 我的部位 頁內小表單(取代 prompt / 直接跳轉) -->
     <div id="portForm" style="display:none;margin-top:12px;background:var(--card2);border:1px solid var(--yellow);border-radius:10px;padding:12px">
-      <div style="font-size:15px;font-weight:700;margin-bottom:8px">? 頛詨雿??其?嚗???/ ??賂?嚗葆?乓??雿捱蝑?/div>
+      <div style="font-size: 15px;font-weight:700;margin-bottom:8px">💼 輸入你的部位（均價 / 持股數），帶入「我的部位決策」</div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-        <label style="font-size:14px;color:var(--muted)">???/label>
-        <input id="portShares" type="number" min="1" inputmode="numeric" placeholder="100" style="width:90px;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:7px 10px;font-size:16px">
-        <label style="font-size:14px;color:var(--muted)">?</label>
-        <input id="portCost" type="number" min="0" step="0.01" inputmode="decimal" placeholder="750" style="width:90px;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:7px 10px;font-size:16px">
-        <button id="portGo" onclick="openPortfolio()" style="background:var(--yellow);color:#0f1419;border:none;border-radius:8px;padding:7px 16px;font-size:15px;font-weight:700;cursor:pointer">撣嗅閰摯 ??/button>
+        <label style="font-size: 14px;color:var(--muted)">持股數</label>
+        <input id="portShares" type="number" min="1" inputmode="numeric" placeholder="100" style="width:90px;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:7px 10px;font-size: 16px">
+        <label style="font-size: 14px;color:var(--muted)">均價</label>
+        <input id="portCost" type="number" min="0" step="0.01" inputmode="decimal" placeholder="750" style="width:90px;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:7px 10px;font-size: 16px">
+        <button id="portGo" onclick="openPortfolio()" style="background:var(--yellow);color:#0f1419;border:none;border-radius:8px;padding:7px 16px;font-size: 15px;font-weight:700;cursor:pointer">帶入評估 →</button>
       </div>
     </div>
   </div>
 
-  <!-- ?芷?∪? -->
+  <!-- 自選股列 -->
   <div id="watchlist" style="display:none;margin:10px 0">
-    <div style="font-size:14px;color:var(--muted);margin-bottom:6px">潃??芷?∴?暺?銝??嚗? 蝘駁嚗?/div>
+    <div style="font-size: 14px;color:var(--muted);margin-bottom:6px">⭐ 自選股（點一下即分析，✕ 移除）</div>
     <div id="watchBtns" style="display:flex;gap:6px;flex-wrap:wrap"></div>
   </div>
-  <!-- ?芷?∠蜇閬質” -->
+  <!-- 自選股總覽表 -->
   <div id="watchOverview" style="display:none;margin:10px 0">
     <div class="card" style="margin:0">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-        <h3 style="margin:0">潃??芷?∠蜇閬踝?餈?20 ?亥”?橘?</h3>
-        <button id="watchOvRefresh" onclick="refreshWatchOverview()" style="background:none;border:1px solid var(--accent);color:var(--accent);border-radius:6px;padding:4px 10px;font-size:14px;cursor:pointer">???湔?芷?∠蜇閬?/button>
+        <h3 style="margin:0">⭐ 自選股總覽（近 20 日表現）</h3>
+        <button id="watchOvRefresh" onclick="refreshWatchOverview()" style="background:none;border:1px solid var(--accent);color:var(--accent);border-radius:6px;padding:4px 10px;font-size: 14px;cursor:pointer">⟳ 更新自選股總覽</button>
       </div>
-      <div id="watchOvTable" style="overflow-x:auto;color:var(--muted);font-size:14px">撠?湔 ??隢??喃?? ?湔?芷?∠蜇閬賬??? 20 ?亙?研?/div>
+      <div id="watchOvTable" style="overflow-x:auto;color:var(--muted);font-size: 14px">尚未更新 — 請點右上「⟳ 更新自選股總覽」抓取近 20 日報酬。</div>
     </div>
   </div>
 
-  <div id="loading"><div class="spin"></div><span id="loadingMsg">甇???銵?????隢???/span></div>
+  <div id="loading"><div class="spin"></div><span id="loadingMsg">正在抓取行情與分析，請稍候…</span></div>
   <div id="demoBanner" class="card" style="display:none;border:1px solid var(--yellow);background:rgba(245,158,11,.08)">
-    <b style="color:var(--yellow)">??蝷箇?鞈?</b> ???祕銵??急????堆?Yahoo 頝典???嚗?隞乩??箏撱箇內蝭?K 蝺???蝷箔??Ｚ???瘚???敺?閰佗???餉??python server.py嚗??祕鞈???  </div>
+    <b style="color:var(--yellow)">⚠ 示範資料</b> — 真實行情暫時抓不到（Yahoo 跨域受限），以下為內建示範 K 線，僅展示介面與分析流程。稍後重試，或用電腦版（python server.py）取真實資料。
+  </div>
   <div id="err" class="card"></div>
   <div id="results" style="display:none">
 
-    <!-- 蝬?閰??∴?鈭蝯? + ??敦 + ??/?征? + ?嗥??RSI/MACD + 甇Ｘ?甇Ｙ?嚗?->
+    <!-- 綜合評論卡（五方結論 + 分數明細 + 看多/看空理由 + 收盤價/RSI/MACD + 止損止盈）-->
     <div class="card final" id="finalCard">
       <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
-        <h2 style="margin:0">? 蝬?閰?嚗?憭抵?銝?鞎瑁都嚗?/h2>
-        <button id="modeToggle" onclick="toggleMode()" style="background:var(--card2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:5px 10px;font-size:14px;cursor:pointer;white-space:nowrap">?? 撠平璅∪?</button>
+        <h2 style="margin:0">🎯 綜合評論（今天要不要買賣）</h2>
+        <button id="modeToggle" onclick="toggleMode()" style="background:var(--card2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:5px 10px;font-size: 14px;cursor:pointer;white-space:nowrap">⚙️ 專業模式</button>
       </div>
-      <!-- 銵??璈急?嚗??嗚??扎敺?鞈??交?嚗??內 -->
+      <!-- 行情醒目橫條：前收、開盤、盤後＋資料日期＋未開盤提示 -->
       <div id="todayTicker" style="display:none;margin-top:10px;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:10px 12px">
         <div style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap">
           <div>
-            <div style="font-size:13px;color:var(--muted)">?</div>
-            <div id="tkPrevClose" style="font-size:20px;font-weight:800;line-height:1.1;color:var(--text)">??/div>
+            <div style="font-size: 13px;color:var(--muted)">前收</div>
+            <div id="tkPrevClose" style="font-size:20px;font-weight:800;line-height:1.1;color:var(--text)">—</div>
           </div>
           <div>
-            <div style="font-size:13px;color:var(--muted)">?</div>
-            <div id="tkOpen" style="font-size:20px;font-weight:800;line-height:1.1;color:var(--text)">??/div>
+            <div style="font-size: 13px;color:var(--muted)">開盤</div>
+            <div id="tkOpen" style="font-size:20px;font-weight:800;line-height:1.1;color:var(--text)">—</div>
           </div>
           <div>
-            <div style="font-size:13px;color:var(--muted)">?曉</div>
-            <div id="tkNow" style="font-size:20px;font-weight:800;line-height:1.1;color:var(--text)">??/div>
+            <div style="font-size: 13px;color:var(--muted)">現價</div>
+            <div id="tkNow" style="font-size:20px;font-weight:800;line-height:1.1;color:var(--text)">—</div>
           </div>
           <div>
-            <div style="font-size:13px;color:var(--muted)">?嗥</div>
-            <div id="tkPost" style="font-size:24px;font-weight:800;line-height:1.05;color:var(--text)">??/div>
+            <div style="font-size: 13px;color:var(--muted)">收盤</div>
+            <div id="tkPost" style="font-size:24px;font-weight:800;line-height:1.05;color:var(--text)">—</div>
           </div>
           <div>
-            <div style="font-size:13px;color:var(--muted)">隞瞍脰?</div>
-            <div id="tkChg" style="font-size:18px;font-weight:800;line-height:1.1">??/div>
-            <div id="tkChgAmt" style="font-size:14px;font-weight:600;line-height:1.1;margin-top:2px;color:var(--muted)">??/div>
+            <div style="font-size: 13px;color:var(--muted)">今日漲跌</div>
+            <div id="tkChg" style="font-size:18px;font-weight:800;line-height:1.1">—</div>
+            <div id="tkChgAmt" style="font-size: 14px;font-weight:600;line-height:1.1;margin-top:2px;color:var(--muted)">—</div>
           </div>
-          <div id="tkDir" style="font-size:14px;font-weight:700;padding:2px 8px;border-radius:8px;display:none"></div>
+          <div id="tkDir" style="font-size: 14px;font-weight:700;padding:2px 8px;border-radius:8px;display:none"></div>
         </div>
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:6px">
-          <div id="tkDate" style="font-size:13px;font-weight:700;color:var(--muted)">??/div>
-          <div id="tkStatusTag" style="font-size:13px;font-weight:700;padding:2px 8px;border-radius:6px;display:none"></div>
+          <div id="tkDate" style="font-size: 13px;font-weight:700;color:var(--muted)">—</div>
+          <div id="tkStatusTag" style="font-size: 13px;font-weight:700;padding:2px 8px;border-radius:6px;display:none"></div>
         </div>
-        <div id="tkNote" style="font-size:13px;color:var(--muted);margin-top:6px"></div>
+        <div id="tkNote" style="font-size: 13px;color:var(--muted);margin-top:6px"></div>
       </div>
-      <div class="final-text" id="finalText">??/div>
-      <!-- ??隞予?獐??銝??摰??質店銵??∴?蝬?蝯?嚗蝺?銝剜?嚗◢?迎? -->
+      <div class="final-text" id="finalText">—</div>
+      <!-- ⚡ 今天怎麼做：一頁看完的白話行動卡（綜合結論＋短線＋中期＋風險） -->
       <div id="todayActionCard" style="display:none;margin-top:10px;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:10px 12px">
-        <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:6px">??隞予?獐??銝??摰?</div>
-        <div id="todayActionBody" style="font-size:14px;line-height:1.7;color:var(--text)"></div>
+        <div style="font-size: 15px;font-weight:700;color:var(--text);margin-bottom:6px">⚡ 今天怎麼做（一頁看完）</div>
+        <div id="todayActionBody" style="font-size: 14px;line-height:1.7;color:var(--text)"></div>
       </div>
-      <!-- 撠蝯?嚗 vs ????vs 憭抒 ??40/60 ?亙???銵陛蝯?嚗?-->
-      <div id="peerVerdict" style="display:none;margin-top:8px;font-size:14px;line-height:1.6;color:var(--muted);background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:8px 10px"></div>
+      <!-- 對照結論（個股 vs 同類股 vs 大盤 的 40/60 日勝率一行簡結論） -->
+      <div id="peerVerdict" style="display:none;margin-top:8px;font-size: 14px;line-height:1.6;color:var(--muted);background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:8px 10px"></div>
 
-      <!-- ??蝯?? -->
+      <!-- ① 結論區 -->
       <div style="margin-top:10px">
-        <div class="sec-title">蝯??????剔? vs 銝剜? ????</div>
-        <!-- ?剔?獢??? -->
+        <div class="sec-title">結論與行動（短線 vs 中期 分開看）</div>
+        <!-- 短線框(藍) -->
         <div style="margin-top:4px;padding:8px 10px;background:var(--card2);border:1px solid var(--border);border-left:4px solid var(--accent);border-radius:8px">
-          <div style="font-size:14px;font-weight:700;color:var(--accent);margin-bottom:4px">?? ?剔?嚗? ?伐?銵?</div>
-          <div id="finalAction" style="display:none;font-size:15px;line-height:1.6;color:var(--text)"></div>
-          <div style="margin-top:6px;font-size:13px;color:var(--muted)"><span id="sessionTag" style="display:none;background:var(--card2);border:1px solid var(--border);padding:2px 6px;border-radius:4px"></span> <span id="dataFreshness" style="display:none;margin-left:4px;background:var(--card2);border:1px solid var(--border);padding:2px 6px;border-radius:4px"></span></div>
+          <div style="font-size: 14px;font-weight:700;color:var(--accent);margin-bottom:4px">📉 短線（5 日）行動</div>
+          <div id="finalAction" style="display:none;font-size: 15px;line-height:1.6;color:var(--text)"></div>
+          <div style="margin-top:6px;font-size: 13px;color:var(--muted)"><span id="sessionTag" style="display:none;background:var(--card2);border:1px solid var(--border);padding:2px 6px;border-radius:4px"></span> <span id="dataFreshness" style="display:none;margin-left:4px;background:var(--card2);border:1px solid var(--border);padding:2px 6px;border-radius:4px"></span></div>
         </div>
-        <!-- 銝剜?獢?璈?,?蝺?憿臬???-->
+        <!-- 中期框(橘),與短線明顯區隔 -->
         <div style="margin-top:8px;padding:8px 10px;background:var(--card2);border:1px solid var(--border);border-left:4px solid var(--yellow);border-radius:8px">
-          <div style="font-size:14px;font-weight:700;color:var(--yellow);margin-bottom:4px">?? 銝剜?嚗??? ??嚗???/div>
-          <div id="midAction" style="display:none;font-size:15px;line-height:1.6;color:var(--text);margin-bottom:6px"></div>
-          <div id="midFiveWay" style="display:none;font-size:14px;line-height:1.6;color:var(--text);margin-bottom:4px"></div>
-          <div id="midAlert" style="display:none;font-size:14px;line-height:1.6;margin-top:4px;padding:6px 8px;border-radius:6px"></div>
+          <div style="font-size: 14px;font-weight:700;color:var(--yellow);margin-bottom:4px">📈 中期（2–3 個月）行動</div>
+          <div id="midAction" style="display:none;font-size: 15px;line-height:1.6;color:var(--text);margin-bottom:6px"></div>
+          <div id="midFiveWay" style="display:none;font-size: 14px;line-height:1.6;color:var(--text);margin-bottom:4px"></div>
+          <div id="midAlert" style="display:none;font-size: 14px;line-height:1.6;margin-top:4px;padding:6px 8px;border-radius:6px"></div>
         </div>
-        <!-- 鈭??質店銝?亥店 -->
-        <div id="plainRead" style="font-size:15px;color:var(--text);line-height:1.55;margin:8px 0 0;padding:8px 10px;background:var(--card2);border:1px solid var(--border);border-radius:8px;display:none"></div>
+        <!-- 五方分數白話一句話 -->
+        <div id="plainRead" style="font-size: 15px;color:var(--text);line-height:1.55;margin:8px 0 0;padding:8px 10px;background:var(--card2);border:1px solid var(--border);border-radius:8px;display:none"></div>
       </div>
 
-      <!-- ?? ?剔? 5 ?交捱蝑???頝都??瑽?銝??其???剔??脣蝝敺?7 ?潘? -->
+      <!-- 📐 短線 5 日決策矩陣（跟賣頁同構，不需部位、畫短線進出紀律 7 格） -->
       <div style="margin-top:10px">
-        <div class="sec-title">?? ?剔? 5 ?交捱蝑????脣蝝敺?</div>
+        <div class="sec-title">📐 短線 5 日決策矩陣（進出紀律）</div>
         <div id="shortMatrix" style="display:none;margin-top:4px"></div>
       </div>
 
       <hr class="sec-divider">
 
-      <!-- ??憸券蝞∠?嚗迫??甇Ｙ?嚗?-->
+      <!-- ② 風險管理（止損/止盈） -->
       <div id="riskSec" style="display:none">
-        <div class="sec-title">憸券蝞∠?</div>
-        <!-- 甇Ｘ? / 甇Ｙ?? -->
-        <div id="slTp" style="margin:0 0 8px;padding:8px 10px;background:var(--card2);border:1px solid var(--border);border-radius:8px;font-size:15px;color:var(--muted);line-height:1.6">
-          <div style="font-weight:700;color:var(--text);font-size:14px;margin-bottom:4px">?? 甇Ｘ? / 甇Ｙ???靘?ATR 瘜Ｗ?隡啁?嚗?靘???</div>
+        <div class="sec-title">風險管理</div>
+        <!-- 止損 / 止盈參考價 -->
+        <div id="slTp" style="margin:0 0 8px;padding:8px 10px;background:var(--card2);border:1px solid var(--border);border-radius:8px;font-size: 15px;color:var(--muted);line-height:1.6">
+          <div style="font-weight:700;color:var(--text);font-size: 14px;margin-bottom:4px">📌 止損 / 止盈參考（依 ATR 波動估算，僅供參考）</div>
           <div id="slTpContent"></div>
         </div>
       </div>
 
       <hr class="sec-divider">
 
-      <!-- ???? -->
+      <!-- ③ 理由區 -->
       <div id="reasonSec" style="display:none">
-        <div class="sec-title">?? / ?征?</div>
-        <!-- ?? / ?征?嚗?憸函嚗?閮?3 璇撅?嚗?-->
+        <div class="sec-title">看多 / 看空理由</div>
+        <!-- 看多 / 看空理由（手風琴，預設 3 條可展開） -->
         <div id="bullBox" style="margin-bottom:8px">
           <div style="display:flex;align-items:center;justify-content:space-between">
-            <span style="font-size:15px;font-weight:700;color:var(--bull)">?????嚗?span id="bullCount">0</span>嚗?/span>
-            <span id="bullToggle" onclick="toggleAccordion('bull')" style="font-size:14px;color:var(--accent);cursor:pointer;user-select:none">撅??券 ??/span>
+            <span style="font-size: 15px;font-weight:700;color:var(--bull)">✅ 看多理由（<span id="bullCount">0</span>）</span>
+            <span id="bullToggle" onclick="toggleAccordion('bull')" style="font-size: 14px;color:var(--accent);cursor:pointer;user-select:none">展開全部 ▾</span>
           </div>
-          <ul id="bullReasons" style="margin:4px 0 0;padding-left:18px;font-size:15px;line-height:1.7;color:var(--text)"></ul>
+          <ul id="bullReasons" style="margin:4px 0 0;padding-left:18px;font-size: 15px;line-height:1.7;color:var(--text)"></ul>
         </div>
         <div id="bearBox" style="margin-bottom:0">
           <div style="display:flex;align-items:center;justify-content:space-between">
-            <span style="font-size:15px;font-weight:700;color:var(--bear)">?? ?征?嚗?span id="bearCount">0</span>嚗?/span>
-            <span id="bearToggle" onclick="toggleAccordion('bear')" style="font-size:14px;color:var(--accent);cursor:pointer;user-select:none">撅??券 ??/span>
+            <span style="font-size: 15px;font-weight:700;color:var(--bear)">⚠️ 看空理由（<span id="bearCount">0</span>）</span>
+            <span id="bearToggle" onclick="toggleAccordion('bear')" style="font-size: 14px;color:var(--accent);cursor:pointer;user-select:none">展開全部 ▾</span>
           </div>
-          <ul id="bearReasons" style="margin:4px 0 0;padding-left:18px;font-size:15px;line-height:1.7;color:var(--text)"></ul>
+          <ul id="bearReasons" style="margin:4px 0 0;padding-left:18px;font-size: 15px;line-height:1.7;color:var(--text)"></ul>
         </div>
       </div>
 
       <hr class="sec-divider">
 
-      <!-- ?????閫?-->
+      <!-- ④ 分數與拆解 -->
       <div id="scoreSec">
-        <div class="sec-title">鈭???閫?/div>
-        <!-- ?銵??嚗?憭??征???+ 蝐Ⅳ/瘨 note嚗?->
-        <div id="adviceSummary" style="font-size:15px;color:var(--muted);line-height:1.6;margin-bottom:10px;display:none"></div>
-        <!-- 鈭??敦 -->
+        <div class="sec-title">五方分數與拆解</div>
+        <!-- 技術面摘要（看多/看空理由數 + 籌碼/消息 note）-->
+        <div id="adviceSummary" style="font-size: 15px;color:var(--muted);line-height:1.6;margin-bottom:10px;display:none"></div>
+        <!-- 五方分數明細 -->
         <div class="bd" id="finalBd" style="display:none"></div>
-        <!-- 蝬???圾嚗???銝???-->
+        <!-- 綜合分數拆解（關連到下方各面向）-->
         <div id="compBreak" style="display:none;margin-top:10px"></div>
       </div>
 
       <hr class="sec-divider">
 
-      <!-- ????敹怨汗 -->
+      <!-- ⑤ 指標快覽 -->
       <div id="statSec">
-        <div class="sec-title">???敹怨汗</div>
-        <!-- ???敹怨汗 -->
+        <div class="sec-title">關鍵指標快覽</div>
+        <!-- 關鍵指標快覽 -->
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:2px" id="statGrid">
-          <div class="stat-mini"><div class="sm-lbl">??唳??/div><div class="sm-val" id="statClose">??/div></div>
-          <div class="stat-mini"><div class="sm-lbl">???交?</div><div class="sm-val sm-sm" id="statDate">??/div></div>
-          <div class="stat-mini"><div class="sm-lbl" title="RSI ?詨?撘瑕摹??嚗?-100嚗?0 隞乩??嚗?賢?敶???0 隞乩??嚗?賢?瑼?">RSI ?瑞嚗?0??70?梧?</div><div class="sm-val" id="statRsi">??/div></div>
-          <div class="stat-mini"><div class="sm-lbl" title="MACD ?撟單?蝘餃?撟喳?蝺????寞??孵?嚗迤?澆?憭??澆?蝛?>MACD ?嚗迤憭?鞎征嚗?/div><div class="sm-val" id="statMacd">??/div></div>
-          <div class="stat-mini"><div class="sm-lbl" title="ATR ?祕瘜Ｗ??潘?銵⊿??∪瘥予撟喳?瘜Ｗ?憭之嚗郭??憭找誨銵券◢?芾?擃?>?亙像???ATR</div><div class="sm-val sm-sm" id="statAtr">??/div></div>
-          <div class="stat-mini"><div class="sm-lbl" title="餈?5 ?漱??撞頝?">5?亙??/div><div class="sm-val sm-sm" id="statRet5">??/div></div>
-          <div class="stat-mini"><div class="sm-lbl" title="餈?20 ?漱??撞頝?">20?亙??/div><div class="sm-val sm-sm" id="statRet20">??/div></div>
-          <div class="stat-mini"><div class="sm-lbl" title="?嗆?漱??vs 20 ?亙像??鈭日?嚗?1 ?舀??1 ?舐葬??>??嚗s 20?亙像??</div><div class="sm-val sm-sm" id="statVol">??/div></div>
+          <div class="stat-mini"><div class="sm-lbl">最新收盤</div><div class="sm-val" id="statClose">—</div></div>
+          <div class="stat-mini"><div class="sm-lbl">分析日期</div><div class="sm-val sm-sm" id="statDate">—</div></div>
+          <div class="stat-mini"><div class="sm-lbl" title="RSI 相對強弱指標：0-100，30 以下偏冷（可能反彈）、70 以上偏熱（可能回檔）">RSI 冷熱（30冷/70熱）</div><div class="sm-val" id="statRsi">—</div></div>
+          <div class="stat-mini"><div class="sm-lbl" title="MACD 指數平滑移動平均線：反映價格動能方向，正值偏多、負值偏空">MACD 動能（正多/負空）</div><div class="sm-val" id="statMacd">—</div></div>
+          <div class="stat-mini"><div class="sm-lbl" title="ATR 真實波幅均值：衡量股價每天平均波動多大，波動越大代表風險越高">日平均擺動 ATR</div><div class="sm-val sm-sm" id="statAtr">—</div></div>
+          <div class="stat-mini"><div class="sm-lbl" title="近 5 個交易日的漲跌幅">5日報酬</div><div class="sm-val sm-sm" id="statRet5">—</div></div>
+          <div class="stat-mini"><div class="sm-lbl" title="近 20 個交易日的漲跌幅">20日報酬</div><div class="sm-val sm-sm" id="statRet20">—</div></div>
+          <div class="stat-mini"><div class="sm-lbl" title="當日成交量 vs 20 日平均成交量：>1 是放量、<1 是縮量">量比（vs 20日平均）</div><div class="sm-val sm-sm" id="statVol">—</div></div>
         </div>
       </div>
 
       <hr class="sec-divider">
 
-      <!-- ??閮??臭縑摨佗?甇瑕 5 ?亙???-->
+      <!-- ⑥ 訊號可信度（歷史 5 日勝率）-->
       <div id="histSec" style="display:none">
-        <div class="sec-title">閮??臭縑摨佗?甇瑕 5 ?亙???</div>
-        <!-- 甇瑕 5 ?亙????質店嚗?雿輻????靽∪漲嚗?->
-        <div id="hist5" style="margin:0;padding:8px 10px;font-size:14px;line-height:1.6;color:var(--muted);background:var(--card2);border:1px solid var(--border);border-radius:8px"></div>
+        <div class="sec-title">訊號可信度（歷史 5 日勝率）</div>
+        <!-- 歷史 5 日勝率（白話，讓使用者知道訊號可信度）-->
+        <div id="hist5" style="margin:0;padding:8px 10px;font-size: 14px;line-height:1.6;color:var(--muted);background:var(--card2);border:1px solid var(--border);border-radius:8px"></div>
       </div>
-      <!-- 銵?撠冪?賂??嗆?嚗策銝?砌蝙?刻??質店閫??嚗?->
+      <!-- 術語小辭典（收折，給一般使用者看白話解釋）-->
       <div class="card" id="glossary" style="margin-top:14px;border:1px solid var(--border);border-radius:8px;display:none">
-        <h3 style="cursor:pointer;user-select:none;font-size:15px;margin:0;padding:10px 12px" onclick="togglePanel('glossary')"><span>?? ?????望?銵?嚗餈??閰梯圾??/span> <span class="pArrow" style="float:right;color:var(--muted)">??/span></h3>
-        <div class="pBody" id="glossaryBody" style="display:none;padding:0 12px 12px;font-size:14px;line-height:1.7;color:var(--muted)">
+        <h3 style="cursor:pointer;user-select:none;font-size: 15px;margin:0;padding:10px 12px" onclick="togglePanel('glossary')"><span>📖 看不懂的英文術語？点这里看白話解釋</span> <span class="pArrow" style="float:right;color:var(--muted)">▸</span></h3>
+        <div class="pBody" id="glossaryBody" style="display:none;padding:0 12px 12px;font-size: 14px;line-height:1.7;color:var(--muted)">
           <dl style="margin:0">
-            <dt style="color:var(--text);font-weight:700;margin-top:8px">RSI嚗撠撥撘望?璅?</dt><dd style="margin-left:0">銵⊿??∪??蝛箏???0~100????30 ?嚗?憭芸??航??嚗???70 ?嚗撞憭芸??航??嚗?/dd>
-            <dt style="color:var(--text);font-weight:700">MACD嚗??詨像皛宏?像??嚗?/dt><dd style="margin-left:0">???寞???賣??潭迤??憭???蝛綽?MACD 蝺蕃銝???嚗???頧撥嚗蕃銝?甇餃?嚗?撘梧???/dd>
-            <dt style="color:var(--text);font-weight:700">KDJ嚗?梢??芣?璅?</dt><dd style="margin-left:0">?剔?敹怨?? ??&lt;0 璆萄?航????gt;100 璆萇?航?矽嚗 蝧颱? D嚗??蕃銝?甇餃???/dd>
-            <dt style="color:var(--text);font-weight:700">撣??? BOLL</dt><dd style="margin-left:0">??銝??拇???嚗?0?亙??嗽???皞榆嚗?潛１銝?嚗?頞都?１銝?嚗?頞眺嚗葉頠停??0?亙??嫘?/dd>
-            <dt style="color:var(--text);font-weight:700">BIAS嚗??Ｙ?嚗?/dt><dd style="margin-left:0">?∪?Ｗ?蝺?憭??迤憭芸之嚗?頞眺嚗?賢?隤選???憭芸之嚗?頞都嚗?賢?敶???/dd>
-            <dt style="color:var(--text);font-weight:700">ATR嚗?撖行郭撟??潘?</dt><dd style="margin-left:0">?∪??憭拙像?郭??憭扼郭??憭折◢?芾?擃?甇Ｘ?/甇Ｙ?撠望?典?靘?嚗?手?1.5?ATR嚗迫????/dd>
-            <dt style="color:var(--text);font-weight:700">OBV嚗?鈭日??賡?嚗?/dt><dd style="margin-left:0">?冽?鈭日?蝝舐???脣?氬BV 銝?嚗蜓??脯???銝餃??券??/dd>
-            <dt style="color:var(--text);font-weight:700">?? VROC</dt><dd style="margin-left:0">?嗆?漱??繩 ??0?亙???gt;1 ?舀??憭征瘣餉?嚗?lt;1 ?舐葬??閫????/dd>
-            <dt style="color:var(--text);font-weight:700">?? SMA</dt><dd style="margin-left:0">? N ?交?文撟喳????伐??剔???0?伐?銝剔???0?伐??瑞??蝺蕃銝蝺?憭??嚗?撘瘀???/dd>
-            <dt style="color:var(--text);font-weight:700">憭? / 瘜犖</dt><dd style="margin-left:0">??鞈?憓?璈?鞈???憭扳?鈭箝?憭?嚗?靽∴??芰????瘛刻眺嚗?憭楊鞈???征??/dd>
-            <dt style="color:var(--text);font-weight:700">?? / TAIEX</dt><dd style="margin-left:0">???嚗誨銵典??擃撣?憭抒?瞍脖?憭抒頝??詨?撘瑕漲撘瘀???撘晞?/dd>
+            <dt style="color:var(--text);font-weight:700;margin-top:8px">RSI（相對強弱指標）</dt><dd style="margin-left:0">衡量股價「多空力道」，0~100。低於 30 偏冷（跌太多可能反彈）、高於 70 偏熱（漲太多可能回檔）。</dd>
+            <dt style="color:var(--text);font-weight:700">MACD（指數平滑移動平均線）</dt><dd style="margin-left:0">反映價格「動能方向」。數值正→偏多、負→偏空；MACD 線翻上訊號線＝金叉（轉強）、翻下＝死叉（轉弱）。</dd>
+            <dt style="color:var(--text);font-weight:700">KDJ（冷熱震盪指標）</dt><dd style="margin-left:0">短線快訊號。J 值 &lt;0 極冷可能反彈、&gt;100 極熱可能回調；K 翻上 D＝金叉、翻下＝死叉。</dd>
+            <dt style="color:var(--text);font-weight:700">布林通道 BOLL</dt><dd style="margin-left:0">均線上下兩條通道（20日均價±2倍標準差）。價格碰下軌＝偏超賣、碰上軌＝偏超買，中軌就是20日均價。</dd>
+            <dt style="color:var(--text);font-weight:700">BIAS（乖離率）</dt><dd style="margin-left:0">股價離均線有多遠。正太大＝偏超買（可能回調）、負太大＝偏超賣（可能反彈）。</dd>
+            <dt style="color:var(--text);font-weight:700">ATR（真實波幅均值）</dt><dd style="margin-left:0">股價「每天平均波動多大」。波動越大風險越高；止損/止盈就是用它來算（收盤−1.5×ATR＝止損）。</dd>
+            <dt style="color:var(--text);font-weight:700">OBV（成交量能量）</dt><dd style="margin-left:0">用成交量累積看「錢進出場」。OBV 上升＝主力在進、下降＝主力在退。</dd>
+            <dt style="color:var(--text);font-weight:700">量比 VROC</dt><dd style="margin-left:0">當日成交量 ÷ 前20日均量。&gt;1 是放量（多空活躍）、&lt;1 是縮量（觀望）。</dd>
+            <dt style="color:var(--text);font-weight:700">均線 SMA</dt><dd style="margin-left:0">過去 N 日收盤價平均。5日＝短線、20日＝中線、60日＝長線。短線翻上長線＝多頭排列（偏強）。</dd>
+            <dt style="color:var(--text);font-weight:700">外資 / 法人</dt><dd style="margin-left:0">「外資」＝境外機構資金、「三大法人」＝外資＋投信＋自營商。連續淨買＝偏多、淨賣＝偏空。</dd>
+            <dt style="color:var(--text);font-weight:700">加權 / TAIEX</dt><dd style="margin-left:0">加權指數＝代表台灣整體股市的大盤。個股漲但大盤跌＝相對強度強，反之弱。</dd>
           </dl>
         </div>
       </div>
@@ -427,28 +429,28 @@ html{zoom:var(--font-scale);}
 
     <div class="grid">
       <div class="card" id="secIntra">
-        <h3 style="cursor:pointer;user-select:none" onclick="togglePanel('secIntra')"><span>???單??日嚗憭抬?</span> <span class="pArrow" style="float:right;color:var(--muted)">??/span></h3>
+        <h3 style="cursor:pointer;user-select:none" onclick="togglePanel('secIntra')"><span>⏰ 即時盤面（當天）</span> <span class="pArrow" style="float:right;color:var(--muted)">▾</span></h3>
         <div class="pBody" id="secIntraBody">
         <div class="score-row">
-          <div class="score-box"><div class="lbl">?日?</div><div class="val" id="iScore">??/div></div>
+          <div class="score-box"><div class="lbl">盤面分數</div><div class="val" id="iScore">—</div></div>
           <div class="msg" id="iInfo" style="flex:1"></div>
         </div>
         </div>
       </div>
       <div class="card" id="secTaiex">
-        <h3 style="cursor:pointer;user-select:none" onclick="togglePanel('secTaiex')"><span>?? 憭抒?啣?嚗?甈?</span> <span class="pArrow" style="float:right;color:var(--muted)">??/span></h3>
+        <h3 style="cursor:pointer;user-select:none" onclick="togglePanel('secTaiex')"><span>🏛 大盤環境（加權）</span> <span class="pArrow" style="float:right;color:var(--muted)">▾</span></h3>
         <div class="pBody" id="secTaiexBody">
         <div class="score-row">
-          <div class="score-box"><div class="lbl">憭抒?</div><div class="val" id="tScore">??/div></div>
+          <div class="score-box"><div class="lbl">大盤分數</div><div class="val" id="tScore">—</div></div>
           <div class="msg" id="tInfo" style="flex:1"></div>
         </div>
         </div>
       </div>
       <div class="card" id="secFund">
-        <h3 style="cursor:pointer;user-select:none" onclick="togglePanel('secFund')"><span>? 蝐Ⅳ?ｇ?憭?嚗?憭扳?鈭綽?</span> <span class="pArrow" style="float:right;color:var(--muted)">??/span></h3>
+        <h3 style="cursor:pointer;user-select:none" onclick="togglePanel('secFund')"><span>💰 籌碼面（外資／三大法人）</span> <span class="pArrow" style="float:right;color:var(--muted)">▾</span></h3>
         <div class="pBody" id="secFundBody">
         <div class="score-row">
-          <div class="score-box"><div class="lbl">瘜犖?</div><div class="val" id="fScore">??/div></div>
+          <div class="score-box"><div class="lbl">法人分數</div><div class="val" id="fScore">—</div></div>
           <div class="msg" id="fInfo" style="flex:1"></div>
         </div>
         <div class="msg" id="fMulti" style="margin-top:10px"></div>
@@ -456,10 +458,10 @@ html{zoom:var(--font-scale);}
         </div>
       </div>
       <div class="card" id="secNews">
-        <h3 style="cursor:pointer;user-select:none" onclick="togglePanel('secNews')"><span>? 瘨?ｇ??啗???嚗?/span> <span class="pArrow" style="float:right;color:var(--muted)">??/span></h3>
+        <h3 style="cursor:pointer;user-select:none" onclick="togglePanel('secNews')"><span>📰 消息面（新聞情緒）</span> <span class="pArrow" style="float:right;color:var(--muted)">▾</span></h3>
         <div class="pBody" id="secNewsBody">
         <div class="score-row">
-          <div class="score-box"><div class="lbl">???</div><div class="val" id="nScore">??/div></div>
+          <div class="score-box"><div class="lbl">情緒分數</div><div class="val" id="nScore">—</div></div>
           <div class="msg" id="nInfo" style="flex:1"></div>
         </div>
         <div id="newsList" style="margin-top:10px;display:none"></div>
@@ -469,17 +471,17 @@ html{zoom:var(--font-scale);}
 
     <div class="two">
       <div class="card" id="secTech">
-        <h3 style="cursor:pointer;user-select:none" onclick="togglePanel('secTech')"><span>? ?銵閮?</span> <span class="pArrow" style="float:right;color:var(--muted)">??/span></h3>
+        <h3 style="cursor:pointer;user-select:none" onclick="togglePanel('secTech')"><span>🎯 技術面訊號</span> <span class="pArrow" style="float:right;color:var(--muted)">▾</span></h3>
         <div class="pBody" id="secTechBody"><div id="sigList"></div></div>
       </div>
       <div class="card" id="secEvents">
-        <h3 style="cursor:pointer;user-select:none" onclick="togglePanel('secEvents')"><span>?? 餈?鞎瑁都??嚗??嚗?/span> <span class="pArrow" style="float:right;color:var(--muted)">??/span></h3>
+        <h3 style="cursor:pointer;user-select:none" onclick="togglePanel('secEvents')"><span>📍 近期買賣時機（新→舊）</span> <span class="pArrow" style="float:right;color:var(--muted)">▾</span></h3>
         <div class="pBody" id="secEventsBody"><div id="evList" class="msg"></div></div>
       </div>
     </div>
 
     <div class="card" id="secCharts">
-      <h3 style="cursor:pointer;user-select:none" onclick="togglePanel('secCharts')"><span>?? K 蝺??”</span> <span class="pArrow" style="float:right;color:var(--muted)">??/span></h3>
+      <h3 style="cursor:pointer;user-select:none" onclick="togglePanel('secCharts')"><span>📊 K 線與圖表</span> <span class="pArrow" style="float:right;color:var(--muted)">▾</span></h3>
       <div class="pBody" id="secChartsBody">
       <canvas id="chart" height="300"></canvas>
       <canvas id="macdChart" height="120" style="margin-top:8px"></canvas>
@@ -488,7 +490,7 @@ html{zoom:var(--font-scale);}
     </div>
 
     <div class="card" id="secVol">
-      <h3 style="cursor:pointer;user-select:none" onclick="togglePanel('secVol')"><span>?? ?? vs 60 ?伐????</span> <span class="pArrow" style="float:right;color:var(--muted)">??/span></h3>
+      <h3 style="cursor:pointer;user-select:none" onclick="togglePanel('secVol')"><span>📊 量比 vs 60 日（量能配速）</span> <span class="pArrow" style="float:right;color:var(--muted)">▾</span></h3>
       <div class="pBody" id="secVolBody">
       <canvas id="volChart" height="160"></canvas>
       <div class="msg" id="volInfo" style="margin-top:8px"></div>
@@ -498,26 +500,33 @@ html{zoom:var(--font-scale);}
   </div>
 
   <div class="disclaimer">
-    ?? ?砍極?瑟?????摮貊??弦嚗?b>銝???鞈遣霅?/b>?撣?憸券嚗??桀?隢銵?隡啣?祇?◢?芣???  </div>
+    ⚠️ 本工具整理公開資料供學習研究，<b>不構成投資建議</b>。股市有風險，下單前請自行評估基本面與風險承受能力。
+  </div>
 </div>
 
 <script src="core.js?v=20261031d"></script>
 <script src="render.js?v=20261031d"></script>
 <script>
-// ?? ?典?垢暺???仕 ????? ??????????????????????
-// ?啗嚗ahoo chart API?汗?刻楊???Yahoo ?◤ CORS ??
-// ?寡粥 Jina Reader嚗.jina.ai嚗???航楊??隞????撖西???
-// ?湔? / Jina 隞颱????喟?祕鞈?嚗憭望????蝷箇?鞈???const STOCK_URLS = [
+// ── 用公開端點抓個股日K 與 加權指數 ──────────────────────
+// 台股：Yahoo chart API。瀏覽器跨域直抓 Yahoo 會被 CORS 擋，
+// 改走 Jina Reader（r.jina.ai，免金鑰可跨域）代理取真實資料；
+// 直抓 / Jina 任一成功即用真實資料，都失敗才回退示範資料。
+const STOCK_URLS = [
   "https://query2.finance.yahoo.com/v8/finance/chart/",
   "https://query1.finance.yahoo.com/v8/finance/chart/",
 ];
-const JINA = "https://r.jina.ai/";   // ???啗楊???垢暺?// 銵?銝剔匱嚗loudflare Worker嚗ORS 撌脤??汗?其?? CORS 蝝?嚗?// ?函蔡 deploy/cf-worker/relay.js 敺‵????URL嚗?蝛箏?頝喲?甇文惜?elay 蝯曹???core.js ??SELF_RELY_URL 摰儔,
-// ?霈 global.SELF_RELY_URL(??URL ?芣 core.js 銝??,fallback ?箇′蝺典潦?const QUOTE_RELAY = (typeof global !== "undefined" && global.SELF_RELY_URL) || "https://tw-news-relay.etonylin.workers.dev";
-// ? relay:?頛?喟銝蝑???瘙?霈?Cloudflare Worker 靽??晞?洵銝甈∟?隡啜??瑕??????內????(function warmRelay(){ if (QUOTE_RELAY && location.protocol === "https:") fetch(QUOTE_RELAY + "?ticker=2330.TW&range=5d&interval=1d").catch(function(){}); })();
+const JINA = "https://r.jina.ai/";   // 免金鑰跨域讀取端點
+// 行情中繼：Cloudflare Worker（CORS 已開、瀏覽器不會噴 CORS 紅字）
+// 部署 deploy/cf-worker/relay.js 後填同一個 URL；留空則跳過此層。relay 統一由 core.js 的 SELF_RELY_URL 定義,
+// 頁面讀 global.SELF_RELY_URL(換 URL 只改 core.js 一處),fallback 為硬編值。
+const QUOTE_RELAY = (typeof global !== "undefined" && global.SELF_RELY_URL) || "https://tw-news-relay.etonylin.workers.dev";
+// 預熱 relay:頁面載入即發一筆輕量請求,讓 Cloudflare Worker 保持熱、避免「第一次評估」遇冷啟動拖慢/掉示意資料
+(function warmRelay(){ if (QUOTE_RELAY && location.protocol === "https:") fetch(QUOTE_RELAY + "?ticker=2330.TW&range=5d&interval=1d").catch(function(){}); })();
 function toYahoo(t){
   const c = t.toUpperCase().replace(/\.TW$/,'').replace(/\.TWO$/,'');
   if (c === "^TWII") return "^TWII";
-  // 銝??∴?3/4/5/6/8 摮嚗? 3105 蝛拇???979 ?舀???182 ???299 蝢方嚗ahoo ??.TWO嚗?  // 銝?/ETF嚗?/1/2 摮嚗? 2330 ?啁??颯?050 憭刨50嚗 .TW
+  // 上櫃股（3/4/5/6/8 字頭，如 3105 穩懋、4979 華星光、6182 合晶、8299 群聯）Yahoo 用 .TWO；
+  // 上市/ETF（0/1/2 字頭，如 2330 台積電、0050 大S50）用 .TW
   return /^[34568]\d{3}$/.test(c) ? c + '.TWO' : c + '.TW';
 }
 
@@ -527,7 +536,7 @@ async function fetchJsonOne(url){
   return await r.json();
 }
 
-// 撣園暹??葉?瑕:?暹???reject(霈?relayRetry 銝甇?
+// 帶逾時的中斷器:逾時時 reject(讓 relayRetry 不卡死)
 async function withTimeout(url, ms, label){
   const ctl = new AbortController();
   const timer = setTimeout(() => ctl.abort(), ms);
@@ -535,13 +544,13 @@ async function withTimeout(url, ms, label){
     const r = await fetch(url, { signal: ctl.signal });
     return r;
   } catch (e) {
-    throw new Error((label||"fetch") + " ?暹? (" + ms + "ms)");
+    throw new Error((label||"fetch") + " 逾時 (" + ms + "ms)");
   } finally {
     clearTimeout(timer);
   }
 }
 
-// 敺?Jina Reader ??Markdown ???賢?批惜 JSON
+// 從 Jina Reader 的 Markdown 包裝抽出內層 JSON
 function jinaParse(text){
   const idx = text.indexOf("Markdown Content:");
   let body = idx >= 0 ? text.slice(idx + "Markdown Content:".length) : text;
@@ -554,29 +563,32 @@ function jinaParse(text){
 async function fetchRows(code, period){
   const qs = "?range=" + period + "&interval=1d";
   const c = code.toUpperCase().replace(/\.TW$/,'').replace(/\.TWO$/,'');
-  // 憭抒:relay 撠?Yahoo 憭抒蝚西??亦鞈?,??^TWII 霈?撅?try/catch ?? null,
-  // 憭抒?∟?撖行??之?方??????閮??箔蜓??銝 0050 隞?????詨潦?  const isTaiex = code === "^TWII";
+  // 大盤:relay 對 Yahoo 大盤符號查無資料,回 ^TWII 讓上層 try/catch 降級 null,
+  // 大盤卡誠實標「大盤資料未取得、本頁個股訊號為主」,不用 0050 代理造假數值。
+  const isTaiex = code === "^TWII";
   const primary = isTaiex ? "^TWII" : toYahoo(c);
-  // ?誨??賣? .TW ??.TWO(憒?3037 甈????Yahoo ??.TW?? 3 摮撣貉◤??.TWO),
-  // ?拙?撠暸銝西??狐?? chart ?刻狐,?踹??桀?撠暹?∪停????頞喋?  const variants = isTaiex ? ["^TWII"] : Array.from(new Set([c + ".TW", c + ".TWO"]));
-  // GitHub Pages(https) 銝??Yahoo 銝摰◤ CORS ???賜? ??頝喲?;?砍(http) 靽?
+  // 同代號可能掛 .TW 或 .TWO(如 3037 欣興在 Yahoo 是 .TW、但 3 字頭常被判 .TWO),
+  // 兩字尾都並行打、誰先回 chart 用誰,避免單字尾查無就掉「資料不足」。
+  const variants = isTaiex ? ["^TWII"] : Array.from(new Set([c + ".TW", c + ".TWO"]));
+  // GitHub Pages(https) 下直抓 Yahoo 一定被 CORS 擋,白等 → 跳過;本地(http) 保留
   const isSecure = location.protocol === "https:";
 
-  // ??皞蒂銵?瘜?隤啣???chart 隤啗?),憭批???銝脣??
-  // ?暹?銝剜???暹? reject 霈?Promise.any 銝??Ｙ垢暺?隤啣??狐韐?  const relayOne = async (v) => {
+  // 各來源並行取法(誰先回 chart 誰贏),大幅降低串列拖慢
+  // 加逾時中斷器:逾時 reject 讓 Promise.any 不等慢端點,誰先回誰贏
+  const relayOne = async (v) => {
     if (!QUOTE_RELAY) throw new Error("no relay");
     const r = await withTimeout(QUOTE_RELAY + "?ticker=" + encodeURIComponent(v) + "&range=" + encodeURIComponent(period) + "&interval=1d", 12000, "relay");
     if (!r.ok) throw new Error("relay HTTP " + r.status);
     const j = await r.json();
     if (j && j.chart) return j;
-    throw new Error(j && j.error ? ("relay " + j.error) : "relay ??chart");
+    throw new Error(j && j.error ? ("relay " + j.error) : "relay 無 chart");
   };
   const jinaOne = async (v) => {
     const target = STOCK_URLS[0] + v + qs;
     const r = await fetch(JINA + target, { headers: { "Accept": "text/plain" } });
     if (!r.ok) throw new Error("jina HTTP " + r.status);
     const j = jinaParse(await r.text());
-    if (!j || !j.chart) throw new Error("jina ?∟圾??);
+    if (!j || !j.chart) throw new Error("jina 無解析");
     return j;
   };
   const allOrigins = async (v) => {
@@ -585,7 +597,7 @@ async function fetchRows(code, period){
     if (!r.ok) throw new Error("allorigins HTTP " + r.status);
     const j = await r.json();
     if (j && j.chart) return j;
-    throw new Error("allorigins ??chart");
+    throw new Error("allorigins 無 chart");
   };
   const yahooDirect = async (v) => {
     const r = await fetch(STOCK_URLS[0] + v + qs, { headers: { "Accept": "application/json" } });
@@ -593,7 +605,7 @@ async function fetchRows(code, period){
     return await r.json();
   };
 
-  // 銝西?隞餃?:relay(銝???+ jina + allorigins +(??https ??yahoo ?湔?)
+  // 並行任務:relay(主+備)+ jina + allorigins +(非 https 才 yahoo 直抓)
   const tasks = [];
   if (QUOTE_RELAY) {
     tasks.push(relayOne(variants[0]));
@@ -602,22 +614,23 @@ async function fetchRows(code, period){
   tasks.push(jinaOne(variants[0]), allOrigins(variants[0]));
   if (!isSecure) tasks.push(yahooDirect(variants[0]));
 
-  // ?orsproxy?????賜???GitHub Pages ??CORS??摨?jina/allorigins ??)
+  // 加「corsproxy」備援(能繞過 GitHub Pages 的 CORS、兜底 jina/allorigins 掛時)
   const corsProxyOne = async (v) => {
     const target = "https://query1.finance.yahoo.com/v8/finance/chart/" + v + qs;
     const r = await fetch("https://api.codetabs.com/v1/proxy/?url=" + encodeURIComponent(target), { headers: { "Accept": "application/json" } });
     if (!r.ok) throw new Error("corsproxy HTTP " + r.status);
     const j = await r.json();
     if (j && j.chart) return j;
-    throw new Error("corsproxy ??chart");
+    throw new Error("corsproxy 無 chart");
   };
-  if (!isSecure) tasks.push(corsProxyOne(variants[0])); // ?砍?舐;https 銝?corsproxy 銋?質◤??撘瑕?
-  // 隤啣???chart 隤啗?嚗romise.any ?拚嚗??踹? Promise.all 蝑??Ｙ垢暺??Ｘ擃?  // ?函垢暺?reject ??蝝?撠銝餉?擃?relay??閰虫?甈??瑕?????摰寥),?仃????throw
+  if (!isSecure) tasks.push(corsProxyOne(variants[0])); // 本地可用;https 下 corsproxy 也可能被擋、不強加
+  // 誰先回 chart 誰贏（Promise.any 早離），避免 Promise.all 等最慢端點拖慢整體
+  // 全端點 reject 才降級：對「個股主變體 relay」再試一次(冷啟動/抖動容錯),再失敗才真 throw
   try {
     const winner = await Promise.any(tasks);
     if (winner && winner.chart) return buildRows(winner, code);
   } catch (e) {
-    // Promise.any ??reject ?粥??靽???relayRetry ??
+    // Promise.any 全 reject 才走這，保留原 relayRetry 兜底
   }
   if (QUOTE_RELAY && !/^\.?TWII/.test(code)) {
     try {
@@ -625,12 +638,12 @@ async function fetchRows(code, period){
       if (rr.ok) { const j = await rr.json(); if (j && j.chart) return buildRows(j, code); }
     } catch (e) {}
   }
-  throw new Error("????" + code + " 銵?嚗??垢暺???chart嚗?);
+  throw new Error("取不到 " + code + " 行情（所有端點皆無 chart）");
 }
 
 function buildRows(j, code){
   const res = j.chart && j.chart.result && j.chart.result[0];
-  if(!res) throw new Error("?乩???" + code + " 銵?");
+  if(!res) throw new Error("查不到 " + code + " 行情");
   const ts = res.timestamp; const q = res.indicators.quote[0];
   const rows = [];
   for(let k=0;k<ts.length;k++){
@@ -639,8 +652,8 @@ function buildRows(j, code){
     rows.push({ date:d.toISOString().slice(0,10), open:q.open[k], high:q.high[k],
       low:q.low[k], close:q.close[k], volume:q.volume[k]||0 });
   }
-  if(!rows.length) throw new Error("?乩???" + code + " 銵?嚗鞈?嚗?);
-  // ??Yahoo meta嚗??嗚???衣敺???? rows 銝?靘帖璇????曉/?嚗?
+  if(!rows.length) throw new Error("查不到 " + code + " 行情（無資料）");
+  // 把 Yahoo meta（前收、即時價、是否盤後資料）附到 rows 上，供橫條「開盤/現價/前收＋日期」用
   const m = res.meta || {};
   rows.meta = {
     chartPreviousClose: m.chartPreviousClose != null ? m.chartPreviousClose : null,
@@ -650,7 +663,9 @@ function buildRows(j, code){
   return rows;
 }
 
-// 蝷箇?鞈? fallback嚗ahoo ?誨?鋡急?嚗??砍皜祈岫嚗?嚗?// ?Ｙ?銝畾萇?撖行??啁???K 蝺??湧?頝?銝行?蝣箸??內蝭???蝺粥?祕蝡舫???function demoRows(code, period){
+// 示範資料 fallback：Yahoo 與代理都被擋（如本地測試）時，
+// 產生一段真實感台積電 K 線把整頁跑通，並明確標「示範資料」。上線走真實端點。
+function demoRows(code, period){
   const days = { "1mo":22, "3mo":63, "6mo":126, "1y":252, "2y":504 }[period] || 63;
   let p = code === "2303" ? 120 : code === "0050" ? 100 : 2400;
   const rows = [];
@@ -684,15 +699,16 @@ function demoTaiexRows(){
   return rows;
 }
 
-// ?芸?撣嗅?∠巨?迂嚗??亙撱箄”嚗???Yahoo meta嚗ina 隞??嚗?async function fetchStockName(t){
+// 自動帶出股票名稱：先查內建表，再查 Yahoo meta（Jina 代理）
+async function fetchStockName(t){
   if (WNAMES[t]) return WNAMES[t];
-  // 銵典?隞??嚗?霈 localStorage ?怠?嚗?????甈∪停閮?嚗??典??梁雯頝荔?
+  // 表外代號：先讀 localStorage 暫存（之前抓過一次就記下，不用再花網路）
   try {
     const cached = JSON.parse(localStorage.getItem('tonyStockNames') || '{}');
     if (cached[t]) return cached[t];
   } catch(e){}
   let found = "";
-  // 1) relay ?name=隞??嚗orker ?湔? Yahoo meta ?葉??;???唳?韏唬?撅歹?
+  // 1) relay ?name=代號（worker 直抓 Yahoo meta 的中文名;抓不到才走下層）
   if (QUOTE_RELAY) {
     try {
       const r = await fetch(QUOTE_RELAY + "/?name=" + encodeURIComponent(t));
@@ -702,7 +718,8 @@ function demoTaiexRows(){
       }
     } catch(e){}
   }
-  // 2) Jina ??Yahoo meta嚗??嚗?  if (!found) {
+  // 2) Jina 抓 Yahoo meta（回退）
+  if (!found) {
     try {
       const target = "https://query2.finance.yahoo.com/v8/finance/chart/" + toYahoo(t) + "?range=1d&interval=1d";
       const r = await fetch("https://r.jina.ai/" + target, { headers: { "Accept": "text/plain" } });
@@ -719,18 +736,20 @@ function demoTaiexRows(){
       }
     } catch(e){}
   }
-  // 銵典?隞??嚗??唳?迂撠望摮 localStorage嚗?摰?Ｚ??朣?  if (found) {
+  // 表外代號：抓到新名稱就暫存到 localStorage，讓它慢慢自我補齊
+  if (found) {
     try {
       const cached = JSON.parse(localStorage.getItem('tonyStockNames') || '{}');
       cached[t] = found;
       localStorage.setItem('tonyStockNames', JSON.stringify(cached));
     } catch(e){}
   }
-  // 3) fallback嚗?誨?頨恬?霈?showResultTitle 憿舐內蝝誨??
+  // 3) fallback：只回代號本身（讓 showResultTitle 顯示純代號）
   return found || "";
 }
 
-// 憿舐內?誨???迂???芷?????function showResultTitle(t, nm){
+// 顯示「代號＋名稱」與自選按鈕狀態
+function showResultTitle(t, nm){
   const box = document.getElementById('resultTitle');
   if(!box) return;
   box.style.display = 'block';
@@ -742,7 +761,7 @@ function updateWatchBtn(t){
   if(!btn) return;
   const list = loadWatch();
   const inList = list.some(x => x.code === t);
-  btn.textContent = inList ? "??撌脣??亥?賂?暺?銝宏?歹?" : "嚗???芷";
+  btn.textContent = inList ? "✓ 已加入自選（點一下移除）" : "＋ 加入自選";
   btn.style.background = inList ? "rgba(34,197,94,.15)" : "var(--card2)";
   btn.style.color = inList ? "var(--green)" : "var(--accent)";
   btn.style.borderColor = inList ? "var(--green)" : "var(--accent)";
@@ -755,7 +774,7 @@ function rtWatchToggle(){
     list.splice(idx, 1);
   } else {
     let nm = document.getElementById('rtName').textContent.replace(t, '').trim();
-    if (!nm || nm === t) nm = WNAMES[t] || '';   // ?迂瘝葆?唳??典撱箄”
+    if (!nm || nm === t) nm = WNAMES[t] || '';   // 名稱沒帶到時用內建表
     list.push({ code: t, name: nm });
   }
   saveWatch(list);
@@ -772,20 +791,20 @@ function demoFundMulti(code){
     if (k%3===0) { onList = true; tickerNet += Math.round(sum/3); }
     history.push({ date:"2026-10-"+(20+k), total_net_sum:Math.round(sum),
       ticker_net: k%3===0 ? Math.round(sum/3) : null,
-      label: score>=0.25?"??":score<=-0.25?"?征":"銝剜? });
+      label: score>=0.25?"偏多":score<=-0.25?"偏空":"中性" });
   }
   const upDays = history.filter(h => h.total_net_sum > 0).length;
   const avg = history.reduce((a,h)=>a + (h.total_net_sum/2000000), 0) / days;
   return { ok:true, days, up_days:upDays, down_days:days-upDays,
     avg_tone:Math.round(avg*1000)/1000,
-    label: avg>=0.2?"餈?瘜犖????":avg<=-0.2?"餈?瘜犖???征":"餈?瘜犖憭征鈭斤?",
+    label: avg>=0.2?"近期法人持續偏多":avg<=-0.2?"近期法人持續偏空":"近期法人多空交織",
     ticker_on_list_days:onList?1:0, ticker_net_sum:Math.round(tickerNet),
     history };
 }
 
 
 
-// ?◢?湛???/?征? ?嗆? ??撅?嚗?憿摮?甇乓?閬??賂?蝮賣??
+// 手風琴：看多/看空理由 收折 ↔ 展開（標題數字同步「目前可見條數／總數」）
 function toggleAccordion(kind){
   const listId = kind === 'bull' ? 'bullReasons' : 'bearReasons';
   const countId = kind === 'bull' ? 'bullCount' : 'bearCount';
@@ -797,22 +816,23 @@ function toggleAccordion(kind){
   const total = el.children.length;
   if (el.classList.contains('collapsed')) {
     el.classList.remove('collapsed');
-    if (toggle) toggle.textContent = '?嗆? ??;
+    if (toggle) toggle.textContent = '收折 ▴';
     if (countEl) countEl.textContent = total;
   } else {
     el.classList.add('collapsed');
-    if (toggle) toggle.textContent = '撅??券 ??;
-    if (countEl) countEl.textContent = total > 3 ? `3嚗?{total}` : total;
+    if (toggle) toggle.textContent = '展開全部 ▾';
+    if (countEl) countEl.textContent = total > 3 ? `3／${total}` : total;
   }
 }
 
-// ???⊥??殷??隞???? 瑼?憿嚗?撠蝯?嚗 vs ???∩葉雿 vs ??憭抒 ??5/20/40/60 ?亙???const PEER_MAP = {
+// 同類股清單（個股代號→8 檔同類股）與對照結論：個股 vs 同類股中位數 vs 加權大盤 的 5/20/40/60 日勝率
+const PEER_MAP = {
   "2330": ["2303","3037","2317","2326","3008","2343","2449","3532"],
   "2303": ["2330","3037","2317","3008","2343","2449","3532","2343"],
   "3037": ["2330","2303","3008","2455","3481","3708","3653","2326"],
   "0050": ["0056","0058","00620","00941","00942","0052","00950","00952"],
   "0056": ["0050","0058","00620","00941","00942","0052","00950","00952"],
-  // 靘?????憭批?蝺望????∴?5 ?亦蝺?0 ?交?蝺?0 ?仿?????0 ?亙迤蝺?
+  // 依你提供的四大均線週期指標股（5 日短線、20 日月線、40 日雙月線、60 日季線）
   "3661": ["3443","1519","1503","2454","3037","3189","3017","3324"],
   "3443": ["3661","1519","1503","2454","3037","3189","3017","3324"],
   "1519": ["3661","3443","1503","2454","3037","3189","3017","3324"],
@@ -834,79 +854,84 @@ async function fillPeerVerdict(t, all, taiexRows){
   const IND = all._stockRows ? StockCore.computeIndicators(all._stockRows) : null;
   const rows = all._stockRows;
   if(!IND || !rows) { el.style.display='none'; return; }
-  // ? 5/20/40/60 ?亙????????摮??孵噩?文??蝯??⊥敹?
+  // 個股 5/20/40/60 日勝率（勝率僅作參考數字；特徵判定才是結論卡核心）
   const s5  = (StockCore.hist5(rows, IND, 180)||{}).up_rate ?? null;
   const s20 = (StockCore.histMid(rows, IND, 180, 20)||{}).up_rate ?? null;
   const s40 = (StockCore.histMid(rows, IND, 180, 40)||{}).up_rate ?? null;
   const s60 = (StockCore.histMid(rows, IND, 180, 60)||{}).up_rate ?? null;
-  // ?? ?之?望??葫?孵噩?文?嚗撠銵剁?瘥?閰脩?隞暻潭?銵?孵噩嚗??
+  // ── 四大週期回測特徵判定（照對照表：每期該看什麼技術面特徵）──
   const i = rows.length - 1;
   const cur = rows[i];
   const closes = rows.map(r=>r.close);
   const smaOf = (k, idx) => { if(idx < k-1 || closes[idx]==null) return null; let s=0, cnt=0; for(let q=idx-k+1;q<=idx;q++){ if(closes[q]!=null){s+=closes[q];cnt++;} } return cnt===k ? s/k : null; };
-  // ??嚗?仿? vs 餈?5 ?亙???
+  // 量比（當日量 vs 近 5 日均量）
   const v5 = i>=4 ? (rows.slice(i-4,i+1).reduce((a,r)=>a+(r.volume||0),0)/5) : 0;
   const volRatio = (v5>0 && cur.volume!=null) ? cur.volume/v5 : null;
   const sma5 = smaOf(5,i), sma20 = smaOf(20,i), sma40 = smaOf(40,i), sma60 = smaOf(60,i);
   const sma20prev = smaOf(20, i-5), sma40prev = smaOf(40, i-5), sma60prev = smaOf(60, i-5);
-  // 餈?5 ?仿?雿?嚗迤蝺帖?文?瘀?
+  // 近 5 日高低幅（季線橫盤判斷）
   const last5 = rows.slice(i-4,i+1);
   const hi5 = Math.max(...last5.map(r=>r.high!=null?r.high:r.close));
   const lo5 = Math.min(...last5.map(r=>r.low!=null?r.low:r.close));
   const range5Pct = lo5>0 ? (hi5-lo5)/lo5*100 : null;
-  // K 璉?瑽?撖阡???敶晞?敶?  const body = Math.abs(cur.close - cur.open);
+  // K 棒結構：實體、下影、上影
+  const body = Math.abs(cur.close - cur.open);
   const lowerShadow = Math.min(cur.open,cur.close) - (cur.low!=null?cur.low:cur.close);
   const prevHigh = i>0 ? (rows[i-1].high!=null?rows[i-1].high:rows[i-1].close) : null;
   const greenK = cur.close > cur.open;
-  // 5 ?伐??餅?蝺?嚗?瘥?> 1.5 銝??瑚?敶????嗥?K ??擃????撘瑯?????  const attack5 = volRatio!=null && volRatio>1.5 && (lowerShadow > body*0.8 || (greenK && prevHigh!=null && cur.close>prevHigh));
-  // 20 ?伐???嚗??葬 < 0.7 銝??20 ?亦? 簣2%嚗?靽⊿?蝮格迫蝛押?鈭箸擛?嚗?  const nearSMA20 = sma20!=null && Math.abs(cur.close-sma20)/sma20*100 < 2;
+  // 5 日（攻擊線）：量比 > 1.5 且（長下影 或 收紅K 過前高）→ 動能強、迅速彈回
+  const attack5 = volRatio!=null && volRatio>1.5 && (lowerShadow > body*0.8 || (greenK && prevHigh!=null && cur.close>prevHigh));
+  // 20 日（月線）：量縮 < 0.7 且收於 20 日線 ±2%（投信量縮止穩、法人未鬆動）
+  const nearSMA20 = sma20!=null && Math.abs(cur.close-sma20)/sma20*100 < 2;
   const month20 = volRatio!=null && volRatio<0.7 && nearSMA20;
-  // 40 ?伐???蝺?嚗??湔?蝺???SMA20嚗? 40 ?亦?甇Ｙ帘嚗>SMA40嚗????湔???  const wash40 = sma20!=null && sma40!=null && cur.close<sma20 && cur.close>sma40;
-  // 60 ?伐?摮??嚗?餈?5 ?仿?雿? < 3% 銝?SMA60 銝?嚗迤蝺帖?斗??蝺雁?????瑟??
+  // 40 日（雙月線）：跌破月線（收<SMA20）但 40 日線止穩（收>SMA40）＝假跌破洗盤
+  const wash40 = sma20!=null && sma40!=null && cur.close<sma20 && cur.close>sma40;
+  // 60 日（季線）：近 5 日高低幅 < 3% 且 SMA60 上揚（季線橫盤整理、均線維持上揚才具支撐）
   const sma60Rising = sma60!=null && sma60prev!=null && sma60>sma60prev;
   const season60 = range5Pct!=null && range5Pct<3 && sma60Rising;
-  // ?? 蝯??∴??之?望??孵噩撠銵剁?銵冽?嚗? 蝬??文? ??
-  const featOk = (ok, mark) => ok ? '<span style="color:var(--bull)">'+(mark||'????')+'</span>' : '<span style="color:var(--muted)">???芣?蝡?/span>';
-  const pct = x => x!=null ? x.toFixed(0)+'%' : '??;
+  // ── 結論卡：四大週期特徵對照表（表格呈現）＋ 綜合判定 ──
+  const featOk = (ok, mark) => ok ? '<span style="color:var(--bull)">'+(mark||'✓ 成立')+'</span>' : '<span style="color:var(--muted)">✗ 未成立</span>';
+  const pct = x => x!=null ? x.toFixed(0)+'%' : '—';
   let verdict, verdictColor, verdictText;
-  if(wash40){ verdict='瘣閮?'; verdictColor='var(--yellow)'; verdictText='40 ?仿???嚗歇頝??雿??40 ?亦?銝????湛?嚗葉蝺?撅??瞈曉?頝?????; }
-  else if(attack5){ verdict='?餅??'; verdictColor='var(--bull)'; verdictText='5 ?交??嚗?瘥?'+ (volRatio!=null?volRatio.toFixed(1):'??) +'嚗璉?敶?璆萇蝺??Ｕ??交???; }
-  else if(month20){ verdict='???葬'; verdictColor='var(--bull)'; verdictText='20 ?交?蝺??葬甇Ｙ帘嚗?瘥?'+ (volRatio!=null?volRatio.toFixed(1):'??) +'??潭?蝺?簣2%嚗??縑雿董 1~3 ??瘜Ｘ挾??; }
-  else if(season60){ verdict='摮???舀?'; verdictColor='var(--bull)'; verdictText='60 ?亙迤蝺?餈?5 ?仿?雿? '+pct(range5Pct)+'?MA60 銝?嚗葉?瑞? 3 ??隞乩????Ⅳ?脩???; }
-  else { verdict='閫??; verdictColor='var(--muted)'; verdictText='?之?望??孵噩??Ⅱ??嚗遣霅啗???銝?瘜Ｚ???隞??; }
+  if(wash40){ verdict='洗盤訊號'; verdictColor='var(--yellow)'; verdictText='40 日雙月線：已跌破月線但收在 40 日線上（假跌破），中線布局、過濾假跌破的窗口。'; }
+  else if(attack5){ verdict='攻擊動能'; verdictColor='var(--bull)'; verdictText='5 日攻擊線：量比 '+ (volRatio!=null?volRatio.toFixed(1):'—') +'＋K棒反彈，極短線順勢、隔日沖。'; }
+  else if(month20){ verdict='月線量縮'; verdictColor='var(--bull)'; verdictText='20 日月線：量縮止穩（量比 '+ (volRatio!=null?volRatio.toFixed(1):'—') +'、收於月線 ±2%），投信作帳 1~3 個月波段。'; }
+  else if(season60){ verdict='季線支撐'; verdictColor='var(--bull)'; verdictText='60 日季線：近 5 日高低幅 '+pct(range5Pct)+'、SMA60 上揚，中長線 3 個月以上投資加碼防線。'; }
+  else { verdict='觀望'; verdictColor='var(--muted)'; verdictText='四大週期特徵皆未明確成立，建議觀望、等下一波訊號再介入。'; }
   const oneLiner =
-    '<div style="font-weight:700;color:var(--text);font-size:15px;margin-bottom:6px">?? ?之?望??葫?孵噩撠銵?/div>' +
-    '<table style="width:100%;border-collapse:collapse;font-size:14px">' +
+    '<div style="font-weight:700;color:var(--text);font-size: 15px;margin-bottom:6px">📊 四大週期回測特徵對照表</div>' +
+    '<table style="width:100%;border-collapse:collapse;font-size: 14px">' +
     '<tr style="border-bottom:1px solid var(--border);color:var(--muted)">' +
-      '<th style="text-align:left;padding:4px 6px 4px 0">???望?</th>' +
-      '<th style="text-align:left;padding:4px 6px">?銵?孵噩嚗?亙摰?</th>' +
-      '<th style="text-align:left;padding:4px 6px">???/th>' +
-      '<th style="text-align:right;padding:4px">??</th>' +
+      '<th style="text-align:left;padding:4px 6px 4px 0">均線週期</th>' +
+      '<th style="text-align:left;padding:4px 6px">技術面特徵（當日判定）</th>' +
+      '<th style="text-align:left;padding:4px 6px">狀態</th>' +
+      '<th style="text-align:right;padding:4px">勝率</th>' +
     '</tr>' +
-    '<tr style="border-bottom:1px solid var(--border)"><td style="padding:4px 6px 4px 0"><b>5 ?亦?</b> ?餅?蝺?/td><td style="padding:4px 6px;font-size:13px">??&gt;1.5嚗銝蔣/蝝??擃??嚗?/td><td style="padding:4px 6px">'+featOk(attack5)+'</td><td style="text-align:right;padding:4px">'+pct(s5)+'</td></tr>' +
-    '<tr style="border-bottom:1px solid var(--border)"><td style="padding:4px 6px 4px 0"><b>20 ?亦?</b> ??</td><td style="padding:4px 6px;font-size:13px">?葬&lt;0.7嚗?潭?蝺?%嚗?靽∴?</td><td style="padding:4px 6px">'+featOk(month20)+'</td><td style="text-align:right;padding:4px">'+pct(s20)+'</td></tr>' +
-    '<tr style="border-bottom:1px solid var(--border)"><td style="padding:4px 6px 4px 0"><b>40 ?亦?</b> ??蝺?/td><td style="padding:4px 6px;font-size:13px">頝??雿??0?亦?銝?瘣嚗?/td><td style="padding:4px 6px">'+featOk(wash40,'??瘣')+'</td><td style="text-align:right;padding:4px">'+pct(s40)+'</td></tr>' +
-    '<tr><td style="padding:4px 6px 4px 0"><b>60 ?亦?</b> 摮??</td><td style="padding:4px 6px;font-size:13px">餈??仿?雿?&lt;3%嚗MA60銝?嚗?鈭綽?</td><td style="padding:4px 6px">'+featOk(season60,'???舀?')+'</td><td style="text-align:right;padding:4px">'+pct(s60)+'</td></tr>' +
+    '<tr style="border-bottom:1px solid var(--border)"><td style="padding:4px 6px 4px 0"><b>5 日線</b> 攻擊線</td><td style="padding:4px 6px;font-size: 13px">量比&gt;1.5＋長下影/紅K過前高（動能）</td><td style="padding:4px 6px">'+featOk(attack5)+'</td><td style="text-align:right;padding:4px">'+pct(s5)+'</td></tr>' +
+    '<tr style="border-bottom:1px solid var(--border)"><td style="padding:4px 6px 4px 0"><b>20 日線</b> 月線</td><td style="padding:4px 6px;font-size: 13px">量縮&lt;0.7＋收於月線±2%（投信）</td><td style="padding:4px 6px">'+featOk(month20)+'</td><td style="text-align:right;padding:4px">'+pct(s20)+'</td></tr>' +
+    '<tr style="border-bottom:1px solid var(--border)"><td style="padding:4px 6px 4px 0"><b>40 日線</b> 雙月線</td><td style="padding:4px 6px;font-size: 13px">跌破月線但收在40日線上（洗盤）</td><td style="padding:4px 6px">'+featOk(wash40,'✓ 洗盤')+'</td><td style="text-align:right;padding:4px">'+pct(s40)+'</td></tr>' +
+    '<tr><td style="padding:4px 6px 4px 0"><b>60 日線</b> 季線</td><td style="padding:4px 6px;font-size: 13px">近5日高低幅&lt;3%＋SMA60上揚（法人）</td><td style="padding:4px 6px">'+featOk(season60,'✓ 支撐')+'</td><td style="text-align:right;padding:4px">'+pct(s60)+'</td></tr>' +
     '</table>' +
-    // ? vs 憭抒撌桀潘?40 ?亙????改?璅??臬頝?憭抒嚗?    (function(){
+    // 個股 vs 大盤差值（40 日勝率對照，標出個股是否跑贏大盤）
+    (function(){
       if(!taiexRows) return '';
       try {
         const ti = StockCore.computeIndicators(taiexRows);
         const t40 = (StockCore.histMid(taiexRows, ti, 180, 40)||{}).up_rate ?? null;
         if(s40==null || t40==null) return '';
         const diff40 = s40 - t40;
-        const verdict40 = diff40 >= 3 ? '?撥' : diff40 <= -3 ? '?摹' : '?亥?';
+        const verdict40 = diff40 >= 3 ? '偏強' : diff40 <= -3 ? '偏弱' : '接近';
         const vColor = diff40 >= 3 ? 'var(--bull)' : diff40 <= -3 ? 'var(--bear)' : 'var(--muted)';
-        return '<div style="margin-top:8px;padding:8px 10px;background:var(--card2);border:1px solid var(--border);border-radius:8px;font-size:14px;line-height:1.7">' +
-          '?? <b>? vs ??憭抒嚗?0 ?亙???</b><br>' +
-          '? '+pct(s40)+'??甈之??'+pct(t40)+' ??<span style="color:'+vColor+';font-weight:700">'+verdict40+'嚗榆 '+(diff40>0?'+':'')+diff40.toFixed(0)+' pt嚗?/span>?? +
+        return '<div style="margin-top:8px;padding:8px 10px;background:var(--card2);border:1px solid var(--border);border-radius:8px;font-size: 14px;line-height:1.7">' +
+          '🔍 <b>個股 vs 加權大盤（40 日勝率）</b><br>' +
+          '個股 '+pct(s40)+'、加權大盤 '+pct(t40)+' → <span style="color:'+vColor+';font-weight:700">'+verdict40+'（差 '+(diff40>0?'+':'')+diff40.toFixed(0)+' pt）</span>。' +
           '</div>';
       } catch(e){ return ''; }
     })() +
-    '<div style="margin-top:8px;padding:8px 10px;background:var(--card2);border:1px solid var(--border);border-radius:8px;font-size:15px;line-height:1.6">' +
-      '<b style="color:'+verdictColor+'">蝬??文?嚗?+verdict+'</b>?<span style="color:var(--text);font-size:14px">'+verdictText+'</span>' +
+    '<div style="margin-top:8px;padding:8px 10px;background:var(--card2);border:1px solid var(--border);border-radius:8px;font-size: 15px;line-height:1.6">' +
+      '<b style="color:'+verdictColor+'">綜合判定：'+verdict+'</b>　<span style="color:var(--text);font-size: 14px">'+verdictText+'</span>' +
     '</div>' +
-    '<div style="margin-top:6px;font-size:13px;color:var(--muted);line-height:1.5">?望??抒鞈?嚗??伐??嗆?/璆萇蝺?0?伐??縑瘜Ｘ挾??0?伐??扯?憭扳??0?伐?憭?/憯賡/?振?????1撟渡?府?孵??府?甇?Ⅱ??靘 vs 憭抒撌?3pt 隞乩???撥/?摹??靘?瘀?銝???鞈遣霅啜?/div>';
+    '<div style="margin-top:6px;font-size: 13px;color:var(--muted);line-height:1.5">週期控盤資金：5日＝當沖/極短線、20日＝投信波段、40日＝內資大戶、60日＝外資/壽險/國家隊。勝率＝過去1年照做該方向、該期內正確的比例。個股 vs 大盤差 3pt 以上才判偏強/偏弱。僅供判斷，不構成投資建議。</div>';
   el.innerHTML = oneLiner;
   el.style.display = 'block';
   window._peerCompare = { s5, s20, s40, s60, attack5, month20, wash40, season60, verdict, verdictText, volRatio, range5Pct };
@@ -914,7 +939,8 @@ async function fillPeerVerdict(t, all, taiexRows){
 
 async function run(){
   const t=document.getElementById('ticker').value.trim();
-  const nm=document.getElementById('ticker').value.trim(); // 隞??嚗?蝔梁?敺?葆??  const period=document.getElementById('period').value;
+  const nm=document.getElementById('ticker').value.trim(); // 代號；名稱稍後自動帶出
+  const period=document.getElementById('period').value;
 
   const btn=document.getElementById('btn');
   document.getElementById('loading').style.display='block';
@@ -922,58 +948,64 @@ async function run(){
   document.getElementById('err').style.display='none';
   btn.disabled=true;
   const btnOriginalText=btn.textContent;
-  btn.textContent='??銝凌?;
+  btn.textContent='分析中…';
   btn.style.opacity='0.6';
   btn.style.cursor='not-allowed';
   try{
-    // 14b. ?挾撘脣漲?內
+    // 14b. 階段式進度提示
     const _lm = document.getElementById('loadingMsg');
     const _setLoading = (m) => { if (_lm) _lm.textContent = m; };
-    _setLoading('甇?銝西???? / 憭抒 / ?迂 / 蝐Ⅳ / ?啗???);
+    _setLoading('正在並行抓：個股 / 大盤 / 名稱 / 籌碼 / 新聞…');
     const with_news = document.getElementById('ckNews').checked;
     const with_fund = document.getElementById('ckFund').checked;
     const news_days = parseInt(document.getElementById('newsDays').value, 10) || 7;
 
-    // 銝瘜Ｖ蒂銵?? K 蝺之?扎蟡典?蝔晞?蝣澆?湔?????)???蝺???)
-    // ??蝐Ⅳ/?啗?憭望??賭?敶梢銝餅?蝔?computeAll ?扳??芸楛鋆????芸???
+    // 一波並行:個股 K 線、大盤、股票名稱、籌碼全場榜單(預抓)、新聞情緒(預抓)
+    // 預抓籌碼/新聞失敗都不影響主流程,computeAll 內會自己補(或標未啟用)
     const prec_fund_p = with_fund ? StockCore.fetchFundFlow().catch(() => null) : Promise.resolve(undefined);
 
-    // ?啗???:蝑?蝔望?摰????迂+隞?? ?皞?,雿?? K 蝺蒂銵?銝憛蜓瘚?
+    // 新聞情緒:等名稱抓完再搜(名稱+代號 搜更準),但仍與「個股 K 線」並行,不阻塞主流程
     const prec_news_p = with_news ? fetchStockName(t).then(nm2 => StockCore.fetchNewsHeadlines(t, nm2 || '', news_days)).then(heads => (heads && heads.length ? StockCore.newsSentiment(heads) : null)).catch(() => null) : Promise.resolve(undefined);
 
     const [stockRows, _taiexRows, nmAuto, prec_fund, prec_news] = await Promise.all([
       fetchRows(toYahoo(t), period),
-      fetchRows("^TWII", "1mo").catch(() => null), // 憭抒???圈?蝝?null,銝?葆?;憭抒 15% 甈?銝???      fetchStockName(t).catch(() => WNAMES[t] || ''),
+      fetchRows("^TWII", "1mo").catch(() => null), // 大盤抓不到降級 null,不連帶個股;大盤 15% 權重不計入
+      fetchStockName(t).catch(() => WNAMES[t] || ''),
       prec_fund_p,
       prec_news_p
     ]);
-    const taiexRows = _taiexRows; // null ??computeAll ?芸?頝喳之?文?????null 銝??
+    const taiexRows = _taiexRows; // null 時 computeAll 自動跳大盤分數(傳 null 不報錯)
 
-    _setLoading('甇?蝞???鈭???);
-    // computeAll ?踹撌脖蒂銵?憟賜? prec_fund/prec_news,銝?銝脣???
+    _setLoading('正在算訊號與五方分數…');
+    // computeAll 拿到已並行抓好的 prec_fund/prec_news,不再串列重抓
     const all = await StockCore.computeAll(stockRows,
       { ticker:t, name:nmAuto, taiexRows, with_news, with_fund, news_days, prec_fund, prec_news });
 
-    // 蝐Ⅳ?Ｗ??亦絞閮???豢?),?蜓蝯?銝西?敺?蝑?摰?蝜芸????    if (with_fund) {
-      _setLoading('甇???蝣潮憭蝯梯???);
+    // 籌碼面多日統計(僅勾選時),與主結果並行後再等它完成繪圖前即可
+    if (with_fund) {
+      _setLoading('正在抓籌碼面多日統計…');
       all.fund_multi = await StockCore.fetchFundFlowMulti(t, 5);
     }
-    // ??詨?憭抒撘瑕漲嚗?仿??典歇???仕 ?之?斗K嚗???嚗??429嚗?    all.relative = StockCore.relativeStrength(stockRows, taiexRows, 20);
+    // 個股相對大盤強度：直接重用已抓到的個股日K 與大盤日K（不重抓，避免 429）
+    all.relative = StockCore.relativeStrength(stockRows, taiexRows, 20);
     all._stockRows = stockRows;
     all._taiexRows = taiexRows;
 
-    // 撠蝯?嚗 vs ???∩葉雿 vs ??憭抒 ??40/60 ?亙????憛‵??peerVerdict嚗?    fillPeerVerdict(t, all, taiexRows).catch(()=>{});
+    // 對照結論：個股 vs 同類股中位數 vs 加權大盤 的 40/60 日勝率（非阻塞、填入 peerVerdict）
+    fillPeerVerdict(t, all, taiexRows).catch(()=>{});
 
     document.getElementById('results').style.display='block';
     document.getElementById('demoBanner').style.display='none';
-    _setLoading('甇?蝜芸??????);
-    await new Promise(r=>requestAnimationFrame(r)); // 蝑??Ｗ????怠?
+    _setLoading('正在繪圖與整理結果…');
+    await new Promise(r=>requestAnimationFrame(r)); // 等版面展開再畫圖
     render(all, stockRows, t);
     showResultTitle(t, nmAuto);
-    applyMode();  // 靘陛??撠平?芋撘??＊蝷?    // 摮??祆活蝯?,靘?sell.html?? ?蝬???????????
+    applyMode();  // 依「簡易/專業」模式切換顯示
+    // 存下本次結果,供 sell.html「← 回到綜合分析」時還原、不重跑
     saveAnalysisState(t, period, stockRows, all, nmAuto);
   }catch(e){
-    // ?祕銵??賣?銝嚗? Yahoo ??嚗??寧蝷箇?鞈??????    document.getElementById('demoBanner').style.display='block';
+    // 真實行情都抓不到（如 Yahoo 限流），改用示範資料把整頁跑通
+    document.getElementById('demoBanner').style.display='block';
     const stockRows = demoRows(t, period);
     const twRows = demoTaiexRows();
     const all = await StockCore.computeAll(stockRows,
@@ -987,9 +1019,10 @@ async function run(){
     showResultTitle(t, WNAMES[t]||'');
     document.getElementById('results').style.display='block';
     document.getElementById('err').style.display='block';
-    applyMode();  // 靘陛??撠平?芋撘??＊蝷?    document.getElementById('err').textContent =
-      "?? ?祕銵??急????堆?Yahoo 頝典???嚗?銝?箝內蝭???撅內隞??敺?閰佗???券?衣?嚗ython server.py嚗?祕鞈???;
-      // demo 頝臬?銋?,霈? ?蝬????歲???賡????芣蝷箸?鞈?),銝??
+    applyMode();  // 依「簡易/專業」模式切換顯示
+    document.getElementById('err').textContent =
+      "⚠️ 真實行情暫時取不到（Yahoo 跨域受限），下方為「示範資料」僅展示介面。稍後重試，或改用電腦版（python server.py）拿真實資料。";
+      // demo 路徑也存,讓「← 回到綜合分析」跳回時能還原(哪怕是示意資料),不用重跑
       saveAnalysisState(t, period, stockRows, all, WNAMES[t] || '');
   }finally{
     document.getElementById('loading').style.display='none';
@@ -1002,7 +1035,7 @@ async function run(){
 
 function saveAnalysisState(t, period, rows, all, name){
   try{
-    // 摮? render ?典??all,雿??憭抒??? K 蝺?_stockRows/_taiexRows),rows 撌脣銵?,?踹???sessionStorage quota
+    // 存下 render 用到的 all,但拿掉最大的重複 K 線(_stockRows/_taiexRows),rows 已另行存,避免爆 sessionStorage quota
     const slim = Object.assign({}, all);
     if (slim) { delete slim._stockRows; delete slim._taiexRows; }
     sessionStorage.setItem('analysis_'+t, JSON.stringify({
@@ -1016,8 +1049,8 @@ function saveAnalysisState(t, period, rows, all, name){
   }catch(e){}
 }
 function restoreAnalysis(){
-  // 敺?sell.html?? ?蝬????歲??,query 撣?restore=1 + ticker,??銝活蝯?????
-  // ??(F5)??URL 撣嗥? restore=1 撌脰◤皜?(restore ??敺?history.replaceState),銝???
+  // 從 sell.html「← 回到綜合分析」跳回時,query 帶 restore=1 + ticker,還原上次結果、不重跑
+  // 重載(F5)時 URL 帶的 restore=1 已被清掉(restore 成功後 history.replaceState),不再還原
   const qs = new URLSearchParams(location.search);
   if (qs.get('restore') !== '1') return false;
   const t = (qs.get('ticker')||'').toUpperCase();
@@ -1025,13 +1058,13 @@ function restoreAnalysis(){
   let data=null;
   try{ data = JSON.parse(sessionStorage.getItem('analysis_'+t)||'null'); }catch(e){}
   if (!data || !data.rows || !data.all) return false;
-  // ??銵典
+  // 還原表單
   document.getElementById('ticker').value = t;
   const p = document.getElementById('period'); if(p) p.value = data.period || p.value;
   const cn = document.getElementById('ckNews'); if(cn) cn.checked = !!data.ckNews;
   const cf = document.getElementById('ckFund'); if(cf) cf.checked = !!data.ckFund;
   const nd = document.getElementById('newsDays'); if(nd && data.newsDays) nd.value = data.newsDays;
-  // ?湔?(銝?????
+  // 直接重畫(不重抓行情)
   document.getElementById('results').style.display='block';
   document.getElementById('demoBanner').style.display='none';
   render(data.all, data.rows, t);
@@ -1039,9 +1072,10 @@ function restoreAnalysis(){
   applyMode();
   window._lastRows = data.rows;
   window._lastIND = data.all.indicators;
-  // ?? window._shareData(霈?鈭急????
-  try{ if (data.all && data.all.final){ const f=data.all.final; window._shareData = Object.assign(window._shareData||{}, {ticker:t,name:data.name,advice:f.final_advice,combined:f.combined_score!=null?f.combined_score.toFixed(2):'??,score_breakdown:f.score_breakdown||{}}); } }catch(e){}
-  // ????敺???restore=1 敺?URL 皜?,?踹???頛?F5)??閫貊????典歇撅????  try{
+  // 還原 window._shareData(讓分享按鈕可用)
+  try{ if (data.all && data.all.final){ const f=data.all.final; window._shareData = Object.assign(window._shareData||{}, {ticker:t,name:data.name,advice:f.final_advice,combined:f.combined_score!=null?f.combined_score.toFixed(2):'—',score_breakdown:f.score_breakdown||{}}); } }catch(e){}
+  // 還原成功後,把 restore=1 從 URL 清掉,避免「重載(F5)」又觸發還原、卡在已展開狀態
+  try{
     const cleanUrl = location.pathname + location.hash;
     history.replaceState(null, '', cleanUrl);
     sessionStorage.removeItem('restore_once_' + t);
@@ -1051,30 +1085,34 @@ function restoreAnalysis(){
 
 
 
-// ?? MACD ???餉??ui.html ????????MACD ?梧?閮?蝺??嗉遘嚗璅?
+// ── MACD 圖（電腦版 ui.html 的「動能/參考線」：MACD 柱＋訊號線＋零軸＋色標）
 
 
-// ?? RSI ???餉??ui.html ??望??詻?70/30 頞眺頞都?脣葆??0 銝剔???00/70/50/30/0 ?餃漲?SI ??嚗?
-
-// ?? ?? vs 60 ?伐????嚗??交?鈭日?嚗?0 ?亙??????梁?嚗?.0 ?箸?蝺?
-
-// ?詨?撘瑕漲?歇蝘駁嚗rawRSChart 撌脣?歹?????rsInfo ??憿舐內嚗?
+// ── RSI 圖（電腦版 ui.html 的「冷熱指數」：70/30 超買超賣色帶、50 中線、100/70/50/30/0 刻度、RSI 折線）
 
 
-// ?? K 蝺???嚗???Canvas嚗??????????????????????????????
-// ?? K 蝺?????頝?衣? ui.html 銝璅??SMA5/20/60 ???眺鞈??銝??雯?潘?
+// ── 量比 vs 60 日（量能配速）：每日成交量／60 日均量 → 柱狀＋1.0 基準線
 
 
-// ?? ?芷?∴?localStorage嚗??????????????????????????????
+// 相對強度圖已移除（drawRSChart 已刪除，僅保留 rsInfo 文字顯示）
+
+
+
+// ── K 線＋均線（原生 Canvas）──────────────────────────────
+// ── K 線＋均線圖（跟電腦版 ui.html 一樣：SMA5/20/60 參考線、買賣點三角、網格）
+
+
+// ── 自選股（localStorage）──────────────────────────────
 const WATCH_KEY = "tony_watchlist_web";
-const WNAMES = {"0050":"?之?啁50","0051":"?之銝剖?100","0052":"撖蝘?","0053":"?之蝘?撣?,"0055":"?之MSCI??","0056":"?之擃??,"0057":"撖?拙","0061":"?之撖嗆賑瘛?,"00636":"?陸銝剖?A50","00639":"撖瘛?00","00643":"蝢斤?瘛梯釆銝剖?","00645":"撖?交","00646":"?之S&P500","00652":"撖?啣漲","00657":"?陸?亦?225","00660":"?之甇散50","00661":"?之?亦?225","00662":"撖NASDAQ","00668":"?陸蝢???","00678":"蝢斤???????","00690":"????30","00692":"撖?砍瘝餌?","00700":"撖?方蝤?,"00701":"?陸?∪蝎暸30","00702":"?陸璅雿郭擃","00703":"?唳MSCI銝剖?","00709":"撖甇散","00712":"敺抵撖?銝???,"00713":"?之?啁擃雿郭","00714":"蝢斤???蝢??啁","00717":"撖蝢??孵??,"00728":"蝚砌??極璆?0","00730":"撖?箇?芾釭擃","00731":"敺抵撖?擃雿郭","00733":"撖?箇銝剖?","00735":"?陸?粹?蝘?","00736":"?陸?啗?撣","00737":"?陸AI璈鈭?,"00739":"?之MSCI A??,"00752":"銝凋縑銝剖?50","00757":"蝯曹?FANG+","00762":"?之?函?AI","00770":"?陸??蝘?","00771":"?之US擃?孵??,"00783":"撖銝剛釆500","00830":"?陸鞎餃???擃?,"00850":"?之?箇ESG瘞貊?","00851":"?唳?函?AI","00861":"?之?函??芯???","00875":"?陸蝬脰楝鞈?","00876":"?之?函?5G","00878":"?陸瘞貊?擃??,"00881":"?陸?啁蝘?樴","00882":"銝凋縑銝剖?擃??,"00885":"撖頞?","00891":"銝凋縑???擃?,"00892":"撖?啁??擃?,"00893":"?陸?箄?餃?頠?,"00894":"銝凋縑撠?擃30","00895":"撖?芯?頠?,"00896":"銝凋縑蝬???","00897":"撖?箏????","00898":"?陸?箏???拙","00899":"FT瞏楊?賣?","00900":"撖?寥擃??0","00901":"瘞貉??箄頠???","00902":"銝凋縑?餅????,"00903":"撖??摰?,"00904":"?唳?箇??擃?0","00905":"FT?箇SMART","00907":"瘞貉??芣摮","00908":"撖?交REITs+","00909":"?陸?訾??臭???","00910":"蝚砌??云蝛箄???,"00911":"??瘣脤???擃?,"00912":"銝凋縑?箇?箸50","00913":"???啁?嗅?鋆賡?,"00915":"?勗?芷擃??0","00916":"?陸?函???50","00917":"銝凋縑?寥??","00918":"憭扯?芸擃‵??0","00919":"蝢斤??啁蝎暸擃","00920":"撖ESG蝬?餃?","00921":"??樴蝑???,"00922":"?陸?啁??50","00923":"蝢斤??蚩SG雿４50","00924":"敺抵S&P500?","00926":"?勗?函??55","00927":"蝢斤???擃??,"00929":"敺抵?啁蝘??芣","00930":"瘞貉?ESG雿４擃","00932":"??瘞貊?擃蝑?","00934":"銝凋縑?擃??,"00935":"???箇?啁??50","00936":"?唳瘞貊?擃銝剖?","00938":"?勗?芷30","00939":"蝯曹??啁擃?","00940":"?之?啁?孵潮???,"00941":"銝凋縑銝虜??擃?,"00943":"???餃?擃蝑?","00944":"??頞典?擃","00946":"蝢斤?蝘?擃?","00947":"?唳?箇IC閮剛?","00949":"敺抵?交樴","00951":"?唳?交??擃?,"00952":"?勗?啁AI50","00954":"銝凋縑?交??擃?,"00956":"銝凋縑?亦?擃??,"00960":"???函??芷?樴","00961":"FT?箇瘞貊?擃","00962":"?唳AI?芣?","00963":"銝凋縑?函?擃??,"00964":"銝凋縑鈭云擃??,"00965":"?之?芸云?脰?蝘?","00971":"??蝢??樴","00972":"???交?擃","1101":"?唳野","11011":"?唳野銝瘞?,"1102":"鈭野","1103":"?野","1104":"?唳野","1108":"撟貊?","1109":"靽∪之","1110":"?望野","1201":"?喳","1203":"?喟?","1210":"憭扳?","1213":"憭折ㄡ","1215":"??","1216":"蝯曹?","1217":"????,"1218":"瘜啣控","1219":"蝳ˊ","1220":"?唳旨","1225":"蝳?瘝?,"1227":"雿單","1229":"?航","1231":"?航憌?,"1232":"憭抒絞??,"1233":"憭拐?","1234":"暺","1235":"?陸","1236":"摰?","1256":"擙格暑??-KY","12561":"擙格暑??銝KY","1301":"?啣?","1303":"??","1304":"?啗?","1305":"?臬?","1307":"銝","1308":"鈭?","1309":"?圈???,"1310":"?啗","1312":"?","1313":"?舀?","1314":"銝剔??,"1315":"?","1316":"銝?","13166":"銝???,"1319":"?梢","1321":"憭扳?","1323":"瘞貉?","1324":"?啁?","1325":"?之","1326":"?啣?","1337":"??-KY","1338":"撱?-KY","13382":"撱?鈭Y","1339":"?剛?","1340":"??-KY","1341":"撖?-KY","1342":"?怨疵","1402":"???,"1409":"?啁?","1410":"??","1413":"摰散","1414":"?勗?","1416":"撱??","1417":"??","1418":"?梯","1419":"?啁插","1423":"?抵","1432":"憭折陌??,"1434":"蝳?","1435":"銝剔?","1436":"?臬???,"14363":"?臬??臭?","14364":"?臬??臬?","1437":"?斤???,"1438":"銝?","14381":"銝?銝","1439":"??","1440":"?插","1441":"憭扳","1442":"??","1443":"蝡??拇?","1444":"??","1445":"憭批?","1446":"摰?","1447":"?筋","1449":"雿喳?","1451":"撟渲?","1452":"摰?","1453":"憭批?","1454":"?啣?","1455":"??","1456":"?∟","1457":"摰?,"1459":"?舐","1460":"摰?","1463":"撘瑞???,"1464":"敺?","1465":"?","1466":"??","14664":"????,"1467":"?楝","1468":"?嗅?","1470":"憭抒絞?啣","1471":"擐","1472":"銝?撖行平","14722":"銝?撖行平鈭?,"14723":"銝?撖行平銝?,"1473":"?啣?","1474":"撘?","14743":"撘?銝?,"1475":"璆剜","1476":"?暑","1477":"?","1503":"憯恍","1504":"?勗?","1506":"甇??","1512":"?","1513":"銝剛???,"1514":"鈭?","15142":"鈭?鈭?,"1515":"?控","1516":"撌?","1517":"?拙?","1519":"?臬?","1521":"憭批?","1522":"?斤雁镼?,"1524":"?輸?","1525":"瘙","1526":"?仿有","1527":"?賢","1528":"?拙噸","1529":"璅?蝬","1530":"鈭斐","1531":"擃???,"1532":"?斤?","1533":"頠???,"1535":"銝剖?","1536":"?之","15364":"?之??,"1537":"撱??","1538":"甇?陸","1539":"撌典滬","1540":"?祉?","1541":"?拇陸","1558":"隡貉?","1560":"銝剔?","15602":"銝剔?鈭?,"1563":"撌扳","1568":"??","1582":"靽⊿","1583":"蝔陸","1587":"??","1589":"瘞詨?-KY","15894":"瘞詨??Y","1590":"鈭噸摰?KY","15952":"撌窄鈭?,"1597":"?游?","1598":"撗勗?","15984":"撗勗???,"1603":"?舫","1604":"?脣窄","1605":"?舀","1608":"?舀旨","1609":"憭找?","16095":"憭找?鈭?,"1611":"銝剝","1612":"摰陸","1614":"銝???,"1615":"憭批控","1616":"?陸","1617":"璁格?","1618":"??","1623":"憭扳??,"16231":"憭扳?颱?","1626":"?曄???KY","1702":"??","1707":"?∟???,"1708":"?梢匱","1709":"??","1710":"?梯","1711":"瘞詨?","1712":"?噙","1713":"??","1714":"??","1717":"?瑁?","17172":"?瑁?鈭?,"1718":"銝剔?","1720":"??","1721":"?蝘?","1722":"?啗","1723":"銝剔４","1725":"??","1726":"瘞貉?","1727":"銝剛??,"17272":"銝剛??","1730":"?曹?摮?,"1731":"蝢??,"1732":"瘥窄","1733":"鈭?","1734":"??","1735":"?亙???,"1736":"?砍控","1737":"?粹厭","1752":"??","1760":"撖園翩撖","1762":"銝剖???,"1773":"??","1776":"撅?","17813":"??銝?,"1783":"?熒??,"1786":"蝘?","17863":"蝘?銝?,"1789":"蟡?","1795":"蝢?","1802":"?啁","1805":"撖嗅?","1806":"??","1808":"瞏日?","1809":"銝剝?","1810":"??","1815":"撖","1817":"?望?銵?,"1903":"憯怎?","1904":"甇??","1905":"?舐?","1906":"撖園?","1907":"瘞貉?擗?,"1909":"璁格?","19094":"璁格???,"2002":"銝剝","2006":"?勗??潮","2007":"??","2008":"擃???,"2009":"蝚砌???,"2010":"?交?","2012":"?仿","2013":"銝剝瑽?,"2014":"銝剝暑","2015":"鞊?","2017":"摰??,"2020":"蝢?","2022":"?漕","2023":"??","2024":"敹","2025":"??","2027":"憭扳???,"2028":"憡","2029":"??","2030":"敶唳?","2031":"?啣???,"2032":"?圈","2033":"雿喳之","2034":"?撥","20344":"?撥??,"2038":"瘚瑕?","2049":"銝?","2059":"撌?","2062":"璈凶","2069":"?","2072":"銝??賣?","2101":"?葛","2102":"瘜啗?","2103":"?唳屆","2104":"??銝剜屆","21043":"??銝剜屆銝?,"2105":"甇?","2106":"撱箏之","2107":"??","2108":"??","2109":"?航?","2114":"?急偶??,"2115":"?剜?-KY","2201":"鋆?","22013":"鋆?銝?,"2204":"銝剛","2206":"銝撌交平","2207":"?陸頠?,"2208":"?啗","2211":"?瑟旨??,"22211":"憭抒銝","2227":"鋆頠?,"2228":"??","22283":"??銝?,"2231":"?箏?","2233":"摰?","22331":"摰?銝","2236":"?暸?-KY","22363":"?暸?銝Y","2237":"?臬噸?-??,"2239":"?勗-KY","2241":"?曉???,"2243":"摰-KY","2247":"瘙噸瘞豢平","22471":"瘙噸瘞豢平銝","22472":"瘙噸瘞豢平鈭?,"2248":"?臬?-KY","2254":"撌券蝎曉?-??,"2258":"暾餉????,"2301":"?窄蝘?,"2302":"暻迤","2303":"?舫","23031":"?舫銝","23032":"?舫鈭?,"2305":"?典?","2308":"?圈???,"2312":"?窄","2313":"?舫?,"2314":"?唳?","2316":"璆???,"23161":"璆??颱?","2317":"暾餅絲","2321":"?梯?","2323":"銝剔","2324":"隞窄","2327":"?楊","2328":"撱??","2329":"?舀陸","23291":"?舀陸銝","2330":"?啁???,"2331":"蝎曇","2332":"??","2337":"?箏?","2338":"?蔗","2340":"?唬?","2342":"?","2344":"?舫??,"2345":"?粹","2347":"?臬撥","2348":"瘚瑟?","2349":"?詨噸","2351":"?噸","23511":"?噸銝","2352":"雿喃???,"2353":"摰?,"2354":"暾餅?","2355":"?祇筋","2356":"?望平??,"2357":"?舐◣","2359":"?蝢?","2360":"?渲?","2362":"?予","2363":"?賜絞","2364":"?恍?","2365":"??","2367":"?輯","2368":"????,"2369":"?梁?","2371":"憭批?","2373":"?銵?,"2374":"雿唾","23742":"雿唾鈭?,"2375":"?梁?","2376":"???,"2377":"敺格?","2379":"?","2380":"?孵?","2382":"撱??","2383":"?啣???,"2385":"蝢文?","2387":"蝎曉?","2388":"憡?","2390":"鈭劓","2392":"甇?斐","2393":"??","2395":"?","2397":"??,"2399":"?陸","2401":"?","2402":"瘥?","24023":"瘥?銝?,"2404":"瞍Ｗ?","2405":"頛縑","2406":"?◣","2408":"??蝘?,"2409":"??","2412":"銝剛??,"2413":"?啁?","2414":"蝎暹?","2415":"?拇","2417":"??","2419":"隞脩","2420":"?啣楊","2421":"撱箸?","2423":"?箇楝","2424":"?渲","2425":"?踹?","2426":"曌?","2427":"銝???,"24271":"銝??颱?","2428":"?","2429":"?蝘?,"2430":"?血","2431":"?舀?","2432":"?予????,"2433":"鈭???,"2434":"蝯望?","2436":"?帑??,"2438":"蝧","2439":"蝢?","24394":"蝢???,"24395":"蝢?鈭?,"2440":"憭芰征璇?,"2441":"頞?","2442":"?啁?朣?,"24423":"?啁?朣?","24424":"?啁?朣?","2444":"??","2449":"鈭砍??餃?","2450":"蟡","2451":"?菔?","2453":"?黎","2454":"?舐蝘?,"2455":"?冽","24552":"?冽鈭?,"24553":"?冽銝?,"2457":"憌?","2458":"蝢拚?","2459":"?血?","2460":"撱粹?,"2461":"?黎??,"2462":"?臬???,"2464":"??","24642":"??鈭?,"24643":"??銝?,"2465":"暻","2466":"?正??,"2467":"敹?","24672":"敹?鈭?,"24673":"敹?銝?,"2468":"?舐?","2471":"鞈?,"2472":"蝡???,"2474":"?舀?","2476":"?孕","24762":"?孕鈭?,"2477":"蝢???,"2478":"憭扳?","2480":"?阡蝘?,"2481":"撘瑁?","2482":"???","2483":"?曉捆","2484":"撣","2485":"?筍","2486":"銝閰?,"24867":"銝閰桐?","2488":"瞍Ｗ像","2489":"??","2491":"?孕??,"2492":"?舀蝘?,"2493":"??","2495":"?桀?","2496":"??","2497":"?∪??,"2498":"摰???,"2501":"?遣","2504":"?","2505":"??","2506":"憭芾身","2509":"?典撱?,"2511":"憭芸?","2514":"樴","2515":"銝剖極","2516":"?啣遣","2520":"?噸","2524":"鈭砍?","2527":"摰?","2528":"?","25283":"?銝?,"25284":"???,"2530":"?臬遣","25303":"?臬遣銝?,"25304":"?臬遣??,"2534":"摰?","2535":"?派撌?,"2536":"摰","2537":"?臭???,"2538":"?箸陸","2539":"瑹餉撱?,"2540":"?控??,"2542":"????,"2543":"??","2545":"??","2546":"?孵","2547":"?亙???,"2548":"?臬","25483":"?臬銝?,"25484":"?臬??,"2597":"瞏文?","2601":"?","2603":"?瑟旨","2605":"?啗?","2606":"鋆?","2607":"璁桅?","2608":"??憭扳旨","2609":"?賣?","2610":"?航","2611":"敹縑","2612":"銝剛","2613":"銝剜?","2614":"?望ㄝ","2615":"?祆絲","2616":"撅梢?","2617":"?啗","2618":"?瑟旨??,"2630":"鈭","2633":"?啁擃","2634":"瞍Ｙ?","2636":"?圈??扯","2637":"?扳?-KY","26417":"甇?噸銝?,"26418":"甇?噸??,"2642":"摰???,"2645":"?瑟旨?芸云","2646":"???芰征","26461":"???芰征銝","26462":"???芰征鈭?,"2701":"?砌?","2702":"?臬?","2704":"??","2705":"?剔?","2706":"蝚砌?摨?,"2707":"?嗉","2712":"??靘?,"2722":"憭","2723":"蝢?-KY","2727":"??","27271":"??銝","2731":"??","27323":"?剛?銝?,"27324":"?剛???,"2739":"撖?","27431":"撅勗?銝","27451":"鈭?銝","2748":"?脣?","2753":"?急?脤?","27531":"?急?脤?銝","27532":"?急?脤?鈭?,"27551":"?圻銝","2756":"?舐??","27561":"?舐??銝","27562":"?舐??鈭?,"2762":"銝??亥澈-KY","2801":"敶圈?","2812":"?唬葉?","2816":"?箸靽?,"2820":"?舐巨","2832":"?啁","2834":"?箔??","2836":"擃??","2838":"?舫?","2845":"??","2849":"摰陸?","2850":"?啁","2851":"銝剖?靽?,"2852":"蝚砌?靽?,"2855":"蝯曹?霅?,"2880":"?臬???,"2881":"撖??,"2882":"?陸??,"2883":"?勗??,"2884":"?控??,"2885":"?之??,"2886":"????,"2887":"?唳?啣???,"2889":"?巨??,"2890":"瘞貉???,"2891":"銝凋縑??,"2892":"蝚砌???,"2897":"???銵?,"2901":"甈?派","2903":"?","2904":"?臬?","2905":"銝?","2906":"擃?","2908":"?孵?","2910":"蝯梢?","2911":"暻為??,"2912":"蝯曹?頞?,"2913":"颲脫?","2915":"瞏斗陸??,"2923":"曌-KY","2929":"瘛?-KY","2939":"瘞賊?-KY","2945":"銝?摰嗉頃","3002":"甇","3003":"?亙???,"3004":"鞊?蝘?,"3005":"蟡","3006":"?嗉悸蝘?,"30062":"?嗉悸蝘?","3008":"憭抒???,"3010":"?舐?","3011":"隞?","30112":"隞?鈭?,"3013":"????,"30134":"???餃?","3014":"?舫","3015":"?冽慰","3016":"?","30165":"?鈭?,"30166":"???,"3017":"憟?","3018":"??蝬","3019":"鈭?","3021":"暾餃?","3022":"憡撥??,"3023":"靽⊿","3024":"?嗉","3025":"??,"3026":"蝳曆撓??,"3027":"??","3028":"憓?撘?,"30285":"憓?撘瑚?","30286":"憓?撘瑕","3029":"?嗅ㄨ","3030":"敺瑕?","3031":"雿圈暑","3032":"??","30321":"??銝","30322":"??鈭?,"3033":"憡","30336":"憡??,"30337":"憡銝?,"3034":"?航?","3035":"?箏?","3036":"??","3037":"甈??","30371":"甈??銝","3038":"?典","3040":"??","30401":"??銝","3041":"?","3042":"?嗆?","3043":"蝘◢","3044":"?仿?","3045":"?啁憭?,"30454":"?啁憭批?","30455":"?啁憭找?","3046":"撱?,"3047":"閮?","3048":"?","3049":"蝎暸?","3050":"?箏噸","3051":"?","3052":"憭","3054":"蝡??,"3055":"?蝘?,"3056":"撖??,"3057":"?祇?","3058":"蝡噸","3059":"?舀蝘?,"3060":"?","3062":"撱箸慰","30811":"?臭?銝","30812":"?臭?鈭?,"3090":"?仿鞎?,"3092":"暾餌◣","3094":"?臬?","30954":"????,"3105":"蝛拇?","31222":"蝚?鈭?,"3130":"銝?嗅?","3135":"?","31352":"?鈭?,"3138":"???,"31382":"??颱?","31413":"?嗅?銝?,"31414":"?嗅???,"31415":"?嗅?鈭?,"3149":"甇??","31494":"甇????,"3150":"?箏窄-??,"3164":"?臬眾","3167":"憭折?","3168":"?曄?蝘?,"31882":"?恍?擉唬?","3189":"?舐◣","32071":"???","3209":"?函?","32191":"?撥蝘?","3229":"?","3231":"蝺臬","3257":"?孵???,"32571":"?孵??颱?","32609":"憡?銋?,"3266":"?","32723":"?梁◣銝?,"32843":"憭芣擃?","32943":"?望?銝?,"3296":"?噸","33035":"撗梁?鈭?,"3305":"?窒","3308":"?臬噸","3311":"??","3312":"撘??,"33121":"撘?∩?","33133":"??銝?,"3321":"?陸","33225":"撱箄??颱?","33245":"?暑鈭?,"33246":"?暑??,"33247":"?暑銝?,"3338":"瘜啁◣","3346":"暻?","33466":"暻???,"3356":"憟","33571":"?箸蝘?","33621":"?脣?銝","3376":"?唳??,"33763":"?唳??","3380":"?陸","33902":"?剛?鈭?,"3406":"???,"3413":"鈭祇?","3416":"????,"34163":"???颱?","3419":"霅?","3432":"?啁垢","3435":"?啗”","3437":"璁桀","3443":"?菜?","3447":"撅?","3450":"?舫?","34793":"摰銝?,"3481":"蝢文","34834":"???,"34843":"撏折辰銝?,"34913":"??蝘?","3494":"隤?","3498":"?賜?","3501":"蝬剔","3504":"????,"35122":"??鈭?,"3515":"?舀?","35161":"鈭?甇?","3518":"?辰","35181":"?辰銝","35221":"敺∪翕銝","35265":"?∠鈭?,"35266":"?∠??,"35267":"?∠銝?,"3528":"摰有","3530":"?嗥??,"3532":"?啣?蝘?,"3533":"?黎","3535":"?嗅蔗蝘?,"3543":"撌概","35431":"撌概銝","3545":"?行陸","35482":"?鈭?,"35483":"?銝?,"3550":"?舐?","35513":"銝汙銝?,"3557":"??","3563":"?批噸","35642":"?園鈭?,"3576":"?臬???","3583":"颲?,"35833":"颲?","35834":"颲?","35872":"?熒鈭?,"3588":"??","3591":"?曄?璉?,"35914":"?曄?璉桀?","3592":"??","3593":"??","3596":"?箸?","3605":"摰","36053":"摰銝?,"36054":"摰??,"3607":"靚瑕揮","3617":"蝣拙予","36173":"蝣拙予銝?,"3622":"瘣","3645":"??","3652":"蝎曇","3653":"?亦?","3661":"銝-KY","3665":"鞎輯-KY","3669":"??","3679":"?啗??,"36805":"摰嗥鈭?,"36806":"摰嗥??,"36841":"璁格?銝","3686":"?","36872":"甇眺撠砌?","36873":"甇眺撠砌?","36913":"蝣拍汙銝?,"3694":"瘚瑁","3701":"憭抒??,"3702":"憭扯憭?,"3703":"甈?","3704":"???,"3705":"瘞訾縑","3706":"蟡?","37075":"瞍Ｙ?鈭?,"3708":"銝楝?","3711":"?交?????,"3712":"瘞詨斐?","3714":"撖?","3715":"摰??","37151":"摰??銝","37152":"摰??鈭?,"3716":"銝剖??扯","3717":"?臬??","37171":"?臬??銝","4104":"雿喲","4106":"??","4108":"?瑞","41135":"?臭?鈭?,"41136":"?臭???,"4119":"?剖?","41236":"?噸??,"41237":"?噸銝?,"41238":"?噸??,"41239":"?噸銋?,"41295":"?臬?鈭?,"4133":"鈭姥瘜?,"4137":"暻?-KY","41372":"暻?鈭Y","4142":"????,"4148":"?典???-KY","4155":"閮?","4164":"?踵平??,"41645":"?踵平?思?","41684":"????,"4169":"瘜啣?","4178":"瘞貊?-KY","4190":"雿-KY","41903":"雿銝Y","41904":"雿?Y","4195":"?箇掖-??,"41981":"甈?之?亙熒銝","4306":"?散","4414":"憒?","44163":"銝?銝?,"4426":"?拙","4438":"撱??","44383":"撱??銝?,"4439":"??-KY","44391":"??銝KY","4440":"摰撖行平","4441":"?臬之?啁?","44421":"蝡?銝KY","45031":"?銝","45102":"擃?鈭?,"4526":"?勗","4532":"?","4536":"?","4540":"?函??喳?","45415":"?鈭?,"45416":"???,"4545":"?","45491":"獢?銝","4551":"?箔撓蝘?,"4552":"??-KY","4555":"瘞??","45554":"瘞????,"4557":"瘞豢-KY","45581":"撖嗥楝銝","4560":"撘瑚縑-KY","4562":"蝛慰","4564":"??","4566":"?◣撌交平","45663":"?◣撌交平銝?,"4569":"?剜蝘?KY","45691":"?剜蝘?KY","4571":"??-KY","4572":"擏?","45721":"擏?銝","4576":"憭折?敺桃頂蝯?,"4581":"??蝎曉?-KY","45811":"??蝎曉?銝KY","4582":"??-??,"4583":"?啁蝎暸","4585":"??","4588":"???餃?","4590":"撖-??,"47148":"瘞豢??,"4720":"敺瑟殿","4722":"?移??,"47223":"?移??","47224":"?移??","4736":"瘜啣?","4737":"?臬誨","4739":"摨瑟","47393":"摨瑟銝?,"47394":"摨瑟??,"4746":"?啗","47491":"?唳???","4755":"銝???,"47602":"?文鈭?,"4763":"??-KY","4764":"?","47642":"?鈭?,"4766":"?窄","4770":"銝?","4771":"?","47721":"?啁??","4807":"?交?-KY","4904":"?","4906":"甇??","4912":"?臬噸?扯-KY","4915":"?港撓","4916":"鈭派蝘?,"49165":"鈭派蝘?","4919":"?啣?","49231":"?ㄚ銝","4927":"瘜圈?-KY","4930":"?行?蝬?,"49311":"?啁???","4934":"憭芣扔","4935":"??-KY","4938":"?◣","4942":"?蔑","4943":"摨瑟-KY","4949":"??蝎曉?","4952":"??,"4956":"??","4958":"?駁?-KY","4960":"隤???,"4961":"憭拚","4967":"??","49675":"??鈭?,"4968":"蝡?","49731":"撱???駁?","4976":"雿喳?","4977":"?暸?-KY","4979":"?舀???,"49793":"?舀???","49794":"?舀???","4989":"璁桃?","4994":"?喳?","4999":"?怎汙","5007":"銝?","5198":"?嗅?","52011":"?梯?銝","5203":"閮?,"52121":"?雯銝","5215":"蝘?-KY","5222":"?刻?","5225":"?梁?-KY","5234":"????","5236":"??菜","5243":"銋?-KY","5244":"撘","52441":"撘銝","52452":"?箸鈭?,"5258":"?孵","52635":"?箏斐鈭?,"5269":"蟡亦◣","5274":"靽⊿?","5283":"蝳曇蝣?,"52844":"jpp?Y","52845":"jpp鈭Y","5285":"??","5288":"鞊孕-KY","52892":"摰?鈭?,"52912":"??鈭?,"5292":"?舀?","5306":"獢?","53064":"獢???,"53096":"蝟餌絞?餃","53097":"蝟餌絞?颱?","5314":"銝?","5316":"?園","53211":"蝢翰銝","5388":"銝剔?","53887":"銝剔?銝?,"5434":"撏?","54391":"擃?銝","54501":"?銝","54573":"摰?噸銝?,"5464":"??","54642":"??鈭?,"5469":"????,"5471":"?曄膩","5483":"銝剔???,"5484":"?批?","5515":"撱箏?","5519":"?之","5521":"撌乩縑","5522":"??","5525":"?予","5531":"??","5533":"??","5534":"?瑁","55344":"?瑁??,"55362":"??鈭?,"55363":"??銝?,"5538":"?望?-KY","5546":"瘞詨-KY","5607":"??皜?,"5608":"?雁??,"56087":"?雁?芯?","5706":"曈喳","5871":"銝剔?-KY","5876":"銝絲??","5880":"?澈??,"5906":"?啣?-KY","5907":"憭扳?-KY","6005":"蝢斤?霅?,"60152":"摰?霅?","6024":"蝢斤???,"61011":"撖祇???銝","61012":"撖祇???鈭?,"61041":"?菜?銝","6108":"蝡嗅?","61112":"???園鈭?,"6112":"????,"6115":"?啣?","6116":"敶拇","6117":"餈誨","61171":"餈誨銝","61172":"餈誨鈭?,"6120":"??","61255":"撱??鈭?,"61263":"靽⊿銝?,"6128":"銝?","6133":"??","61343":"?祆銝?,"6136":"撖??,"6139":"鈭?","6141":"?","6142":"??","6147":"?","61506":"?潸???,"6152":"?曆?","6153":"???,"6155":"?窄","61565":"?曆?鈭?,"61635":"?舫蝬脖?","6164":"?航?","6165":"瘚芸","6166":"?","6168":"摰?","61743":"摰?T","6176":"??","6177":"??","61777":"??銝?,"61794":"鈭?","6182":"?","61828":"???,"6183":"?窒","6184":"憭扯???,"61843":"憭扯??颱?","61876":"?祆膜??,"6189":"鞊?","61894":"鞊???,"61907":"?祆陸蝘?","6191":"蝎暹?蝘?,"6192":"撌刻楝","6196":"撣恐","6197":"雿喳???,"61973":"雿喳??芯?","61993":"憭拙?銝?,"61994":"憭拙???,"6201":"鈭???,"6202":"?黎","6205":"閰格派","6206":"憌","62075":"?瑞?鈭?,"62076":"?瑞???,"6209":"隞???,"62093":"隞???","6213":"?航?","6214":"蝎曇?","6215":"?凶","6216":"撅?","62194":"撖??,"62236":"?箇??,"6224":"??","6225":"憭拍?,"6226":"??","6230":"撠澆?蝘???,"6235":"?臬?","6239":"??","6243":"餈","62433":"餈銝?,"6245":"?啗","6257":"?賣","6269":"?圈","62695":"?圈鈭?,"62696":"?圈??,"6271":"?派??,"6272":"撽?","6277":"摰迤","6278":"?啗”蝘?,"6281":"?典???,"6282":"摨瑁?","62822":"摨瑁?鈭?,"6283":"瘛喳?","62843":"雿喲銝?,"6285":"??,"62854":"??","62855":"??","6405":"??","6409":"?剝","6412":"蝢日","6414":"璅箸慰","6415":"?賢?-KY","6416":"?朮?駁?,"64251":"?銝","6426":"蝯望","6431":"??-KY","64324":"隞?蝘?","6438":"餈?","64383":"餈?銝?,"6442":"??","6443":"?","6446":"?亥??,"6449":"?粹","6451":"閮-KY","6464":"?唳蝘?,"6467":"瘜啣?","64693":"憭扳邦銝?,"6472":"靽?","64724":"靽???,"64725":"靽?鈭?,"6477":"摰?","64774":"摰???,"64775":"摰?鈭?,"6488":"?啁???,"6491":"?嗥◣","6504":"?","6505":"?啣???,"65096":"????,"65101":"蝎暹葫銝","6515":"蝛斐","65152":"蝛斐鈭?,"6525":"?瑟?-KY","6526":"?","6531":"?","6533":"?嗅?蝘?,"65331":"?嗅?蝘?","6534":"甇????,"65381":"??銝","6541":"瘜啁?-KY","65461":"甇?銝","65462":"甇?鈭?,"65463":"甇?銝?,"65472":"擃垢?怨?鈭?,"6550":"?扔?璆?KY","6552":"???,"65521":"??颱?","6558":"?擃?,"65702":"蝬剔鈭?,"6573":"?寞?-KY","65761":"?賊?銝","6579":"??","6581":"?潸","6582":"?唾?","65843":"????銝?,"6585":"曌","65851":"曌銝","65852":"曌鈭?,"6589":"?啣熒??","6591":"??-KY","65914":"???Y","6592":"?膜隡平","66034":"撖撥?怠?","6605":"撣窄","6606":"撱箏噸撌交平","6614":"鞈?摰?","66163":"?寞?銝Y","66241":"?砍僑皜?","6625":"敹?","66292":"瘜圈?鈭Y","6641":"?箏ㄚ敺?KY","6645":"?????,"66451":"?????,"6655":"蝘?","6657":"?臬?","6658":"?舐?","66642":"蝢斤?鈭?,"6666":"蝢???KY","6668":"銝剜???,"6669":"蝺舐?","6670":"敺拍??","66702":"敺拍??鈭?,"6671":"銝-KY","6672":"擉啗??餃?-KY","6674":"?窄蝘?","66801":"?怠?餃?銝","66831":"?銝","6689":"隡靚?,"6691":"瘣撌亦?","66931":"撱??蝘?","6695":"?舫?","6698":"?剜???","6706":"?","67062":"?鈭?,"6715":"?","6719":"?","6722":"頛","6729":"?券?","6742":"瞉斤掖","6743":"摰??,"6753":"樴噸?","67531":"樴噸?銝","6754":"?臬?閮剛?","6756":"憡??餃?","6757":"?啁?","6768":"敹撥-KY","67681":"敹撥-KY","6770":"????,"6771":"撟喳??唬?-??,"67711":"撟喳??唬?銝??,"6776":"撅蝭?,"6782":"閬","6789":"?","6790":"瘞貉?撖?,"6792":"閰平","6794":"?旨??","6796":"??","67962":"??鈭?,"6799":"靘","68032":"撏?鈭?,"6805":"撖???,"68061":"璉桀斐?賣?銝","6807":"撜唳?-KY","68211":"?臬窄銝","6830":"瘙?","68301":"瘙?銝","6831":"??","6834":"憭拐?蝘?","6835":"??","68351":"??銝","6838":"?唳??,"68401":"?梁?靽∟?銝","68431":"?脣銝","68461":"蝬銝","68462":"蝬鈭?,"6854":"?澆蝘?-KY??,"68541":"?澆蝘?銝KY??,"6861":"?輻??","6862":"銝???KY","68621":"銝???KY","6863":"瘞賊?-KY","68631":"瘞賊?銝KY","6869":"?脰措?賣?","68692":"?脰措?賣?鈭?,"68701":"擉圈銝","68702":"擉圈鈭?,"6873":"瘜噸?賣?","68732":"瘜噸?賣?鈭?,"68741":"??銝","6885":"?函???","6887":"撖嗥???KY","6890":"靘?-KY","68901":"靘?銝KY","68902":"靘?鈭Y","68941":"銵?嫣?","6901":"?賜??","69031":"撌冽慰銝","69032":"撌冽慰鈭?,"69041":"隡舫銝","6906":"?曇?蝘?,"6908":"摰C????,"6909":"?菜","69131":"暾餃?銝","6914":"???,"6916":"?臬?","6918":"?晷??,"6919":"摨琿?","6921":"?????,"6923":"銝剖","6924":"璁格?-KY??,"6928":"?豢陸蝘?","6931":"??亙熒","6934":"敹???,"6936":"瘞賊暑??","6937":"憭抵","6944":"?撖行平","6947":"?圈?蝘?","6949":"瘝?-??,"6951":"?-??,"6952":"憭扳郎撅?,"6955":"?衣??-??,"6957":"鋆-KY","69571":"鋆銝KY","6958":"?亦??圈尿","6962":"憟?-KY","6965":"銝剖?-KY","6969":"?縑撖行平-??,"69821":"憭找?瘜菜策銝","69822":"憭找?瘜菜策鈭?,"6988":"憡?????,"6994":"撖??餃?","74022":"?鈭?,"75561":"?噸憯思?瘞?,"75562":"?噸憯思?","7610":"?臬??惇-??,"76101":"?臬??惇銝??,"7631":"?郭?-??,"76311":"?郭?銝??,"7689":"憭折筋蝘LMX","7705":"銝?擗ㄡ","7710":"?望?蝘?","7711":"瘞豢?","77131":"憡?敺瑞??思?","7721":"敺桃?撘?,"7730":"??-??,"7732":"??蝎曉?","7736":"?控","77381":"?梯鈭?銝","7740":"?????,"77431":"?憌?銝","7749":"?辰-KY","7750":"?唬誨","7760":"鈭急澈擐?,"7765":"銝剛鞈?","7768":"??蝘?","7769":"暾餃?","7780":"憭抒??","7786":"?望憸刻","7788":"?曉?蝎曉?","7791":"?振?臬","7795":"?瑕誨","7799":"蝳暹旨蝘?,"7803":"?脰情蝘?-??,"7812":"蝔?蝘?-??,"7818":"皞Ｘ陸撖行平","7821":"蟡","7822":"?蝘?,"7823":"憟抒儔鞈賢?-KY??,"7827":"瞍Ｗ熒-KY??,"7835":"瘞豢??亙熒-??,"7855":"??蝘?","8011":"?圈?,"8016":"?賢","8021":"撠?","80212":"撠?鈭?,"80213":"撠?銝?,"80273":"?行?銝?,"8028":"???擃?,"80282":"???擃?","8033":"?瑁?","8039":"?啗","80426":"?控?餃","8045":"???","8046":"?","80506":"撱????,"80541":"摰?銝","8070":"?瑁","8072":"?陸","80746":"?屆??,"8081":"?湔","80872":"暻??賣?鈭?,"80914":"蝧???,"80924":"撱箸???,"80962":"??鈭?,"80963":"??銝?,"8101":"?臬?","8103":"??","8104":"?詨窄","81042":"?詨窄鈭?,"8105":"?楊","8110":"?舀","81114":"蝡?","8112":"?喃?","8114":"?舀那??,"8131":"蝳?蝘?,"81473":"甇?楨銝?,"8150":"??","81551":"?銝","81552":"?鈭?,"81553":"?銝?,"8162":"敺桃?餃?-??,"8163":"?","81714":"憭拙???,"81715":"憭拙?鈭?,"8201":"?⊥","8210":"?方?","82102":"?方?鈭?,"82103":"?方?銝?,"8213":"敹?","8215":"???,"8222":"撖嗡?","82221":"撖嗡?銝","8249":"?勗?","8261":"撖?","8271":"摰","82711":"摰銝","8299":"蝢方","82993":"蝢方銝?,"8341":"?亙?","8358":"??","8367":"撱箸??","8374":"蝢?","83742":"蝢?鈭?,"8404":"?曉??平-KY","84041":"?曉??平銝KY","8411":"蝳?-KY","84113":"蝳?銝Y","8422":"?臬祐銵?,"84221":"?臬祐銵?","84222":"?臬祐銵?","84223":"?臬祐銵?","8429":"??-KY","84312":"?舫蝘?","84332":"撘?鈭?,"84333":"撘?銝?,"8438":"?嗆?","84381":"?嗆?銝","8442":"憡?-KY","84423":"憡?銝Y","84424":"憡??Y","8443":"?輻","8454":"撖慦?,"8462":"??","84624":"????,"8463":"瞏斗陸??,"8464":"??","8466":"蝢???KY","8467":"瘜Ｗ?-KY","84672":"瘜Ｗ?鈭Y","84673":"瘜Ｗ?銝Y","8473":"撅望?瘞?,"8476":"?啣?","84762":"?啣?鈭?,"8478":"?勗??","84781":"?勗??銝","8481":"?蹂撓","8482":"??-KY","8487":"?????,"8488":"??-KY","84881":"??銝KY","84891":"銝?敺瑚?","8499":"曌-KY","8908":"甈??","8926":"?唳掃??,"89277":"?銝?,"89278":"???,"89365":"?絞鈭?,"89366":"?絞??,"8940":"?啣予??,"8996":"擃?","89965":"擃?鈭?,"89966":"擃???,"9103":"蝢噸?怎?-DR","9105":"瘜圈?撖?DR","9110":"頞???DR","9136":"撌券辰-DR","9802":"?粹?-KY","98026":"?粹??胛Y","9902":"?啁","9904":"撖嗆?","9905":"憭扯","9906":"甈?毀撌?,"99063":"甈?毀撌港?","9907":"蝯曹?撖?,"9908":"憭批??,"9910":"鞊陸","9911":"瑹餉","9912":"?","9914":"蝢??,"9917":"銝凋?蝘?,"9918":"甈?予??,"9919":"摨琿擐?,"9921":"撌典之","9924":"蝳?","9925":"?唬?","9926":"?唳絲","9927":"瘜圈?","9928":"銝剛?","9929":"蝘","9930":"銝剛鞈?","9931":"甈??","9933":"銝剝?","99332":"銝剝?鈭?,"9934":"??","9935":"?嗉?撖?,"99353":"?嗉?撖?","9937":"?典?","9938":"?曉?","9939":"摰","99392":"摰鈭?,"9940":"靽∠儔","9941":"鋆?","99412":"鋆?鈭?,"9942":"??","9943":"憟賣?餈?,"9944":"?圈?","9945":"瞏斗陸??,"9946":"銝?啁","9955":"雿喲?","9958":"銝???,"99587":"銝??潔?","99588":"銝??澆瘞?};
+const WNAMES = {"0050":"元大台灣50","0051":"元大中型100","0052":"富邦科技","0053":"元大科技市值","0055":"元大MSCI金融","0056":"元大高股息","0057":"富邦摩台","0061":"元大寶滬深","00636":"國泰中國A50","00639":"富邦深100","00643":"群益深証中小","00645":"富邦日本","00646":"元大S&P500","00652":"富邦印度","00657":"國泰日經225","00660":"元大歐洲50","00661":"元大日經225","00662":"富邦NASDAQ","00668":"國泰美國道瓊","00678":"群益那斯達克生技","00690":"兆豐藍籌30","00692":"富邦公司治理","00700":"富邦琤肭磪","00701":"國泰股利精選30","00702":"國泰標普低波高息","00703":"台新MSCI中國","00709":"富邦歐洲","00712":"復華富時不動產","00713":"元大台灣高息低波","00714":"群益道瓊美國地產","00717":"富邦美國特別股","00728":"第一金工業30","00730":"富邦臺灣優質高息","00731":"復華富時高息低波","00733":"富邦臺灣中小","00735":"國泰臺韓科技","00736":"國泰新興市場","00737":"國泰AI機器人","00739":"元大MSCI A股","00752":"中信中國50","00757":"統一FANG+","00762":"元大全球AI","00770":"國泰北美科技","00771":"元大US高息特別股","00783":"富邦中証500","00830":"國泰費城半導體","00850":"元大臺灣ESG永續","00851":"台新全球AI","00861":"元大全球未來通訊","00875":"國泰網路資安","00876":"元大全球5G","00878":"國泰永續高股息","00881":"國泰台灣科技龍頭","00882":"中信中國高股息","00885":"富邦越南","00891":"中信關鍵半導體","00892":"富邦台灣半導體","00893":"國泰智能電動車","00894":"中信小資高價30","00895":"富邦未來車","00896":"中信綠能及電動車","00897":"富邦基因免疫生技","00898":"國泰基因免疫革命","00899":"FT潔淨能源","00900":"富邦特選高股息30","00901":"永豐智能車供應鏈","00902":"中信電池及儲能","00903":"富邦元宇宙","00904":"台新臺灣半導體30","00905":"FT臺灣SMART","00907":"永豐優息存股","00908":"富邦入息REITs+","00909":"國泰數位支付服務","00910":"第一金太空衛星","00911":"兆豐洲際半導體","00912":"中信臺灣智慧50","00913":"兆豐台灣晶圓製造","00915":"凱基優選高股息30","00916":"國泰全球品牌50","00917":"中信特選金融","00918":"大華優利高填息30","00919":"群益台灣精選高息","00920":"富邦ESG綠色電力","00921":"兆豐龍頭等權重","00922":"國泰台灣領袖50","00923":"群益台ESG低碳50","00924":"復華S&P500成長","00926":"凱基全球菁英55","00927":"群益半導體收益","00929":"復華台灣科技優息","00930":"永豐ESG低碳高息","00932":"兆豐永續高息等權","00934":"中信成長高股息","00935":"野村臺灣新科技50","00936":"台新永續高息中小","00938":"凱基優選30","00939":"統一台灣高息動能","00940":"元大台灣價值高息","00941":"中信上游半導體","00943":"兆豐電子高息等權","00944":"野村趨勢動能高息","00946":"群益科技高息成長","00947":"台新臺灣IC設計","00949":"復華日本龍頭","00951":"台新日本半導體","00952":"凱基台灣AI50","00954":"中信日本半導體","00956":"中信日經高股息","00960":"野村全球航運龍頭","00961":"FT臺灣永續高息","00962":"台新AI優息動能","00963":"中信全球高股息","00964":"中信亞太高股息","00965":"元大航太防衛科技","00971":"野村美國研發龍頭","00972":"野村日本動能高息","1101":"台泥","11011":"台泥一永","1102":"亞泥","1103":"嘉泥","1104":"環泥","1108":"幸福","1109":"信大","1110":"東泥","1201":"味全","1203":"味王","1210":"大成","1213":"大飲","1215":"卜蜂","1216":"統一","1217":"愛之味","1218":"泰山","1219":"福壽","1220":"台榮","1225":"福懋油","1227":"佳格","1229":"聯華","1231":"聯華食","1232":"大統益","1233":"天仁","1234":"黑松","1235":"興泰","1236":"宏亞","1256":"鮮活果汁-KY","12561":"鮮活果汁一KY","1301":"台塑","1303":"南亞","1304":"台聚","1305":"華夏","1307":"三芳","1308":"亞聚","1309":"台達化","1310":"台苯","1312":"國喬","1313":"聯成","1314":"中石化","1315":"達新","1316":"上曜","13166":"上曜六","1319":"東陽","1321":"大洋","1323":"永裕","1324":"地球","1325":"恆大","1326":"台化","1337":"再生-KY","1338":"廣華-KY","13382":"廣華二KY","1339":"昭輝","1340":"勝悅-KY","1341":"富林-KY","1342":"八貫","1402":"遠東新","1409":"新纖","1410":"南染","1413":"宏洲","1414":"東和","1416":"廣豐","1417":"嘉裕","1418":"東華","1419":"新紡","1423":"利華","1432":"大魯閣","1434":"福懋","1435":"中福","1436":"華友聯","14363":"華友聯三","14364":"華友聯四","1437":"勤益控","1438":"三地開發","14381":"三地開發一","1439":"雋揚","1440":"南紡","1441":"大東","1442":"名軒","1443":"立益物流","1444":"力麗","1445":"大宇","1446":"宏和","1447":"力鵬","1449":"佳和","1451":"年興","1452":"宏益","1453":"大將","1454":"台富","1455":"集盛","1456":"怡華","1457":"宜進","1459":"聯發","1460":"宏遠","1463":"強盛新","1464":"得力","1465":"偉全","1466":"聚隆","14664":"聚隆四","1467":"南緯","1468":"昶和","1470":"大統新創","1471":"首利","1472":"三洋實業","14722":"三洋實業二","14723":"三洋實業三","1473":"台南","1474":"弘裕","14743":"弘裕三","1475":"業旺","1476":"儒鴻","1477":"聚陽","1503":"士電","1504":"東元","1506":"正道","1512":"瑞利","1513":"中興電","1514":"亞力","15142":"亞力二","1515":"力山","1516":"川飛","1517":"利奇","1519":"華城","1521":"大億","1522":"堤維西","1524":"耿鼎","1525":"江申","1526":"日馳","1527":"鑽全","1528":"恩德","1529":"樂事綠能","1530":"亞崴","1531":"高林股","1532":"勤美","1533":"車王電","1535":"中宇","1536":"和大","15364":"和大四","1537":"廣隆","1538":"正峰","1539":"巨庭","1540":"喬福","1541":"錩泰","1558":"伸興","1560":"中砂","15602":"中砂二","1563":"巧新","1568":"倉佑","1582":"信錦","1583":"程泰","1587":"吉茂","1589":"永冠-KY","15894":"永冠四KY","1590":"亞德客-KY","15952":"川寶二","1597":"直得","1598":"岱宇","15984":"岱宇四","1603":"華電","1604":"聲寶","1605":"華新","1608":"華榮","1609":"大亞","16095":"大亞五","1611":"中電","1612":"宏泰","1614":"三洋電","1615":"大山","1616":"億泰","1617":"榮星","1618":"合機","1623":"大東電","16231":"大東電一","1626":"艾美特-KY","1702":"南僑","1707":"葡萄王","1708":"東鹼","1709":"和益","1710":"東聯","1711":"永光","1712":"興農","1713":"國化","1714":"和桐","1717":"長興","17172":"長興二","1718":"中纖","1720":"生達","1721":"國慶科技","1722":"台肥","1723":"中碳","1725":"元禎","1726":"永記","1727":"中華化","17272":"中華化二","1730":"花仙子","1731":"美吾華","1732":"毛寶","1733":"五鼎","1734":"杏輝","1735":"日勝化","1736":"喬山","1737":"臺鹽","1752":"南光","1760":"寶齡富錦","1762":"中化生","1773":"勝一","1776":"展宇","17813":"合世三","1783":"和康生","1786":"科妍","17863":"科妍三","1789":"神隆","1795":"美時","1802":"台玻","1805":"寶徠","1806":"冠軍","1808":"潤隆","1809":"中釉","1810":"和成","1815":"富喬","1817":"凱撒衛","1903":"士紙","1904":"正隆","1905":"華紙","1906":"寶隆","1907":"永豐餘","1909":"榮成","19094":"榮成四","2002":"中鋼","2006":"東和鋼鐵","2007":"燁興","2008":"高興昌","2009":"第一銅","2010":"春源","2012":"春雨","2013":"中鋼構","2014":"中鴻","2015":"豐興","2017":"官田鋼","2020":"美亞","2022":"聚亨","2023":"燁輝","2024":"志聯","2025":"千興","2027":"大成鋼","2028":"威致","2029":"盛餘","2030":"彰源","2031":"新光鋼","2032":"新鋼","2033":"佳大","2034":"允強","20344":"允強四","2038":"海光","2049":"上銀","2059":"川湖","2062":"橋椿","2069":"運錩","2072":"世紀能源","2101":"南港","2102":"泰豐","2103":"台橡","2104":"國際中橡","21043":"國際中橡三","2105":"正新","2106":"建大","2107":"厚生","2108":"南帝","2109":"華豐","2114":"鑫永銓","2115":"六暉-KY","2201":"裕隆","22013":"裕隆三","2204":"中華","2206":"三陽工業","2207":"和泰車","2208":"台船","2211":"長榮鋼","22211":"大甲一","2227":"裕日車","2228":"劍麟","22283":"劍麟三","2231":"為升","2233":"宇隆","22331":"宇隆一","2236":"百達-KY","22363":"百達三KY","2237":"華德動能-創","2239":"英利-KY","2241":"艾姆勒","2243":"宏旭-KY","2247":"汎德永業","22471":"汎德永業一","22472":"汎德永業二","2248":"華勝-KY","2254":"巨鎧精密-創","2258":"鴻華先進-創","2301":"光寶科","2302":"麗正","2303":"聯電","23031":"聯電一","23032":"聯電二","2305":"全友","2308":"台達電","2312":"金寶","2313":"華通","2314":"台揚","2316":"楠梓電","23161":"楠梓電一","2317":"鴻海","2321":"東訊","2323":"中環","2324":"仁寶","2327":"國巨","2328":"廣宇","2329":"華泰","23291":"華泰一","2330":"台積電","2331":"精英","2332":"友訊","2337":"旺宏","2338":"光罩","2340":"台亞","2342":"茂矽","2344":"華邦電","2345":"智邦","2347":"聯強","2348":"海悅","2349":"錸德","2351":"順德","23511":"順德一","2352":"佳世達","2353":"宏","2354":"鴻準","2355":"敬鵬","2356":"英業達","2357":"華碩","2359":"所羅門","2360":"致茂","2362":"藍天","2363":"矽統","2364":"倫飛","2365":"昆盈","2367":"燿華","2368":"金像電","2369":"菱生","2371":"大同","2373":"震旦行","2374":"佳能","23742":"佳能二","2375":"凱美","2376":"技嘉","2377":"微星","2379":"瑞昱","2380":"虹光","2382":"廣達","2383":"台光電","2385":"群光","2387":"精元","2388":"威盛","2390":"云辰","2392":"正崴","2393":"億光","2395":"研華","2397":"友通","2399":"映泰","2401":"凌陽","2402":"毅嘉","24023":"毅嘉三","2404":"漢唐","2405":"輔信","2406":"國碩","2408":"南亞科","2409":"友達","2412":"中華電","2413":"環科","2414":"精技","2415":"錩新","2417":"圓剛","2419":"仲琦","2420":"新巨","2421":"建準","2423":"固緯","2424":"隴華","2425":"承啟","2426":"鼎元","2427":"三商電","24271":"三商電一","2428":"興勤","2429":"銘旺科","2430":"燦坤","2431":"聯昌","2432":"倚天酷-創","2433":"互盛電","2434":"統懋","2436":"偉詮電","2438":"翔耀","2439":"美律","24394":"美律四","24395":"美律五","2440":"太空梭","2441":"超豐","2442":"新美齊","24423":"新美齊三","24424":"新美齊四","2444":"兆勁","2449":"京元電子","2450":"神腦","2451":"創見","2453":"凌群","2454":"聯發科","2455":"全新","24552":"全新二","24553":"全新三","2457":"飛宏","2458":"義隆","2459":"敦吉","2460":"建通","2461":"光群雷","2462":"良得電","2464":"盟立","24642":"盟立二","24643":"盟立三","2465":"麗臺","2466":"冠西電","2467":"志聖","24672":"志聖二","24673":"志聖三","2468":"華經","2471":"資通","2472":"立隆電","2474":"可成","2476":"鉅祥","24762":"鉅祥二","2477":"美隆電","2478":"大毅","2480":"敦陽科","2481":"強茂","2482":"連宇","2483":"百容","2484":"希華","2485":"兆赫","2486":"一詮","24867":"一詮七","2488":"漢平","2489":"瑞軒","2491":"吉祥全","2492":"華新科","2493":"揚博","2495":"普安","2496":"卓越","2497":"怡利電","2498":"宏達電","2501":"國建","2504":"國產","2505":"國揚","2506":"太設","2509":"全坤建","2511":"太子","2514":"龍邦","2515":"中工","2516":"新建","2520":"冠德","2524":"京城","2527":"宏璟","2528":"皇普","25283":"皇普三","25284":"皇普四","2530":"華建","25303":"華建三","25304":"華建四","2534":"宏盛","2535":"達欣工","2536":"宏普","2537":"聯上發","2538":"基泰","2539":"櫻花建","2540":"愛山林","2542":"興富發","2543":"皇昌","2545":"皇翔","2546":"根基","2547":"日勝生","2548":"華固","25483":"華固三","25484":"華固四","2597":"潤弘","2601":"益航","2603":"長榮","2605":"新興","2606":"裕民","2607":"榮運","2608":"嘉里大榮","2609":"陽明","2610":"華航","2611":"志信","2612":"中航","2613":"中櫃","2614":"東森","2615":"萬海","2616":"山隆","2617":"台航","2618":"長榮航","2630":"亞航","2633":"台灣高鐵","2634":"漢翔","2636":"台驊控股","2637":"慧洋-KY","26417":"正德七","26418":"正德八","2642":"宅配通","2645":"長榮航太","2646":"星宇航空","26461":"星宇航空一","26462":"星宇航空二","2701":"萬企","2702":"華園","2704":"國賓","2705":"六福","2706":"第一店","2707":"晶華","2712":"遠雄來","2722":"夏都","2723":"美食-KY","2727":"王品","27271":"王品一","2731":"雄獅","27323":"六角三","27324":"六角四","2739":"寒舍","27431":"山富一","27451":"五福一","2748":"雲品","2753":"八方雲集","27531":"八方雲集一","27532":"八方雲集二","27551":"揚秦一","2756":"聯發國際","27561":"聯發國際一","27562":"聯發國際二","2762":"世界健身-KY","2801":"彰銀","2812":"台中銀","2816":"旺旺保","2820":"華票","2832":"台產","2834":"臺企銀","2836":"高雄銀","2838":"聯邦銀","2845":"遠東銀","2849":"安泰銀","2850":"新產","2851":"中再保","2852":"第一保","2855":"統一證","2880":"華南金","2881":"富邦金","2882":"國泰金","2883":"凱基金","2884":"玉山金","2885":"元大金","2886":"兆豐金","2887":"台新新光金","2889":"國票金","2890":"永豐金","2891":"中信金","2892":"第一金","2897":"王道銀行","2901":"欣欣","2903":"遠百","2904":"匯僑","2905":"三商","2906":"高林","2908":"特力","2910":"統領","2911":"麗嬰房","2912":"統一超","2913":"農林","2915":"潤泰全","2923":"鼎固-KY","2929":"淘帝-KY","2939":"永邑-KY","2945":"三商家購","3002":"歐格","3003":"健和興","3004":"豐達科","3005":"神基","3006":"晶豪科","30062":"晶豪科二","3008":"大立光","3010":"華立","3011":"今皓","30112":"今皓二","3013":"晟銘電","30134":"晟銘電四","3014":"聯陽","3015":"全漢","3016":"嘉晶","30165":"嘉晶五","30166":"嘉晶六","3017":"奇鋐","3018":"隆銘綠能","3019":"亞光","3021":"鴻名","3022":"威強電","3023":"信邦","3024":"憶聲","3025":"星通","3026":"禾伸堂","3027":"盛達","3028":"增你強","30285":"增你強五","30286":"增你強六","3029":"零壹","3030":"德律","3031":"佰鴻","3032":"偉訓","30321":"偉訓一","30322":"偉訓二","3033":"威健","30336":"威健六","30337":"威健七","3034":"聯詠","3035":"智原","3036":"文曄","3037":"欣興","30371":"欣興一","3038":"全台","3040":"遠見","30401":"遠見一","3041":"揚智","3042":"晶技","3043":"科風","3044":"健鼎","3045":"台灣大","30454":"台灣大四","30455":"台灣大五","3046":"建","3047":"訊舟","3048":"益登","3049":"精金","3050":"鈺德","3051":"力特","3052":"夆典","3054":"立萬利","3055":"蔚華科","3056":"富華新","3057":"喬鼎","3058":"立德","3059":"華晶科","3060":"銘異","3062":"建漢","30811":"聯亞一","30812":"聯亞二","3090":"日電貿","3092":"鴻碩","3094":"聯傑","30954":"及成四","3105":"穩懋","31222":"笙泉二","3130":"一零四","3135":"凌航","31352":"凌航二","3138":"耀登","31382":"耀登二","31413":"晶宏三","31414":"晶宏四","31415":"晶宏五","3149":"正達","31494":"正達四","3150":"鈺寶-創","3164":"景岳","3167":"大量","3168":"眾福科","31882":"鑫龍騰二","3189":"景碩","32071":"耀勝一","3209":"全科","32191":"倚強科一","3229":"晟鈦","3231":"緯創","3257":"虹冠電","32571":"虹冠電一","32609":"威剛九","3266":"昇陽","32723":"東碩三","32843":"太普高三","32943":"英濟三","3296":"勝德","33035":"岱稜五","3305":"昇貿","3308":"聯德","3311":"閎暉","3312":"弘憶股","33121":"弘憶股一","33133":"斐成三","3321":"同泰","33225":"建舜電五","33245":"雙鴻五","33246":"雙鴻六","33247":"雙鴻七","3338":"泰碩","3346":"麗清","33466":"麗清六","3356":"奇偶","33571":"臺慶科一","33621":"先進光一","3376":"新日興","33763":"新日興三","3380":"明泰","33902":"旭軟二","3406":"玉晶光","3413":"京鼎","3416":"融程電","34163":"融程電三","3419":"譁裕","3432":"台端","3435":"台表","3437":"榮創","3443":"創意","3447":"展達","3450":"聯鈞","34793":"安勤三","3481":"群創","34834":"力致四","34843":"崧騰三","34913":"昇達科三","3494":"誠研","3498":"陽程","3501":"維熹","3504":"揚明光","35122":"皇龍二","3515":"華擎","35161":"亞帝歐一","3518":"柏騰","35181":"柏騰一","35221":"御嵿一","35265":"凡甲五","35266":"凡甲六","35267":"凡甲七","3528":"安馳","3530":"晶相光","3532":"台勝科","3533":"嘉澤","3535":"晶彩科","3543":"州巧","35431":"州巧一","3545":"敦泰","35482":"兆利二","35483":"兆利三","3550":"聯穎","35513":"世禾三","3557":"嘉威","3563":"牧德","35642":"其陽二","3576":"聯合再生","3583":"辛耘","35833":"辛耘三","35834":"辛耘四","35872":"閎康二","3588":"通嘉","3591":"艾笛森","35914":"艾笛森四","3592":"瑞鼎","3593":"力銘","3596":"智易","3605":"宏致","36053":"宏致三","36054":"宏致四","3607":"谷崧","3617":"碩天","36173":"碩天三","3622":"洋華","3645":"達邁","3652":"精聯","3653":"健策","3661":"世芯-KY","3665":"貿聯-KY","3669":"圓展","3679":"新至陞","36805":"家登五","36806":"家登六","36841":"榮昌一","3686":"達能","36872":"歐買尬二","36873":"歐買尬三","36913":"碩禾三","3694":"海華","3701":"大眾控","3702":"大聯大","3703":"欣陸","3704":"合勤控","3705":"永信","3706":"神達","37075":"漢磊五","3708":"上緯投控","3711":"日月光投控","3712":"永崴投控","3714":"富采","3715":"定穎投控","37151":"定穎投控一","37152":"定穎投控二","3716":"中化控股","3717":"聯嘉投控","37171":"聯嘉投控一","4104":"佳醫","4106":"雃博","4108":"懷特","41135":"聯上五","41136":"聯上六","4119":"旭富","41236":"晟德六","41237":"晟德七","41238":"晟德八","41239":"晟德九","41295":"聯合五","4133":"亞諾法","4137":"麗豐-KY","41372":"麗豐二KY","4142":"國光生","4148":"全宇生技-KY","4155":"訊映","4164":"承業醫","41645":"承業醫五","41684":"醣聯四","4169":"泰宗","4178":"永笙-KY","4190":"佐登-KY","41903":"佐登三KY","41904":"佐登四KY","4195":"基米-創","41981":"欣大健康一","4306":"炎洲","4414":"如興","44163":"三圓三","4426":"利勤","4438":"廣越","44383":"廣越三","4439":"冠星-KY","44391":"冠星一KY","4440":"宜新實業","4441":"振大環球","44421":"竣邦一KY","45031":"金雨一","45102":"高鋒二","4526":"東台","4532":"瑞智","4536":"拓凱","4540":"全球傳動","45415":"晟田五","45416":"晟田六","4545":"銘鈺","45491":"桓達一","4551":"智伸科","4552":"力達-KY","4555":"氣立","45554":"氣立四","4557":"永新-KY","45581":"寶緯一","4560":"強信-KY","4562":"穎漢","4564":"元翎","4566":"時碩工業","45663":"時碩工業三","4569":"六方科-KY","45691":"六方科一KY","4571":"鈞興-KY","4572":"駐龍","45721":"駐龍一","4576":"大銀微系統","4581":"光隆精密-KY","45811":"光隆精密一KY","4582":"聚恆-創","4583":"台灣精銳","4585":"達明","4588":"玖鼎電力","4590":"富田-創","47148":"永捷八","4720":"德淵","4722":"國精化","47223":"國精化三","47224":"國精化四","4736":"泰博","4737":"華廣","4739":"康普","47393":"康普三","47394":"康普四","4746":"台耀","47491":"新應材一","4755":"三福化","47602":"勤凱二","4763":"材料-KY","4764":"雙鍵","47642":"雙鍵二","4766":"南寶","4770":"上品","4771":"望隼","47721":"台特化一","4807":"日成-KY","4904":"遠傳","4906":"正文","4912":"聯德控股-KY","4915":"致伸","4916":"事欣科","49165":"事欣科五","4919":"新唐","49231":"力士一","4927":"泰鼎-KY","4930":"燦星網","49311":"新盛力一","4934":"太極","4935":"茂林-KY","4938":"和碩","4942":"嘉彰","4943":"康控-KY","4949":"有成精密","4952":"凌通","4956":"光鋐","4958":"臻鼎-KY","4960":"誠美材","4961":"天鈺","4967":"十銓","49675":"十銓五","4968":"立積","49731":"廣穎電通一","4976":"佳凌","4977":"眾達-KY","4979":"華星光","49793":"華星光三","49794":"華星光四","4989":"榮科","4994":"傳奇","4999":"鑫禾","5007":"三星","5198":"晶心","52011":"凱衛一","5203":"訊連","52121":"凌網一","5215":"科嘉-KY","5222":"全訊","5225":"東科-KY","5234":"達興材料","5236":"凌陽創新","5243":"乙盛-KY","5244":"弘凱","52441":"弘凱一","52452":"智晶二","5258":"虹堡","52635":"智崴五","5269":"祥碩","5274":"信驊","5283":"禾聯碩","52844":"jpp四KY","52845":"jpp五KY","5285":"界霖","5288":"豐祥-KY","52892":"宜鼎二","52912":"邑昇二","5292":"華懋","5306":"桂盟","53064":"桂盟四","53096":"系統電六","53097":"系統電七","5314":"世紀","5316":"晶錡","53211":"美而快一","5388":"中磊","53887":"中磊七","5434":"崇越","54391":"高技一","54501":"南良一","54573":"宣德三","5464":"霖宏","54642":"霖宏二","5469":"瀚宇博","5471":"松翰","5483":"中美晶","5484":"慧友","5515":"建國","5519":"隆大","5521":"工信","5522":"遠雄","5525":"順天","5531":"鄉林","5533":"皇鼎","5534":"長虹","55344":"長虹四","55362":"聖暉二","55363":"聖暉三","5538":"東明-KY","5546":"永固-KY","5607":"遠雄港","5608":"四維航","56087":"四維航七","5706":"鳳凰","5871":"中租-KY","5876":"上海商銀","5880":"合庫金","5906":"台南-KY","5907":"大洋-KY","6005":"群益證","60152":"宏遠證二","6024":"群益期","61011":"寬魚國際一","61012":"寬魚國際二","61041":"創惟一","6108":"競國","61112":"光聚晶電二","6112":"邁達特","6115":"鎰勝","6116":"彩晶","6117":"迎廣","61171":"迎廣一","61172":"迎廣二","6120":"達運","61255":"廣運五","61263":"信音三","6128":"上福","6133":"金橋","61343":"萬旭三","6136":"富爾特","6139":"亞翔","6141":"柏承","6142":"友勁","6147":"頎邦","61506":"撼訊六","6152":"百一","6153":"嘉聯益","6155":"鈞寶","61565":"松上五","61635":"華電網五","6164":"華興","6165":"浪凡","6166":"凌華","6168":"宏齊","61743":"安痐T","6176":"瑞儀","6177":"達麗","61777":"達麗七","61794":"亞通四","6182":"合晶","61828":"合晶八","6183":"關貿","6184":"大豐電","61843":"大豐電三","61876":"萬潤六","6189":"豐藝","61894":"豐藝四","61907":"萬泰科七","6191":"精成科","6192":"巨路","6196":"帆宣","6197":"佳必琪","61973":"佳必琪三","61993":"天品三","61994":"天品四","6201":"亞弘電","6202":"盛群","6205":"詮欣","6206":"飛捷","62075":"雷科五","62076":"雷科六","6209":"今國光","62093":"今國光三","6213":"聯茂","6214":"精誠","6215":"和椿","6216":"居易","62194":"富旺四","62236":"旺矽六","6224":"聚鼎","6225":"天瀚","6226":"光鼎","6230":"尼得科超眾","6235":"華孚","6239":"力成","6243":"迅杰","62433":"迅杰三","6245":"台耀","6257":"矽格","6269":"台郡","62695":"台郡五","62696":"台郡六","6271":"同欣電","6272":"驊陞","6277":"宏正","6278":"台表科","6281":"全國電","6282":"康舒","62822":"康舒二","6283":"淳安","62843":"佳邦三","6285":"啟","62854":"啟皏","62855":"啟痐","6405":"悅城","6409":"旭隼","6412":"群電","6414":"樺漢","6415":"矽力-KY","6416":"瑞祺電通","64251":"易發一","6426":"統新","6431":"光麗-KY","64324":"今展科四","6438":"迅得","64383":"迅得三","6442":"光聖","6443":"元晶","6446":"藥華藥","6449":"鈺邦","6451":"訊芯-KY","6464":"台數科","6467":"泰合","64693":"大樹三","6472":"保瑞","64724":"保瑞四","64725":"保瑞五","6477":"安集","64774":"安集四","64775":"安集五","6488":"環球晶","6491":"晶碩","6504":"南六","6505":"台塑化","65096":"聚和六","65101":"精測一","6515":"穎崴","65152":"穎崴二","6525":"捷敏-KY","6526":"達發","6531":"愛普","6533":"晶心科","65331":"晶心科一","6534":"正瀚-創","65381":"倉和一","6541":"泰福-KY","65461":"正基一","65462":"正基二","65463":"正基三","65472":"高端疫苗二","6550":"北極星藥業-KY","6552":"易華電","65521":"易華電一","6558":"興能高","65702":"維田二","6573":"虹揚-KY","65761":"逸達一","6579":"研揚","6581":"鋼聯","6582":"申豐","65843":"南俊國際三","6585":"鼎基","65851":"鼎基一","65852":"鼎基二","6589":"台康生技","6591":"動力-KY","65914":"動力四KY","6592":"和潤企業","66034":"富強鑫四","6605":"帝寶","6606":"建德工業","6614":"資拓宏宇","66163":"特昇三KY","66241":"萬年清一","6625":"必應","66292":"泰金二KY","6641":"基士德-KY","6645":"金萬林-創","66451":"金萬林一創","6655":"科定","6657":"華安","6658":"聯策","66642":"群翊二","6666":"羅麗芬-KY","6668":"中揚光","6669":"緯穎","6670":"復盛應用","66702":"復盛應用二","6671":"三能-KY","6672":"騰輝電子-KY","6674":"鋐寶科技","66801":"鑫創電子一","66831":"雍智一","6689":"伊雲谷","6691":"洋基工程","66931":"廣閎科一","6695":"芯鼎","6698":"旭暉應材","6706":"惠特","67062":"惠特二","6715":"嘉基","6719":"力智","6722":"輝創","6729":"全達","6742":"澤米","6743":"安普新","6753":"龍德造船","67531":"龍德造船一","6754":"匯僑設計","6756":"威鋒電子","6757":"台灣虎航","6768":"志強-KY","67681":"志強-KY","6770":"力積電","6771":"平和環保-創","67711":"平和環保一創","6776":"展眥篕","6782":"視陽","6789":"采鈺","6790":"永豐實","6792":"詠業","6794":"向榮生技","6796":"晉弘","67962":"晉弘二","6799":"來頡","68032":"崑鼎二","6805":"富世達","68061":"森崴能源一","6807":"峰源-KY","68211":"聯寶一","6830":"汎銓","68301":"汎銓一","6831":"邁科","6834":"天二科技","6835":"圓裕","68351":"圓裕一","6838":"台新藥","68401":"東研信超一","68431":"進典一","68461":"綠茵一","68462":"綠茵二","6854":"錼創科技-KY創","68541":"錼創科技一KY創","6861":"睿生光電","6862":"三集瑞-KY","68621":"三集瑞一KY","6863":"永道-KY","68631":"永道一KY","6869":"雲豹能源","68692":"雲豹能源二","68701":"騰雲一","68702":"騰雲二","6873":"泓德能源","68732":"泓德能源二","68741":"倍力一","6885":"全福生技","6887":"寶綠特-KY","6890":"來億-KY","68901":"來億一KY","68902":"來億二KY","68941":"衛司特一","6901":"鑽石投資","69031":"巨漢一","69032":"巨漢二","69041":"伯鑫一","6906":"現觀科","6908":"宏砦C戲-創","6909":"創控","69131":"鴻呈一","6914":"阜爾運通","6916":"華凌","6918":"愛派司","6919":"康霈","6921":"嘉雨思-創","6923":"中台","6924":"榮惠-KY創","6928":"攸泰科技","6931":"青松健康","6934":"心誠鎂","6936":"永鴻生技","6937":"天虹","6944":"兆聯實業","6947":"台鎔科技","6949":"沛爾生醫-創","6951":"青新-創","6952":"大武山","6955":"邦睿生技-創","6957":"裕慶-KY","69571":"裕慶一KY","6958":"日盛台駿","6962":"奕力-KY","6965":"中傑-KY","6969":"成信實業-創","69821":"大井泵浦一","69822":"大井泵浦二","6988":"威力暘-創","6994":"富威電力","74022":"邑錡二","75561":"意德士一永","75562":"意德士二","7610":"聯友金屬-創","76101":"聯友金屬一創","7631":"聚賢研發-創","76311":"聚賢研發一創","7689":"大鵬科CLMX","7705":"三商餐飲","7710":"東擎科技","7711":"永擎","77131":"威力德生醫一","7721":"微程式","7730":"暉盛-創","7732":"金興精密","7736":"虎山","77381":"東聯互動一","7740":"熙特爾-創","77431":"金利食安一","7749":"意騰-KY","7750":"新代","7760":"享溫馨","7765":"中華資安","7768":"頌勝科技","7769":"鴻勁","7780":"大研生醫","7786":"東方風能","7788":"松川精密","7791":"皇家可口","7795":"長廣","7799":"禾榮科","7803":"雲象科技-創","7812":"稜研科技-創","7818":"溢泰實業","7821":"神數","7822":"倍利科","7823":"奧義賽博-KY創","7827":"漢康-KY創","7835":"永悅健康-創","7855":"和運租車","8011":"台通","8016":"矽創","8021":"尖點","80212":"尖點二","80213":"尖點三","80273":"鈦昇三","8028":"昇陽半導體","80282":"昇陽半導體二","8033":"雷虎","8039":"台虹","80426":"金山電六","8045":"達運光電","8046":"南電","80506":"廣積六","80541":"安國一","8070":"長華","8072":"陞泰","80746":"鉅橡六","8081":"致新","80872":"麗升能源二","80914":"翔名四","80924":"建暐四","80962":"擎亞二","80963":"擎亞三","8101":"華冠","8103":"瀚荃","8104":"錸寶","81042":"錸寶二","8105":"凌巨","8110":"華東","81114":"立皏","8112":"至上","8114":"振樺電","8131":"福懋科","81473":"正淩三","8150":"南茂","81551":"博智一","81552":"博智二","81553":"博智三","8162":"微矽電子-創","8163":"達方","81714":"天宇四","81715":"天宇五","8201":"無敵","8210":"勤誠","82102":"勤誠二","82103":"勤誠三","8213":"志超","8215":"明基材","8222":"寶一","82221":"寶一一","8249":"菱光","8261":"富鼎","8271":"宇瞻","82711":"宇瞻一","8299":"群聯","82993":"群聯三","8341":"日友","8358":"金居","8367":"建新國際","8374":"羅昇","83742":"羅昇二","8404":"百和興業-KY","84041":"百和興業一KY","8411":"福貞-KY","84113":"福貞三KY","8422":"可寧衛","84221":"可寧衛一","84222":"可寧衛二","84223":"可寧衛三","8429":"金麗-KY","84312":"匯鑽科二","84332":"弘帆二","84333":"弘帆三","8438":"昶昕","84381":"昶昕一","8442":"威宏-KY","84423":"威宏三KY","84424":"威宏四KY","8443":"阿瘦","8454":"富邦媒","8462":"柏文","84624":"柏文四","8463":"潤泰材","8464":"億豐","8466":"美吉吉-KY","8467":"波力-KY","84672":"波力二KY","84673":"波力三KY","8473":"山林水","8476":"台境","84762":"台境二","8478":"東哥遊艇","84781":"東哥遊艇一","8481":"政伸","8482":"商億-KY","8487":"愛爾達-創","8488":"吉源-KY","84881":"吉源一KY","84891":"三貝德一","8499":"鼎炫-KY","8908":"欣雄","8926":"台汽電","89277":"北基七","89278":"北基八","89365":"國統五","89366":"國統六","8940":"新天地","8996":"高力","89965":"高力五","89966":"高力六","9103":"美德醫療-DR","9105":"泰金寶-DR","9110":"越南控-DR","9136":"巨騰-DR","9802":"鈺齊-KY","98026":"鈺齊六KY","9902":"台火","9904":"寶成","9905":"大華","9906":"欣巴巴","99063":"欣巴巴三","9907":"統一實","9908":"大台北","9910":"豐泰","9911":"櫻花","9912":"偉聯","9914":"美利達","9917":"中保科","9918":"欣天然","9919":"康那香","9921":"巨大","9924":"福興","9925":"新保","9926":"新海","9927":"泰銘","9928":"中視","9929":"秋雨","9930":"中聯資源","9931":"欣高","9933":"中鼎","99332":"中鼎二","9934":"成霖","9935":"慶豐富","99353":"慶豐富三","9937":"全國","9938":"百和","9939":"宏全","99392":"宏全二","9940":"信義","9941":"裕融","99412":"裕融二","9942":"茂順","9943":"好樂迪","9944":"新麗","9945":"潤泰新","9946":"三發地產","9955":"佳龍","9958":"世紀鋼","99587":"世紀鋼七","99588":"世紀鋼八永"};
 function loadWatch(){
   let list;
   try{ list = JSON.parse(localStorage.getItem(WATCH_KEY)||"[]"); }catch(e){ list=[]; }
-  // 蝯曹??澆?嚗?鞈??航?舐?摮葡嚗???{code,name} ?拐辣嚗蕪???
+  // 統一格式：舊資料可能是純字串，轉成 {code,name} 物件；濾掉無效項
   list = list.filter(x => typeof x === 'object' && x && /^\d{4}$/.test(x.code))
               .map(o => ({ code: o.code, name: o.name || WNAMES[o.code] || '' }));
-  // name===code ??甇?  list.forEach(o => { if(!o.name || o.name === o.code) o.name = WNAMES[o.code] || ''; });
+  // name===code 的補正
+  list.forEach(o => { if(!o.name || o.name === o.code) o.name = WNAMES[o.code] || ''; });
   return list;
 }
 function saveWatch(list){
@@ -1089,11 +1127,11 @@ function renderWatch(list){
   box.innerHTML=list.map(o=>{
     const t=o.code, nm=(o.name&&o.name!==t)?o.name:WNAMES[t]||'';
     return `<span style="display:inline-flex;align-items:center;gap:4px;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:6px 10px">
-      <button onclick="pickWatch('${t}')" style="background:none;border:none;color:var(--text);font-size:15px;cursor:pointer">${t} ${nm}</button>
-      <button onclick="delWatch('${t}')" style="background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer" title="蝘駁">??/button>
+      <button onclick="pickWatch('${t}')" style="background:none;border:none;color:var(--text);font-size: 15px;cursor:pointer">${t} ${nm}</button>
+      <button onclick="delWatch('${t}')" style="background:none;border:none;color:var(--muted);font-size: 16px;cursor:pointer" title="移除">✕</button>
     </span>`;
   }).join('');
-  // ?芷?∠蜇閬質”嚗??芷?∪停憿舐內?游?憛??怒 ?湔????嚗?銝??
+  // 自選股總覽表：有自選股就顯示整個區塊（含「⟳ 更新」按鈕），但不自動抓
   const ov = document.getElementById('watchOverview');
   if (ov) ov.style.display = 'block';
 }
@@ -1116,7 +1154,7 @@ function watchToggle(){
   saveWatch(list);
 }
 
-// ?芷?∠蜇閬質”嚗蒂???芾? 20 ?交?斤??梢 + 蝬??嚗??對?嚗＊蝷?隞??/?迂/?嗥/20?亙??蝬?
+// 自選股總覽表：並抓每只近 20 日收盤算報酬 + 綜合分數（五方），顯示 代號/名稱/收盤/20日報酬/綜合
 async function refreshWatchOverview(){
   const list = loadWatch().map(x => x.code || x).filter(c => /^\d{4}$/.test(c));
   const panel = document.getElementById('watchOverview');
@@ -1124,13 +1162,13 @@ async function refreshWatchOverview(){
   const btn = document.getElementById('watchOvRefresh');
   if (!list.length || !panel || !table) { if(panel) panel.style.display='none'; return; }
   panel.style.display = 'block';
-  if(btn){ btn.disabled=true; btn.textContent='頛銝凌?; btn.style.opacity='0.6'; btn.style.cursor='not-allowed'; }
-  table.innerHTML = '<div style="color:var(--muted);font-size:14px">頛銝哨?????鈭蝬??嚗?/div>';
-  // 憭抒銵????貉?梁??隞踝?
+  if(btn){ btn.disabled=true; btn.textContent='載入中…'; btn.style.opacity='0.6'; btn.style.cursor='not-allowed'; }
+  table.innerHTML = '<div style="color:var(--muted);font-size: 14px">載入中（抓行情＋五方綜合分數）…</div>';
+  // 大盤行（所有自選股共用同一份）
   let taiexRows = [];
   try { taiexRows = await fetchRows('^TWII','3mo'); } catch(e){}
   const txBase = StockCore.fetchTaiexFromRows(taiexRows);
-  // 銝西???嚗???8 ?迎?
+  // 並行抓取（上限 8 只）
   const tasks = list.slice(0, 8).map(async (t) => {
     try {
       const rows = await fetchRows(toYahoo(t), '1y');
@@ -1140,21 +1178,24 @@ async function refreshWatchOverview(){
         ? (close - tail[0].close) / tail[0].close * 100
         : null;
       const nm = WNAMES[t] || '';
-      // 蝞?銵??賂???core.js ????
+      // 算技術分數（用 core.js 的訊號）
       const IND = StockCore.computeIndicators(rows);
       let tech = 0;
       try { tech = StockCore.compositeSignal(StockCore.detectSignals(IND, rows.length-1)).tech_score; } catch(e){ tech = 0; }
-      // ?日?
+      // 盤面分數
       let intra = 0;
       try { intra = StockCore.intradayFromRows(rows, IND, rows.length-1).score; } catch(e){ intra = 0; }
-      // 憭抒?嚗?剁?
+      // 大盤分數（共用）
       const tx = txBase;
-      // 鈭蝬?嚗陛???銵?40% + ?日 10% + 憭抒 15%嚗?蝣?瘨?芣? ??銝剜?0嚗?      const wT=0.40, wF=0.25, wN=0.10, wI=0.10, wTa=0.15;
-      const ff = 0, nw = 0;   // ?芣?蝐Ⅳ/瘨 ??銝剜?      let combined = wT*tech + wF*ff + wN*nw + wI*intra + wTa*(tx.score||0);
+      // 五方綜合（簡化：技術 40% + 盤面 10% + 大盤 15%，籌碼/消息未抓 → 中性 0）
+      const wT=0.40, wF=0.25, wN=0.10, wI=0.10, wTa=0.15;
+      const ff = 0, nw = 0;   // 未抓籌碼/消息 → 中性
+      let combined = wT*tech + wF*ff + wN*nw + wI*intra + wTa*(tx.score||0);
       combined = Math.round(Math.max(-1,Math.min(1,combined))*100)/100;
-      const label = combined >= 0.4 ? '??' : combined >= 0.15 ? '?亙?' : combined > -0.15 ? '銝剜? : combined > -0.4 ? '?亦征' : '?征';
+      const label = combined >= 0.4 ? '偏多' : combined >= 0.15 ? '略多' : combined > -0.15 ? '中性' : combined > -0.4 ? '略空' : '偏空';
       const lcls = combined >= 0.15 ? 'pos' : combined <= -0.15 ? 'neg' : 'neu';
-              // 銝剜? 40/60 ?亙???蝯?2?? ??????嚗?        let m40u = null, m60u = null, mAlert = null;
+              // 中期 40/60 日勝率（給 2–3 個月持有者看）
+        let m40u = null, m60u = null, mAlert = null;
         try {
           const h40 = StockCore.histMid(rows, IND, 180, 40);
           const h60 = StockCore.histMid(rows, IND, 180, 60);
@@ -1174,78 +1215,79 @@ async function refreshWatchOverview(){
   const weakA = rowsOut.filter(r => r.mAlert && r.mAlert.level === 'weak').map(r => r.code + (r.name ? ' ' + r.name : ''));
   let alertBar = '';
   if (strong.length || weakA.length) {
-    alertBar = '<div style="margin-bottom:8px;padding:8px 10px;border-radius:8px;background:var(--card2);border:1px solid var(--border);font-size:14px;line-height:1.7">' +
-      '<div style="font-weight:700;color:var(--text);margin-bottom:4px">?? 銝剜?甇Ｘ?霅血敶蜇</div>' +
-      (strong.length ? '<div style="color:var(--bear)">? 銝剜?頧摹嚗???0???征嚗?' + strong.join('??) + '</div>' : '') +
-      (weakA.length ? '<div style="color:var(--yellow)">? ?銝雲嚗?典蕭嚗?' + weakA.join('??) + '</div>' : '') +
-      '<div style="font-size:12px;color:var(--muted);margin-top:4px">?質店嚗??閰脫?蝣潮?芥??閰脰??餈踝??賣蝯?2?? ????????/div>' +
+    alertBar = '<div style="margin-bottom:8px;padding:8px 10px;border-radius:8px;background:var(--card2);border:1px solid var(--border);font-size: 14px;line-height:1.7">' +
+      '<div style="font-weight:700;color:var(--text);margin-bottom:4px">⚠️ 中期止損警報彙總</div>' +
+      (strong.length ? '<div style="color:var(--bear)">🔴 中期轉弱（跌破60日+偏空）：' + strong.join('、') + '</div>' : '') +
+      (weakA.length ? '<div style="color:var(--yellow)">🟡 量能不足（勿全倉追）：' + weakA.join('、') + '</div>' : '') +
+      '<div style="font-size: 12px;color:var(--muted);margin-top:4px">白話：🔴 該減碼避險、🟡 該觀望勿追；都是給 2–3 個月持有者看的。</div>' +
       '</div>';
   }
   table.innerHTML = alertBar +
-    '<table style="width:100%;border-collapse:collapse;font-size:14px">' +
+    '<table style="width:100%;border-collapse:collapse;font-size: 14px">' +
     '<thead><tr style="color:var(--muted);border-bottom:1px solid var(--border)">' +
-    '<th style="text-align:left;padding:6px 8px">隞??</th>' +
-    '<th style="text-align:left;padding:6px 8px">?迂</th>' +
-    '<th style="text-align:right;padding:6px 8px">?嗥</th>' +
-    '<th style="text-align:right;padding:6px 8px">20 ?亙??/th>' +
-    '<th style="text-align:right;padding:6px 8px">蝬??</th>' +
-    '<th style="text-align:right;padding:6px 8px">銝剜?40??/th>' +
-    '<th style="text-align:right;padding:6px 8px">銝剜?60??/th>' +
+    '<th style="text-align:left;padding:6px 8px">代號</th>' +
+    '<th style="text-align:left;padding:6px 8px">名稱</th>' +
+    '<th style="text-align:right;padding:6px 8px">收盤</th>' +
+    '<th style="text-align:right;padding:6px 8px">20 日報酬</th>' +
+    '<th style="text-align:right;padding:6px 8px">綜合分數</th>' +
+    '<th style="text-align:right;padding:6px 8px">中期40日</th>' +
+    '<th style="text-align:right;padding:6px 8px">中期60日</th>' +
     '<th style="text-align:right;padding:6px 8px"></th></tr></thead>' +
     '<tbody>' +
     rowsOut.map(r => {
       const chgCls = r.r20 == null ? '' : r.r20 > 0 ? 'pos' : r.r20 < 0 ? 'neg' : '';
-      const chgTxt = r.r20 == null ? '?? : (r.r20 >= 0 ? '+' : '') + r.r20.toFixed(1) + '%';
-      const combTxt = r.err ? '?? : r.combined.toFixed(2) + ' ' + r.label;
+      const chgTxt = r.r20 == null ? '—' : (r.r20 >= 0 ? '+' : '') + r.r20.toFixed(1) + '%';
+      const combTxt = r.err ? '—' : r.combined.toFixed(2) + ' ' + r.label;
       return `<tr style="border-bottom:1px solid var(--border)">` +
-        `<td style="padding:6px 8px"><b>${r.code}</b>${r.mAlert ? (r.mAlert.level === 'strong' ? ' <span title="' + r.mAlert.text + '" style="cursor:help">??</span>' : ' <span title="' + r.mAlert.text + '" style="cursor:help">?</span>') : ''}</td>` +
-        `<td style="padding:6px 8px">${r.name || '??}</td>` +
-        `<td style="padding:6px 8px;text-align:right">${r.close != null ? r.close.toFixed(2) : '??}</td>` +
+        `<td style="padding:6px 8px"><b>${r.code}</b>${r.mAlert ? (r.mAlert.level === 'strong' ? ' <span title="' + r.mAlert.text + '" style="cursor:help">⚠️</span>' : ' <span title="' + r.mAlert.text + '" style="cursor:help">🟡</span>') : ''}</td>` +
+        `<td style="padding:6px 8px">${r.name || '—'}</td>` +
+        `<td style="padding:6px 8px;text-align:right">${r.close != null ? r.close.toFixed(2) : '—'}</td>` +
         `<td style="padding:6px 8px;text-align:right" class="${chgCls}">${chgTxt}</td>` +
         `<td style="padding:6px 8px;text-align:right" class="${r.lcls||''}">${combTxt}</td>` +
-          `<td style="padding:6px 8px;text-align:right">${r.m40u != null ? r.m40u.toFixed(1)+'%' : '鞈?銝雲'}</td>` +
-          `<td style="padding:6px 8px;text-align:right">${r.m60u != null ? r.m60u.toFixed(1)+'%' : '鞈?銝雲'}</td>` +
-        `<td style="padding:6px 8px;text-align:right"><button onclick="pickWatch('${r.code}')" style="background:none;border:1px solid var(--accent);color:var(--accent);border-radius:6px;padding:2px 8px;font-size:13px;cursor:pointer">??</button></td>` +
+          `<td style="padding:6px 8px;text-align:right">${r.m40u != null ? r.m40u.toFixed(1)+'%' : '資料不足'}</td>` +
+          `<td style="padding:6px 8px;text-align:right">${r.m60u != null ? r.m60u.toFixed(1)+'%' : '資料不足'}</td>` +
+        `<td style="padding:6px 8px;text-align:right"><button onclick="pickWatch('${r.code}')" style="background:none;border:1px solid var(--accent);color:var(--accent);border-radius:6px;padding:2px 8px;font-size: 13px;cursor:pointer">分析</button></td>` +
         `</tr>`;
     }).join('') +
     '</tbody></table>' +
-    '<div style="font-size:12px;color:var(--muted);margin-top:4px">蝬??嚗?銵?40%嚗??10%嚗之??15%嚗?蝣?瘨?芣??閮葉?改?嚗葉??0/60?伐???閮??批???嚗?儭?頝60?乩??征嚗葉?迫?郎?梧???∴??銝雲嚗?????摰鈭??/div>' +
+    '<div style="font-size: 12px;color:var(--muted);margin-top:4px">綜合分數＝技術 40%＋盤面 10%＋大盤 15%（籌碼/消息未抓、暫計中性）；中期40/60日＝偏多訊號照做勝率；⚠️＝跌破60日且偏空（中期止損警報）、🟡＝量能不足；點「分析」看完整五方。</div>' +
     (() => {
       const ts = new Date().toLocaleString('zh-TW', {hour12:false, year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', second:'2-digit'});
       const msg = okCount === rowsOut.length
-        ? `???湔?? ??${okCount}/${rowsOut.length} ?迎?${ts}`
+        ? `✅ 更新成功 — ${okCount}/${rowsOut.length} 只，${ts}`
         : (okCount === 0
-            ? `???券憭望? ??銵?蝡舫???銝嚗?{ts}??蝔??岫??券?衣??
-            : `?? ?典??? ??${okCount}/${rowsOut.length} ?芣?唳???${rowsOut.length-okCount} ?芣?銝嚗?{ts}?);
-      return '<div style="margin-top:6px;font-size:14px;color:var(--muted)">' + msg + '</div>';
+            ? `❌ 全部失敗 — 行情端點皆抓不到，${ts}。請稍後重試或改用電腦版。`
+            : `⚠️ 部分成功 — ${okCount}/${rowsOut.length} 只更新成功，${rowsOut.length-okCount} 只抓不到，${ts}。`);
+      return '<div style="margin-top:6px;font-size: 14px;color:var(--muted)">' + msg + '</div>';
     })();
-  if(btn){ btn.disabled=false; btn.textContent='???湔?芷?∠蜇閬?; btn.style.opacity=''; btn.style.cursor=''; }
+  if(btn){ btn.disabled=false; btn.textContent='⟳ 更新自選股總覽'; btn.style.opacity=''; btn.style.cursor=''; }
 }
 
-// ?芸???
+// 自動分析
 document.getElementById('ticker').addEventListener('keydown',e=>{if(e.key==='Enter')run();});
 if (document.getElementById('ckWatch')) document.getElementById('ckWatch').addEventListener('change',watchToggle);
 
-// #7 瘛望滓?脣???localStorage 閮嚗?function toggleTheme(){
+// #7 深淺色切換（localStorage 記憶）
+function toggleTheme(){
   const root=document.documentElement;
   const cur = root.getAttribute('data-theme')==='light' ? 'dark' : 'light';
   root.setAttribute('data-theme', cur);
   localStorage.setItem('tony_theme', cur);
   const btn=document.getElementById('themeToggle');
-  if(btn) btn.textContent = cur==='light' ? '?儭?瘛箄' : '?? 瘛梯';
-  // ??”嚗??脰?銝駁?韏堆?
+  if(btn) btn.textContent = cur==='light' ? '☀️ 淺色' : '🌙 深色';
+  // 重畫圖表（配色跟主題走）
   if(window._lastRows){ drawChart(window._lastRows, window._lastIND); drawMACD(window._lastRows, window._lastIND); drawRSI(window._lastRows, window._lastIND); drawVolChart(window._lastRows, window._lastIND); }
 }
 function initTheme(){
   const saved=localStorage.getItem('tony_theme')||(window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark');
   document.documentElement.setAttribute('data-theme', saved);
   const btn=document.getElementById('themeToggle');
-  if(btn) btn.textContent = saved==='light' ? '?儭?瘛箄' : '?? 瘛梯';
+  if(btn) btn.textContent = saved==='light' ? '☀️ 淺色' : '🌙 深色';
 }
 
-// ?? 蝪⊥?嚗?璆??芋撘??????????????????????????????
-// 蝪⊥?嚗?閮哨?嚗靽?蝯?嚗府??鈭?甇Ｘ?甇Ｙ?嚗?憭??征?嚗??
-// 撠平嚗＊蝷箔??孵??賊璇?閫???亙????菜?璅??Ｘ摰
+// ── 簡易／專業 雙模式 ─────────────────────────────
+// 簡易（預設）：只保留結論＋該做的事＋止損止盈＋看多/看空理由（收折）
+// 專業：顯示五方分數長條、拆解、5日勝率、關鍵指標、各面板完整
 const MODE_KEY='tony_mode';
 function getMode(){ return localStorage.getItem(MODE_KEY) || 'simple'; }
 function isPro(){ return getMode()==='pro'; }
@@ -1254,7 +1296,7 @@ function toggleMode(){
   localStorage.setItem(MODE_KEY, cur==='pro' ? 'simple' : 'pro');
   applyMode();
 }
-// 蝬??∪嚗鈭?蝝?典?璆剜芋撘＊蝷綽?蝪⊥?嚗??隢??剔?/銝剜?銵?獢?撠平嚗?鈭??瑟???閫???亙????扯”?捱蝑???
+// 綜合卡內：哪些元素只在專業模式顯示（簡易＝只看結論＋短線/中期行動框；專業＝加五方分數長條、拆解、5日勝率、對照表、決策矩陣）
 const PRO_ONLY=[
   ['todayActionCard','block'],
   ['peerVerdict','block'],
@@ -1270,37 +1312,41 @@ const PRO_ONLY=[
 ];
 function applyMode(){
   const pro=isPro();
-  // ??????嚗陛????璆剜芋撘?暺脣?璆哨???璆??陛?芋撘?暺?蝪⊥?嚗?  const btn=document.getElementById('modeToggle');
-  if(btn) btn.textContent = pro ? '?? 蝪⊥?璅∪?嚗?撠平嚗? : '?? 撠平璅∪?';
-  // 蝬??∪蝝啁?
+  // 開關按鈕文字：簡易=「專業模式」（點進專業）、專業=「簡易模式」（點回簡易）
+  const btn=document.getElementById('modeToggle');
+  if(btn) btn.textContent = pro ? '📊 簡易模式（點專業）' : '📊 專業模式';
+  // 綜合卡內細節
   PRO_ONLY.forEach(([id,dis])=>{
     const el=document.getElementById(id);
     if(el) el.style.display = pro ? dis : 'none';
   });
-  // ??璅?選?撠平=?典??陛???冽??  ['secIntra','secTaiex','secFund','secNews','secTech','secEvents','secCharts','secVol'].forEach(id=>{
+  // 各指標面板：專業=全展開、簡易=全收折
+  ['secIntra','secTaiex','secFund','secNews','secTech','secEvents','secCharts','secVol'].forEach(id=>{
     const body=document.getElementById(id+'Body');
     if(!body) return;
     const open = pro;
     body.style.display = open ? 'block' : 'none';
     const arrow=document.querySelector('#'+id+' .pArrow');
-    if(arrow) arrow.textContent = open ? '?? : '??;
+    if(arrow) arrow.textContent = open ? '▾' : '▸';
   });
-  // ?”?嗆????????怠??箔?嚗?璅∪?敺??思?甈?  if(window._lastRows){ drawChart(window._lastRows, window._lastIND); drawMACD(window._lastRows, window._lastIND); drawRSI(window._lastRows, window._lastIND); drawVolChart(window._lastRows, window._lastIND); }
+  // 圖表收折時要再展開才畫得出來，切模式後重畫一次
+  if(window._lastRows){ drawChart(window._lastRows, window._lastIND); drawMACD(window._lastRows, window._lastIND); drawRSI(window._lastRows, window._lastIND); drawVolChart(window._lastRows, window._lastIND); }
 }
-// ??暺??桀?踵?憿????function togglePanel(id){
+// 手動點擊單個面板標題切換收折
+function togglePanel(id){
   const body=document.getElementById(id+'Body');
   if(!body) return;
   const open = body.style.display==='none';
   body.style.display = open ? 'block' : 'none';
   const arrow=document.querySelector('#'+id+' .pArrow');
-  if(arrow) arrow.textContent = open ? '?? : '??;
+  if(arrow) arrow.textContent = open ? '▾' : '▸';
 }
 
-// 15b. ?拇郊:openPortfolioForm() 撅??撠”??openPortfolio() 霈銵典?澆葆 query 頝?sell.html
+// 15b. 兩步:openPortfolioForm() 展開頁內小表單;openPortfolio() 讀表單值帶 query 跳 sell.html
 function openPortfolioForm(){
   const t = document.getElementById('ticker').value.trim().toUpperCase();
-  if (!/^\d{4}$/.test(t)) { alert("隢?頛詨 4 雿誨??閰摯?其???); return; }
-  // 敺?sell.html ??localStorage ?‵(??origin ?航?)
+  if (!/^\d{4}$/.test(t)) { alert("請先輸入 4 位代號再評估部位。"); return; }
+  // 從 sell.html 的 localStorage 預填(同 origin 可讀)
   try {
     const costs = JSON.parse(localStorage.getItem('tony_costs_web') || '{}');
     const c = costs[t];
@@ -1314,7 +1360,7 @@ function openPortfolioForm(){
 }
 function openPortfolio(){
   const t = document.getElementById('ticker').value.trim().toUpperCase();
-  if (!/^\d{4}$/.test(t)) { alert("隢?頛詨 4 雿誨??閰摯?其???); return; }
+  if (!/^\d{4}$/.test(t)) { alert("請先輸入 4 位代號再評估部位。"); return; }
   const s = document.getElementById('portShares');
   const co = document.getElementById('portCost');
   const shares = s ? parseInt(s.value, 10) : NaN;
@@ -1326,10 +1372,10 @@ function openPortfolio(){
   location.href = 'sell.html?' + qs.join('&');
 }
 
-// 撘??～???其?瘙箇???撣嗥?誨???亙歇???孵?銝雿萄葆),頝?sell.html
+// 引導卡「去我的部位決策」:帶當前代號(若已有均價則一併帶),跳 sell.html
 function jumpToSell(){
   const t = document.getElementById('ticker').value.trim().toUpperCase();
-  if (!/^\d{4}$/.test(t)) { alert("隢?頛詨 4 雿誨???歲?圈雿捱蝑?); return; }
+  if (!/^\d{4}$/.test(t)) { alert("請先輸入 4 位代號,再跳到部位決策。"); return; }
   const qs = ['ticker=' + encodeURIComponent(t)];
   try {
     const costs = JSON.parse(localStorage.getItem('tony_costs_web') || '{}');
@@ -1339,37 +1385,40 @@ function jumpToSell(){
   location.href = 'sell.html?' + qs.join('&');
 }
 
-// #9 ?澈??嚗?鋆賜???隢?鈭??啣鞎潛倏嚗?function shareAnalysis(){
+// #9 分享按鈕（複製綜合結論＋五方分數到剪貼簿）
+function shareAnalysis(){
     if(!window._shareData) return;
     const d=window._shareData;
-    let txt = `?? ${d.ticker} ${d.name||''} 鈭蝬?嚗?{d.advice}\n` +
-      `鈭?嚗???嚗?銵?${d.tech}嚗?0%嚗?蝣?${d.fund}嚗?5%嚗???${d.news}嚗?0%嚗??${d.intra}嚗?0%嚗之??${d.taiex}嚗?5%嚗n` +
-      `蝬?? ${d.combined}?迫??${d.sl}嚗迫??${d.tp}?;
-    if (d.midAlert) txt += `\n?? 銝剜?甇Ｘ?霅血嚗?{d.midAlert.text}`;
+    let txt = `📊 ${d.ticker} ${d.name||''} 五方綜合：${d.advice}\n` +
+      `五方分數（權重）：技術 ${d.tech}（40%）、籌碼 ${d.fund}（25%）、消息 ${d.news}（10%）、盤面 ${d.intra}（10%）、大盤 ${d.taiex}（15%）\n` +
+      `綜合分數 ${d.combined}。止損 ${d.sl}／止盈 ${d.tp}。`;
+    if (d.midAlert) txt += `\n⚠️ 中期止損警報：${d.midAlert.text}`;
     const mparts = [];
-    if (d.mid40 != null) mparts.push('??閮? 40 ?亙?批? ' + d.mid40 + '%');
-    if (d.mid60 != null) mparts.push('60 ?亙?批? ' + d.mid60 + '%');
-    if (mparts.length) txt += `\n?? 銝剜?????` + mparts.join('??) + '??;
-    if (d.midAction) txt += `\n?? 銝剜?銵?嚗?{d.midAction}`;
+    if (d.mid40 != null) mparts.push('偏多訊號 40 日內照做 ' + d.mid40 + '%');
+    if (d.mid60 != null) mparts.push('60 日內照做 ' + d.mid60 + '%');
+    if (mparts.length) txt += `\n📅 中期持有參考：` + mparts.join('、') + '。';
+    if (d.midAction) txt += `\n📅 中期行動：${d.midAction}`;
     if(navigator.clipboard && navigator.clipboard.writeText){
       navigator.clipboard.writeText(txt).then(()=>{
         const btn=document.getElementById('shareBtn');
-        if(btn){ const old=btn.textContent; btn.textContent='??撌脰?鋆?; setTimeout(()=>btn.textContent=old,1500); }
-      }).catch(()=>prompt('銴ˊ隞乩??批捆嚗?,txt));
-    } else { prompt('銴ˊ隞乩??批捆嚗?,txt); }
+        if(btn){ const old=btn.textContent; btn.textContent='✔ 已複製'; setTimeout(()=>btn.textContent=old,1500); }
+      }).catch(()=>prompt('複製以下內容：',txt));
+    } else { prompt('複製以下內容：',txt); }
   }
 
 window.addEventListener('load',()=>{
   initTheme();
   renderWatch(loadWatch());
-  applyMode();  // ????靘?閮准陛?芋撘???Ｘ
-  // 銝???芷蝮質汗嚗?雿輻??? ?湔??????  // 銝????蝑蝙?刻撓?乩誨??????????Enter
-  // 靘?:敺?sell.html?? ?蝬????歲??restore=1)???湔??銝活蝯?,銝?頝?  if (!restoreAnalysis()) { /* 甇?虜:蝑蝙?刻?????*/ }
+  applyMode();  // 開頁時先依預設「簡易模式」收折各面板
+  // 不自動抓自選總覽，等使用者按「⟳ 更新」再拉資料
+  // 不自動分析,等使用者輸入代號後再按「分析」或按 Enter
+  // 例外:從 sell.html「← 回到綜合分析」跳回(restore=1)→ 直接還原上次結果,不重跑
+  if (!restoreAnalysis()) { /* 正常:等使用者手動分析 */ }
 });
 window.addEventListener('resize',()=>{ if(window._lastRows) { drawChart(window._lastRows, window._lastIND); drawMACD(window._lastRows, window._lastIND); drawRSI(window._lastRows, window._lastIND); drawVolChart(window._lastRows, window._lastIND); } });
 
 
-/* ===== font scale ===== */
+/* font scale */
 (function(){
   const LVL=[0.9,1.0,1.15];
   let cur=parseInt(localStorage.getItem('tonyFontScale')||'1',10);
@@ -1382,9 +1431,6 @@ window.addEventListener('resize',()=>{ if(window._lastRows) { drawChart(window._
     apply();
   };
 })();
-
 </script>
 </body>
 </html>
-
-
