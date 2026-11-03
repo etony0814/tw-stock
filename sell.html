@@ -1,10 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#0f1419">
-<title>我的部位決策 — Tony 台股</title>
+<title>???其?瘙箇? ??Tony ?啗</title>
 <link rel="manifest" href="manifest.json">
 <link rel="stylesheet" href="style.css">
 <style>
@@ -13,214 +13,224 @@
   *{box-sizing:border-box;margin:0;padding:0;}
   body{font-family:-apple-system,"Segoe UI","Microsoft JhengHei",sans-serif;
     background:var(--bg);color:var(--text);min-height:100vh;padding:16px;}
-  /* 13b. 數字等寬對齊:損益/分數/勝率換算不跳動 */
+  /* 13b. ?詨?蝑祝撠?:??/?/????銝歲??*/
   .sm-val,.stat-mini .sm-val,.matrix td,.matrix th,.box .box-title{font-variant-numeric:tabular-nums;}
   .grid{font-variant-numeric:tabular-nums;}
   .wrap{max-width:1080px;margin:0 auto;}
   .theme-toggle{background:var(--card2);color:var(--text);border:1px solid var(--border);border-radius:8px;
-    padding:8px 12px;font-size:13px;cursor:pointer;}
-  .share-btn{background:var(--accent);color:#0f1419;border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;margin-top:8px;width:100%;}
+    padding:8px 12px;font-size:15px;cursor:pointer;}
+  .share-btn{background:var(--accent);color:#0f1419;border:none;border-radius:8px;padding:8px 14px;font-size:15px;font-weight:700;cursor:pointer;margin-top:8px;width:100%;}
   .header h1{font-size:20px;font-weight:700;margin-bottom:4px;}
   .header h1 span{color:var(--accent);}
-  .header .sub{font-size:13px;color:var(--muted);margin-bottom:12px;}
-  .back{font-size:12px;color:var(--accent);text-decoration:none;display:inline-block;margin-bottom:8px;cursor:pointer;}
+  .header .sub{font-size:15px;color:var(--muted);margin-bottom:12px;}
+  .back{font-size:14px;color:var(--accent);text-decoration:none;display:inline-block;margin-bottom:8px;cursor:pointer;}
   .controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;background:var(--card);
     padding:14px;border-radius:12px;border:1px solid var(--border);margin:16px 0;}
-  .controls label{font-size:13px;color:var(--muted);}
+  .controls label{font-size:15px;color:var(--muted);}
   .controls input,.controls select{background:var(--card2);color:var(--text);
-    border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:14px;}
+    border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:16px;}
   .controls input{width:90px;}
   .controls .num{width:110px;}
   .controls button{background:var(--accent);color:#0f1419;border:none;border-radius:8px;
-    padding:9px 20px;font-size:14px;font-weight:700;cursor:pointer;}
+    padding:9px 20px;font-size:16px;font-weight:700;cursor:pointer;}
   .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:14px;}
-  .card h3{font-size:13px;color:var(--muted);margin-bottom:10px;}
+  .card h3{font-size:15px;color:var(--muted);margin-bottom:10px;}
   .final{border:1px solid var(--accent);background:var(--card);}
-  .final h2{font-size:14px;color:var(--accent);margin-bottom:8px;}
+  .final h2{font-size:16px;color:var(--accent);margin-bottom:8px;}
   .final-text{font-size:19px;font-weight:700;line-height:1.5;}
   .final-text.pos{color:var(--green);} .final-text.neg{color:var(--red);} .final-text.neu{color:var(--yellow);}
-  .verdict-tag{display:inline-block;padding:3px 10px;border-radius:12px;font-size:12px;font-weight:700;margin-left:6px;vertical-align:middle;}
-  /* 13a. 正色:減碼/全賣=偏空(綠),持股=偏多(紅),觀望=中性(藍灰) */
+  .verdict-tag{display:inline-block;padding:3px 10px;border-radius:12px;font-size:14px;font-weight:700;margin-left:6px;vertical-align:middle;}
+  /* 13a. 甇?:皜Ⅳ/?刻都=?征(蝬?,?=??(蝝?,閫??銝剜??) */
   .vt-sell{background:var(--bear);color:#0f1419;}
   .vt-reduce{background:var(--yellow);color:#0f1419;}
   .vt-hold{background:rgba(239,68,68,.16);color:var(--bull);border:1px solid var(--bull);}
   .vt-watch{background:rgba(56,189,248,.15);color:var(--accent);}
   .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;}
   .stat-mini{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;}
-  .sm-lbl{font-size:10px;color:var(--muted);margin-bottom:3px;}
+  .sm-lbl{font-size:12px;color:var(--muted);margin-bottom:3px;}
   .sm-val{font-size:18px;font-weight:800;}
   .sm-val.pos{color:var(--green);} .sm-val.neg{color:var(--red);} .sm-val.neu{color:var(--yellow);}
   .box{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:8px;}
-  .box .box-title{font-size:12px;font-weight:700;margin-bottom:6px;}
+  .box .box-title{font-size:14px;font-weight:700;margin-bottom:6px;}
   .box.short{border-left:3px solid var(--accent);}
   .box.mid{border-left:3px solid var(--yellow);}
-  .matrix{width:100%;border-collapse:collapse;font-size:12px;}
+  .matrix{width:100%;border-collapse:collapse;font-size:14px;}
   .matrix th,.matrix td{border:1px solid var(--border);padding:6px 8px;text-align:left;vertical-align:top;}
-  .matrix th{background:var(--card2);color:var(--muted);font-weight:700;font-size:11px;}
+  .matrix th{background:var(--card2);color:var(--muted);font-weight:700;font-size:13px;}
   .matrix td.hit{background:rgba(56,189,248,.12);border:1px solid var(--accent);}
   .matrix .hit-label{font-weight:700;color:var(--accent);}
-  .reason{font-size:12px;line-height:1.6;color:var(--text);margin-top:6px;}
+  .reason{font-size:14px;line-height:1.6;color:var(--text);margin-top:6px;}
   .reason li{margin-left:18px;margin-bottom:2px;}
   canvas{width:100%;display:block;}
-  .disclaimer{text-align:center;font-size:12px;color:var(--muted);margin-top:16px;line-height:1.6;}
+  .disclaimer{text-align:center;font-size:14px;color:var(--muted);margin-top:16px;line-height:1.6;}
   @media(max-width:700px){
     body{padding:8px;}
     .header h1{font-size:17px;}
-    .header .sub{font-size:12px;line-height:1.4;}
+    .header .sub{font-size:14px;line-height:1.4;}
     .controls{flex-direction:column;align-items:stretch;gap:8px;padding:12px;}
-    .controls input,.controls .num,.controls select{width:100%;font-size:15px;padding:10px 12px;}
-    .controls button{width:100%;padding:11px;font-size:15px;font-weight:700;}
+    .controls input,.controls .num,.controls select{width:100%;font-size:17px;padding:10px 12px;}
+    .controls button{width:100%;padding:11px;font-size:17px;font-weight:700;}
     .card{padding:14px;margin-bottom:12px;border-radius:10px;}
-    .card h3{font-size:13px;margin-bottom:8px;font-weight:700;}
+    .card h3{font-size:15px;margin-bottom:8px;font-weight:700;}
     .final{padding:14px;}
-    .final-text{font-size:15px;line-height:1.5;}
+    .final-text{font-size:17px;line-height:1.5;}
     .grid{gap:8px;}
     .stat-mini{padding:8px;}
     .sm-val{font-size:16px;}
-    .matrix{font-size:11px;}
+    .matrix{font-size:13px;}
     .matrix th,.matrix td{padding:5px 6px;}
-    .disclaimer{font-size:11px;line-height:1.5;margin-top:12px;}
+    .disclaimer{font-size:13px;line-height:1.5;margin-top:12px;}
     canvas{width:100%;}
   }
+</style>
+<style>
+:root{--font-scale:1;}
+html{zoom:var(--font-scale);}
+.fs-btn{background:var(--card2);color:var(--text);border:1px solid var(--border);border-radius:6px;
+  padding:4px 8px;font-size:14px;cursor:pointer;line-height:1;min-width:32px;}
+.fs-btn:hover{background:var(--accent);color:#0f1419;}
+.fs-group{display:flex;gap:4px;align-items:center;}
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="header" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;margin-bottom:12px">
     <div>
-      <a class="back" id="backLink" onclick="goBackToAnalysis()">← 回到綜合分析</a>
-      <h1>💼 我的部位決策 <span>（持股 × 均價 → 是否賣出）</span></h1>
-      <div class="sub">輸入持股數與均價，系統依 止損 / 止盈 / 中期訊號 建議「持有 / 減碼 / 減碼觀望 / 全賣」</div>
+      <a class="back" id="backLink" onclick="goBackToAnalysis()">???蝬???</a>
+      <h1>? ???其?瘙箇? <span>嚗???? ? ???臬鞈?嚗?/span></h1>
+      <div class="sub">頛詨??貉??嚗頂蝯曹? 甇Ｘ? / 甇Ｙ? / 銝剜?閮? 撱箄降????/ 皜Ⅳ / 皜Ⅳ閫??/ ?刻都??/div>
     </div>
-    <button class="theme-toggle" onclick="toggleTheme()" id="themeToggle">🌗 換色</button>
+    <button class="theme-toggle" onclick="toggleTheme()" id="themeToggle">?? ?</button>
   </div>
 
-  <div id="guideCard" class="card" style="margin-bottom:14px;border-left:4px solid var(--yellow)"><button onclick="this.parentElement.style.display='none';localStorage.tonyHideGuide=1" style="float:right;background:none;border:none;color:var(--muted);cursor:pointer;font-size:11px">隱藏 ✕</button>
-    <div style="font-size:12px;font-weight:700;color:var(--yellow);margin-bottom:4px">🧭 這兩頁差在哪？</div>
-    <div style="font-size:12px;line-height:1.6;color:var(--text)">
-      <div style="margin-bottom:6px"><b>💼 我的部位決策（本頁）</b>：已持有，回答「<b>我手上這批（均價×持股數）該減幾成、加幾成、保本線拉多高</b>」— 含損益、止損/止盈、加碼/減碼、決策矩陣。</div>
-      <div><b>📊 綜合分析</b>：空手看盤，回答「<b>今天這支該不該買/賣</b>」— 五方綜合 + 短線(5日)/中期(2–3月)雙視角 + 40/60日勝率。</div>
+  <div id="guideCard" class="card" style="margin-bottom:14px;border-left:4px solid var(--yellow)"><button onclick="this.parentElement.style.display='none';localStorage.tonyHideGuide=1" style="float:right;background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px">?梯? ??/button>
+    <div style="font-size:14px;font-weight:700;color:var(--yellow);margin-bottom:4px">?妣 ??榆?典嚗?/div>
+    <div style="font-size:14px;line-height:1.6;color:var(--text)">
+      <div style="margin-bottom:6px"><b>? ???其?瘙箇?嚗??</b>嚗歇??嚗?蝑?b>??銝嚗??嘔??⊥嚗府皜嗾??撟暹????祉???擃?/b>???急??迫??甇Ｙ???蝣?皜Ⅳ?捱蝑???/div>
+      <div><b>?? 蝬???</b>嚗征???歹?????b>隞予?閰脖?閰脰眺/鞈?/b>??鈭蝬? + ?剔?(5??/銝剜?(2??????閫?+ 40/60?亙???/div>
     </div>
-    <a class="share-btn" id="guideBack" style="width:auto;margin-top:8px;padding:7px 14px;font-size:12px;display:inline-block;text-align:center;text-decoration:none;cursor:pointer" onclick="jumpToIndex()">📊 我要看今天整體多空 → 回「綜合分析」</a>
+    <a class="share-btn" id="guideBack" style="width:auto;margin-top:8px;padding:7px 14px;font-size:14px;display:inline-block;text-align:center;text-decoration:none;cursor:pointer" onclick="jumpToIndex()">?? ????憭拇擃?蝛?????????/a>
   </div>
 
   <div class="controls">
-    <label>代號</label>
+    <label>隞??</label>
     <input id="ticker" maxlength="5" placeholder="2330">
-    <label>持股數</label>
+    <label>???/label>
     <input id="shares" class="num" type="number" min="1" placeholder="100" inputmode="numeric">
-    <label>均價</label>
+    <label>?</label>
     <input id="cost" class="num" type="number" min="0" step="0.01" placeholder="750" inputmode="decimal">
-    <button id="btn" onclick="runSell()">開始評估</button>
-    <button class="share-btn" id="shareBtn" onclick="shareSell()" style="display:none;width:auto;margin-top:0">📤 分享決策</button>
+    <button id="btn" onclick="runSell()">??閰摯</button>
+    <button class="share-btn" id="shareBtn" onclick="shareSell()" style="display:none;width:auto;margin-top:0">? ?澈瘙箇?</button>
     <div style="width:100%;display:flex;align-items:center;gap:6px;margin-top:4px">
-      <label style="font-size:11px;color:var(--muted)">我持有的部位</label>
-      <select id="posSel" style="flex:1;background:var(--card2);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:6px 8px;font-size:12px" onchange="loadPosSel()"></select>
+      <label style="font-size:13px;color:var(--muted)">?????其?</label>
+      <select id="posSel" style="flex:1;background:var(--card2);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:6px 8px;font-size:14px" onchange="loadPosSel()"></select>
     </div>
-    <div id="dirtyHint" style="display:none;width:100%;font-size:11px;color:var(--yellow)">⚠️ 你已修改均價/持股數，結論未更新，請按「重新評估」。</div>
-    <div id="noCostHint" style="display:none;width:100%;font-size:11px;color:var(--accent)">💡 此檔尚未存均價，請先填「持股數」與「均價」再評估。</div>
+    <div id="dirtyHint" style="display:none;width:100%;font-size:13px;color:var(--yellow)">?? 雿歇靽格?/??賂?蝯??芣?堆?隢????啗?隡啜?/div>
+    <div id="noCostHint" style="display:none;width:100%;font-size:13px;color:var(--accent)">? 甇斗?撠摮??對?隢?憛怒??⊥?????嫘?閰摯??/div>
+    <span class="fs-group">
+      <button class="fs-btn" onclick="changeFontScale(-1)">A−</button>
+      <button class="fs-btn" onclick="changeFontScale(1)">A＋</button>
+    </span>
   </div>
 
-  <div id="demoBanner" style="display:none;background:rgba(245,158,11,.12);border:1px solid var(--yellow);border-radius:8px;padding:8px 12px;font-size:12px;margin-bottom:12px">⚠️ 所有行情端點暫時取不到，下方為「示意資料」僅展示介面；稍後重試或換用電腦版（python server.py）取真實資料。</div>
+  <div id="demoBanner" style="display:none;background:rgba(245,158,11,.12);border:1px solid var(--yellow);border-radius:8px;padding:8px 12px;font-size:14px;margin-bottom:12px">?? ????垢暺??銝嚗??寧?內????撅內隞嚗?敺?閰行???餉??python server.py嚗??祕鞈???/div>
 
   <div id="loading" style="display:none;text-align:center;padding:40px;color:var(--muted)">
     <div style="width:30px;height:30px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;margin:0 auto 10px;animation:sp .8s linear infinite"></div>
-    評估中…
-  </div>
-  <div id="err" style="display:none;text-align:center;padding:40px;color:var(--muted);font-size:13px"><div id="errMsg"></div><button id="retryBtn" style="display:none;margin-top:10px;background:var(--accent);color:#0f1419;border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer">↻ 重試一次</button></div>
+    閰摯銝凌?  </div>
+  <div id="err" style="display:none;text-align:center;padding:40px;color:var(--muted);font-size:15px"><div id="errMsg"></div><button id="retryBtn" style="display:none;margin-top:10px;background:var(--accent);color:#0f1419;border:none;border-radius:8px;padding:8px 16px;font-size:15px;font-weight:700;cursor:pointer">???岫銝甈?/button></div>
 
   <div id="results" style="display:none">
-    <!-- 結論 -->
+    <!-- 蝯? -->
     <div class="card final">
       <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
-        <h2 style="margin:0">📌 結論與建議</h2>
-        <button id="modeToggle" onclick="toggleMode()" style="background:var(--card2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:5px 10px;font-size:12px;cursor:pointer;white-space:nowrap;display:none">⚙️ 專業模式</button>
+        <h2 style="margin:0">?? 蝯??遣霅?/h2>
+        <button id="modeToggle" onclick="toggleMode()" style="background:var(--card2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:5px 10px;font-size:14px;cursor:pointer;white-space:nowrap;display:none">?? 撠平璅∪?</button>
       </div>
       <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-        <div id="finalText" class="final-text">—</div>
-        <span id="verdictTag" class="verdict-tag vt-hold" style="display:none">—</span>
+        <div id="finalText" class="final-text">??/div>
+        <span id="verdictTag" class="verdict-tag vt-hold" style="display:none">??/span>
       </div>
-      <!-- ⚡ 今天怎麼做：一頁看完白話行動卡（部位損益＋短線＋中期＋風險 四件事） -->
+      <!-- ??隞予?獐??銝??摰閰梯??嚗雿????剔?嚗葉??憸券 ?辣鈭? -->
       <div id="todayActionCard" style="display:none;margin-top:10px;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:10px 12px">
-        <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:6px">⚡ 今天怎麼做（一頁看完）</div>
-        <div id="todayActionBody" style="font-size:12px;line-height:1.7;color:var(--text)"></div>
+        <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:6px">??隞予?獐??銝??摰?</div>
+        <div id="todayActionBody" style="font-size:14px;line-height:1.7;color:var(--text)"></div>
       </div>
-      <div id="peerVerdict" style="display:none;margin-top:8px;font-size:12px;line-height:1.6;color:var(--muted);background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:8px 10px"></div>
+      <div id="peerVerdict" style="display:none;margin-top:8px;font-size:14px;line-height:1.6;color:var(--muted);background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:8px 10px"></div>
       <div id="adviceLine" class="box" style="margin-top:10px"></div>
       <div id="shortBox" class="box short" style="margin-top:10px;display:none">
-        <div class="box-title">📉 短線視角（5 日）</div>
-        <div id="shortDetail" style="font-size:12px;line-height:1.6"></div>
+        <div class="box-title">?? ?剔?閬?嚗? ?伐?</div>
+        <div id="shortDetail" style="font-size:14px;line-height:1.6"></div>
       </div>
       <div id="midBox" class="box mid" style="margin-top:10px;display:none">
-        <div class="box-title">📈 中期視角（2–3 個月持有）</div>
-        <div id="midDetail" style="font-size:12px;line-height:1.6"></div>
+        <div class="box-title">?? 銝剜?閬?嚗??? ????嚗?/div>
+        <div id="midDetail" style="font-size:14px;line-height:1.6"></div>
       </div>
       <div id="reasonList" class="reason" style="display:none"></div>
     </div>
 
-    <!-- 行情橫條：開盤、現價、前收＋資料日期＋未開盤提示（與首頁一致） -->
+    <!-- 銵?璈急?嚗??扎?嫘??塚?鞈??交?嚗??內嚗?擐?銝?湛? -->
     <div class="card" id="todayTickerCard" style="display:none">
-      <h3>📊 行情速覽（前收／開盤／收盤）</h3>
+      <h3>?? 銵??汗嚗??塚??嚗?歹?</h3>
       <div style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap">
-        <div><div style="font-size:11px;color:var(--muted)">前收</div><div id="tkPrevClose" style="font-size:20px;font-weight:800;line-height:1.1;color:var(--text)">—</div></div>
-        <div><div style="font-size:11px;color:var(--muted)">開盤</div><div id="tkOpen" style="font-size:20px;font-weight:800;line-height:1.1;color:var(--text)">—</div></div>
-        <div><div style="font-size:11px;color:var(--muted)">現價</div><div id="tkNow" style="font-size:20px;font-weight:800;line-height:1.1;color:var(--text)">—</div></div>
-        <div><div style="font-size:11px;color:var(--muted)">收盤</div><div id="tkPost" style="font-size:24px;font-weight:800;line-height:1.05;color:var(--text)">—</div></div>
-        <div><div style="font-size:11px;color:var(--muted)">今日漲跌</div><div id="tkChg" style="font-size:18px;font-weight:800;line-height:1.1">—</div><div id="tkChgAmt" style="font-size:12px;font-weight:600;line-height:1.1;margin-top:2px;color:var(--muted)">—</div></div>
-        <div id="tkDir" style="font-size:12px;font-weight:700;padding:2px 8px;border-radius:8px;display:none"></div>
+        <div><div style="font-size:13px;color:var(--muted)">?</div><div id="tkPrevClose" style="font-size:20px;font-weight:800;line-height:1.1;color:var(--text)">??/div></div>
+        <div><div style="font-size:13px;color:var(--muted)">?</div><div id="tkOpen" style="font-size:20px;font-weight:800;line-height:1.1;color:var(--text)">??/div></div>
+        <div><div style="font-size:13px;color:var(--muted)">?曉</div><div id="tkNow" style="font-size:20px;font-weight:800;line-height:1.1;color:var(--text)">??/div></div>
+        <div><div style="font-size:13px;color:var(--muted)">?嗥</div><div id="tkPost" style="font-size:24px;font-weight:800;line-height:1.05;color:var(--text)">??/div></div>
+        <div><div style="font-size:13px;color:var(--muted)">隞瞍脰?</div><div id="tkChg" style="font-size:18px;font-weight:800;line-height:1.1">??/div><div id="tkChgAmt" style="font-size:14px;font-weight:600;line-height:1.1;margin-top:2px;color:var(--muted)">??/div></div>
+        <div id="tkDir" style="font-size:14px;font-weight:700;padding:2px 8px;border-radius:8px;display:none"></div>
       </div>
       <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:6px">
-        <div id="tkDate" style="font-size:11px;font-weight:700;color:var(--muted)">—</div>
-        <div id="tkStatusTag" style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:6px;display:none"></div>
+        <div id="tkDate" style="font-size:13px;font-weight:700;color:var(--muted)">??/div>
+        <div id="tkStatusTag" style="font-size:13px;font-weight:700;padding:2px 8px;border-radius:6px;display:none"></div>
       </div>
-      <div id="tkNote" style="font-size:11px;color:var(--muted);margin-top:6px"></div>
+      <div id="tkNote" style="font-size:13px;color:var(--muted);margin-top:6px"></div>
     </div>
 
-    <!-- 損益面板 -->
+    <!-- ???Ｘ -->
     <div class="card" id="pnlCard">
-      <h3>💰 我的部位損益（現價 vs 均價）</h3>
+      <h3>? ???其???嚗??vs ?嚗?/h3>
       <div class="grid" id="pnlGrid"></div>
     </div>
 
-    <!-- 決策矩陣 -->
+    <!-- 瘙箇??拚 -->
     <div class="card" id="matrixCard">
-      <h3>🎯 決策矩陣（短線 + 中期 各 7 格對照）</h3>
-      <div id="matrixShort" style="overflow-x:auto;margin-bottom:12px"><div style="font-size:12px;font-weight:700;color:var(--accent);margin-bottom:6px">📉 短線（5 日）</div><table class="matrix" id="matrixTableShort"></table></div>
-      <div id="matrixMid" style="overflow-x:auto"><div style="font-size:12px;font-weight:700;color:var(--yellow);margin-bottom:6px">📈 中期（2–3 月持有）</div><table class="matrix" id="matrixTableMid"></table></div>
+      <h3>? 瘙箇??拚嚗蝺?+ 銝剜? ??7 ?澆??改?</h3>
+      <div id="matrixShort" style="overflow-x:auto;margin-bottom:12px"><div style="font-size:14px;font-weight:700;color:var(--accent);margin-bottom:6px">?? ?剔?嚗? ?伐?</div><table class="matrix" id="matrixTableShort"></table></div>
+      <div id="matrixMid" style="overflow-x:auto"><div style="font-size:14px;font-weight:700;color:var(--yellow);margin-bottom:6px">?? 銝剜?嚗??? ????</div><table class="matrix" id="matrixTableMid"></table></div>
     </div>
 
-    <!-- 類股／大盤對照 -->
+    <!-- 憿嚗之?文???-->
     <div class="card" id="peerCard" style="display:none">
-      <h3>🔍 回測勝率對照（個股 vs 類股 vs 大盤）</h3>
-      <div style="font-size:11px;color:var(--muted);margin-bottom:8px">用同類股中位數與加權大盤，輔助判斷個股 40/60 日勝率是否離群。</div>
+      <h3>?? ?葫??撠嚗 vs 憿 vs 憭抒嚗?/h3>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:8px">?典?憿銝凋??貉???憭抒嚗??拙?瑕 40/60 ?亙???阡蝢扎?/div>
       <div id="peerBody"></div>
     </div>
 
-    <!-- K 線 + 均價/止損/止盈 -->
+    <!-- K 蝺?+ ?/甇Ｘ?/甇Ｙ? -->
     <div class="card" id="chartCard">
-      <h3>📈 K 線與部位參考線</h3>
+      <h3>?? K 蝺??其???</h3>
       <canvas id="chart" width="800" height="300"></canvas>
-      <div style="font-size:11px;color:var(--muted);margin-top:6px">黑色實線＝均價、綠色虛線＝短線止損、紅色實線＝止盈、橘色點線＝中期止損(40日)、深橘點線＝中期止損(60日)、紫色點線＝保本止損(僅「持股」)、綠色虛線＝加碼保本(僅「可加碼」)</div>
+      <div style="font-size:13px;color:var(--muted);margin-top:6px">暺撖衣?嚗??嫘??脰?蝺??剔?甇Ｘ????脣祕蝺?甇Ｙ????脤?蝺?銝剜?甇Ｘ?(40???楛璈?蝺?銝剜?甇Ｘ?(60???換?脤?蝺?靽甇Ｘ?(???～????脰?蝺??Ⅳ靽(??Ⅳ??</div>
     </div>
   </div>
 
-  <div class="disclaimer">本工具僅供學習，不構成投資建議。決策依據「均價 + 現價 + 止損/止盈 + 中期訊號」，請依自身風險承受能力決策。</div>
+  <div class="disclaimer">?砍極?瑕?靘飛蝧?銝???鞈遣霅啜捱蝑?????+ ?曉 + 甇Ｘ?/甇Ｙ? + 銝剜?閮???隢??芾澈憸券?踹??賢?瘙箇???/div>
 </div>
 
 <script src="core.js?v=20261031d"></script>
 <script src="render.js?v=20261031d"></script>
 <script>
 "use strict";
-// ── 常量（複用 index.html 的 Yahoo 端點 / 中繼）──────────────────────────
+// ?? 撣賊?嚗???index.html ??Yahoo 蝡舫? / 銝剔匱嚗??????????????????????????
 const QUOTE_RELAY = (typeof global !== "undefined" && global.SELF_RELY_URL) || "https://tw-news-relay.etonylin.workers.dev";
-// 預熱 relay:頁面載入即發一筆輕量請求,讓 Cloudflare Worker 保持熱、避免「第一次評估」遇冷啟動拖慢/掉示意資料
-(function warmRelay(){ if (QUOTE_RELAY && location.protocol === "https:") fetch(QUOTE_RELAY + "?ticker=2330.TW&range=5d&interval=1d").catch(function(){}); })();
+// ? relay:?頛?喟銝蝑???瘙?霈?Cloudflare Worker 靽??晞?洵銝甈∟?隡啜??瑕??????內????(function warmRelay(){ if (QUOTE_RELAY && location.protocol === "https:") fetch(QUOTE_RELAY + "?ticker=2330.TW&range=5d&interval=1d").catch(function(){}); })();
 const STOCK_URLS = ["https://query1.finance.yahoo.com/v8/finance/chart/","https://query2.finance.yahoo.com/v8/finance/chart/"];
 const JINA = "https://r.jina.ai/";
 const COSTS_KEY = "tony_costs_web";
-const WNAMES = {"0050":"元大台灣50","0051":"元大中型100","0052":"富邦科技","0053":"元大科技市值","0055":"元大MSCI金融","0056":"元大高股息","0057":"富邦摩台","0061":"元大寶滬深","00636":"國泰中國A50","00639":"富邦深100","00643":"群益深証中小","00645":"富邦日本","00646":"元大S&P500","00652":"富邦印度","00657":"國泰日經225","00660":"元大歐洲50","00661":"元大日經225","00662":"富邦NASDAQ","00668":"國泰美國道瓊","00678":"群益那斯達克生技","00690":"兆豐藍籌30","00692":"富邦公司治理","00700":"富邦琤肭磪","00701":"國泰股利精選30","00702":"國泰標普低波高息","00703":"台新MSCI中國","00709":"富邦歐洲","00712":"復華富時不動產","00713":"元大台灣高息低波","00714":"群益道瓊美國地產","00717":"富邦美國特別股","00728":"第一金工業30","00730":"富邦臺灣優質高息","00731":"復華富時高息低波","00733":"富邦臺灣中小","00735":"國泰臺韓科技","00736":"國泰新興市場","00737":"國泰AI機器人","00739":"元大MSCI A股","00752":"中信中國50","00757":"統一FANG+","00762":"元大全球AI","00770":"國泰北美科技","00771":"元大US高息特別股","00783":"富邦中証500","00830":"國泰費城半導體","00850":"元大臺灣ESG永續","00851":"台新全球AI","00861":"元大全球未來通訊","00875":"國泰網路資安","00876":"元大全球5G","00878":"國泰永續高股息","00881":"國泰台灣科技龍頭","00882":"中信中國高股息","00885":"富邦越南","00891":"中信關鍵半導體","00892":"富邦台灣半導體","00893":"國泰智能電動車","00894":"中信小資高價30","00895":"富邦未來車","00896":"中信綠能及電動車","00897":"富邦基因免疫生技","00898":"國泰基因免疫革命","00899":"FT潔淨能源","00900":"富邦特選高股息30","00901":"永豐智能車供應鏈","00902":"中信電池及儲能","00903":"富邦元宇宙","00904":"台新臺灣半導體30","00905":"FT臺灣SMART","00907":"永豐優息存股","00908":"富邦入息REITs+","00909":"國泰數位支付服務","00910":"第一金太空衛星","00911":"兆豐洲際半導體","00912":"中信臺灣智慧50","00913":"兆豐台灣晶圓製造","00915":"凱基優選高股息30","00916":"國泰全球品牌50","00917":"中信特選金融","00918":"大華優利高填息30","00919":"群益台灣精選高息","00920":"富邦ESG綠色電力","00921":"兆豐龍頭等權重","00922":"國泰台灣領袖50","00923":"群益台ESG低碳50","00924":"復華S&P500成長","00926":"凱基全球菁英55","00927":"群益半導體收益","00929":"復華台灣科技優息","00930":"永豐ESG低碳高息","00932":"兆豐永續高息等權","00934":"中信成長高股息","00935":"野村臺灣新科技50","00936":"台新永續高息中小","00938":"凱基優選30","00939":"統一台灣高息動能","00940":"元大台灣價值高息","00941":"中信上游半導體","00943":"兆豐電子高息等權","00944":"野村趨勢動能高息","00946":"群益科技高息成長","00947":"台新臺灣IC設計","00949":"復華日本龍頭","00951":"台新日本半導體","00952":"凱基台灣AI50","00954":"中信日本半導體","00956":"中信日經高股息","00960":"野村全球航運龍頭","00961":"FT臺灣永續高息","00962":"台新AI優息動能","00963":"中信全球高股息","00964":"中信亞太高股息","00965":"元大航太防衛科技","00971":"野村美國研發龍頭","00972":"野村日本動能高息","1101":"台泥","11011":"台泥一永","1102":"亞泥","1103":"嘉泥","1104":"環泥","1108":"幸福","1109":"信大","1110":"東泥","1201":"味全","1203":"味王","1210":"大成","1213":"大飲","1215":"卜蜂","1216":"統一","1217":"愛之味","1218":"泰山","1219":"福壽","1220":"台榮","1225":"福懋油","1227":"佳格","1229":"聯華","1231":"聯華食","1232":"大統益","1233":"天仁","1234":"黑松","1235":"興泰","1236":"宏亞","1256":"鮮活果汁-KY","12561":"鮮活果汁一KY","1301":"台塑","1303":"南亞","1304":"台聚","1305":"華夏","1307":"三芳","1308":"亞聚","1309":"台達化","1310":"台苯","1312":"國喬","1313":"聯成","1314":"中石化","1315":"達新","1316":"上曜","13166":"上曜六","1319":"東陽","1321":"大洋","1323":"永裕","1324":"地球","1325":"恆大","1326":"台化","1337":"再生-KY","1338":"廣華-KY","13382":"廣華二KY","1339":"昭輝","1340":"勝悅-KY","1341":"富林-KY","1342":"八貫","1402":"遠東新","1409":"新纖","1410":"南染","1413":"宏洲","1414":"東和","1416":"廣豐","1417":"嘉裕","1418":"東華","1419":"新紡","1423":"利華","1432":"大魯閣","1434":"福懋","1435":"中福","1436":"華友聯","14363":"華友聯三","14364":"華友聯四","1437":"勤益控","1438":"三地開發","14381":"三地開發一","1439":"雋揚","1440":"南紡","1441":"大東","1442":"名軒","1443":"立益物流","1444":"力麗","1445":"大宇","1446":"宏和","1447":"力鵬","1449":"佳和","1451":"年興","1452":"宏益","1453":"大將","1454":"台富","1455":"集盛","1456":"怡華","1457":"宜進","1459":"聯發","1460":"宏遠","1463":"強盛新","1464":"得力","1465":"偉全","1466":"聚隆","14664":"聚隆四","1467":"南緯","1468":"昶和","1470":"大統新創","1471":"首利","1472":"三洋實業","14722":"三洋實業二","14723":"三洋實業三","1473":"台南","1474":"弘裕","14743":"弘裕三","1475":"業旺","1476":"儒鴻","1477":"聚陽","1503":"士電","1504":"東元","1506":"正道","1512":"瑞利","1513":"中興電","1514":"亞力","15142":"亞力二","1515":"力山","1516":"川飛","1517":"利奇","1519":"華城","1521":"大億","1522":"堤維西","1524":"耿鼎","1525":"江申","1526":"日馳","1527":"鑽全","1528":"恩德","1529":"樂事綠能","1530":"亞崴","1531":"高林股","1532":"勤美","1533":"車王電","1535":"中宇","1536":"和大","15364":"和大四","1537":"廣隆","1538":"正峰","1539":"巨庭","1540":"喬福","1541":"錩泰","1558":"伸興","1560":"中砂","15602":"中砂二","1563":"巧新","1568":"倉佑","1582":"信錦","1583":"程泰","1587":"吉茂","1589":"永冠-KY","15894":"永冠四KY","1590":"亞德客-KY","15952":"川寶二","1597":"直得","1598":"岱宇","15984":"岱宇四","1603":"華電","1604":"聲寶","1605":"華新","1608":"華榮","1609":"大亞","16095":"大亞五","1611":"中電","1612":"宏泰","1614":"三洋電","1615":"大山","1616":"億泰","1617":"榮星","1618":"合機","1623":"大東電","16231":"大東電一","1626":"艾美特-KY","1702":"南僑","1707":"葡萄王","1708":"東鹼","1709":"和益","1710":"東聯","1711":"永光","1712":"興農","1713":"國化","1714":"和桐","1717":"長興","17172":"長興二","1718":"中纖","1720":"生達","1721":"國慶科技","1722":"台肥","1723":"中碳","1725":"元禎","1726":"永記","1727":"中華化","17272":"中華化二","1730":"花仙子","1731":"美吾華","1732":"毛寶","1733":"五鼎","1734":"杏輝","1735":"日勝化","1736":"喬山","1737":"臺鹽","1752":"南光","1760":"寶齡富錦","1762":"中化生","1773":"勝一","1776":"展宇","17813":"合世三","1783":"和康生","1786":"科妍","17863":"科妍三","1789":"神隆","1795":"美時","1802":"台玻","1805":"寶徠","1806":"冠軍","1808":"潤隆","1809":"中釉","1810":"和成","1815":"富喬","1817":"凱撒衛","1903":"士紙","1904":"正隆","1905":"華紙","1906":"寶隆","1907":"永豐餘","1909":"榮成","19094":"榮成四","2002":"中鋼","2006":"東和鋼鐵","2007":"燁興","2008":"高興昌","2009":"第一銅","2010":"春源","2012":"春雨","2013":"中鋼構","2014":"中鴻","2015":"豐興","2017":"官田鋼","2020":"美亞","2022":"聚亨","2023":"燁輝","2024":"志聯","2025":"千興","2027":"大成鋼","2028":"威致","2029":"盛餘","2030":"彰源","2031":"新光鋼","2032":"新鋼","2033":"佳大","2034":"允強","20344":"允強四","2038":"海光","2049":"上銀","2059":"川湖","2062":"橋椿","2069":"運錩","2072":"世紀能源","2101":"南港","2102":"泰豐","2103":"台橡","2104":"國際中橡","21043":"國際中橡三","2105":"正新","2106":"建大","2107":"厚生","2108":"南帝","2109":"華豐","2114":"鑫永銓","2115":"六暉-KY","2201":"裕隆","22013":"裕隆三","2204":"中華","2206":"三陽工業","2207":"和泰車","2208":"台船","2211":"長榮鋼","22211":"大甲一","2227":"裕日車","2228":"劍麟","22283":"劍麟三","2231":"為升","2233":"宇隆","22331":"宇隆一","2236":"百達-KY","22363":"百達三KY","2237":"華德動能-創","2239":"英利-KY","2241":"艾姆勒","2243":"宏旭-KY","2247":"汎德永業","22471":"汎德永業一","22472":"汎德永業二","2248":"華勝-KY","2254":"巨鎧精密-創","2258":"鴻華先進-創","2301":"光寶科","2302":"麗正","2303":"聯電","23031":"聯電一","23032":"聯電二","2305":"全友","2308":"台達電","2312":"金寶","2313":"華通","2314":"台揚","2316":"楠梓電","23161":"楠梓電一","2317":"鴻海","2321":"東訊","2323":"中環","2324":"仁寶","2327":"國巨","2328":"廣宇","2329":"華泰","23291":"華泰一","2330":"台積電","2331":"精英","2332":"友訊","2337":"旺宏","2338":"光罩","2340":"台亞","2342":"茂矽","2344":"華邦電","2345":"智邦","2347":"聯強","2348":"海悅","2349":"錸德","2351":"順德","23511":"順德一","2352":"佳世達","2353":"宏","2354":"鴻準","2355":"敬鵬","2356":"英業達","2357":"華碩","2359":"所羅門","2360":"致茂","2362":"藍天","2363":"矽統","2364":"倫飛","2365":"昆盈","2367":"燿華","2368":"金像電","2369":"菱生","2371":"大同","2373":"震旦行","2374":"佳能","23742":"佳能二","2375":"凱美","2376":"技嘉","2377":"微星","2379":"瑞昱","2380":"虹光","2382":"廣達","2383":"台光電","2385":"群光","2387":"精元","2388":"威盛","2390":"云辰","2392":"正崴","2393":"億光","2395":"研華","2397":"友通","2399":"映泰","2401":"凌陽","2402":"毅嘉","24023":"毅嘉三","2404":"漢唐","2405":"輔信","2406":"國碩","2408":"南亞科","2409":"友達","2412":"中華電","2413":"環科","2414":"精技","2415":"錩新","2417":"圓剛","2419":"仲琦","2420":"新巨","2421":"建準","2423":"固緯","2424":"隴華","2425":"承啟","2426":"鼎元","2427":"三商電","24271":"三商電一","2428":"興勤","2429":"銘旺科","2430":"燦坤","2431":"聯昌","2432":"倚天酷-創","2433":"互盛電","2434":"統懋","2436":"偉詮電","2438":"翔耀","2439":"美律","24394":"美律四","24395":"美律五","2440":"太空梭","2441":"超豐","2442":"新美齊","24423":"新美齊三","24424":"新美齊四","2444":"兆勁","2449":"京元電子","2450":"神腦","2451":"創見","2453":"凌群","2454":"聯發科","2455":"全新","24552":"全新二","24553":"全新三","2457":"飛宏","2458":"義隆","2459":"敦吉","2460":"建通","2461":"光群雷","2462":"良得電","2464":"盟立","24642":"盟立二","24643":"盟立三","2465":"麗臺","2466":"冠西電","2467":"志聖","24672":"志聖二","24673":"志聖三","2468":"華經","2471":"資通","2472":"立隆電","2474":"可成","2476":"鉅祥","24762":"鉅祥二","2477":"美隆電","2478":"大毅","2480":"敦陽科","2481":"強茂","2482":"連宇","2483":"百容","2484":"希華","2485":"兆赫","2486":"一詮","24867":"一詮七","2488":"漢平","2489":"瑞軒","2491":"吉祥全","2492":"華新科","2493":"揚博","2495":"普安","2496":"卓越","2497":"怡利電","2498":"宏達電","2501":"國建","2504":"國產","2505":"國揚","2506":"太設","2509":"全坤建","2511":"太子","2514":"龍邦","2515":"中工","2516":"新建","2520":"冠德","2524":"京城","2527":"宏璟","2528":"皇普","25283":"皇普三","25284":"皇普四","2530":"華建","25303":"華建三","25304":"華建四","2534":"宏盛","2535":"達欣工","2536":"宏普","2537":"聯上發","2538":"基泰","2539":"櫻花建","2540":"愛山林","2542":"興富發","2543":"皇昌","2545":"皇翔","2546":"根基","2547":"日勝生","2548":"華固","25483":"華固三","25484":"華固四","2597":"潤弘","2601":"益航","2603":"長榮","2605":"新興","2606":"裕民","2607":"榮運","2608":"嘉里大榮","2609":"陽明","2610":"華航","2611":"志信","2612":"中航","2613":"中櫃","2614":"東森","2615":"萬海","2616":"山隆","2617":"台航","2618":"長榮航","2630":"亞航","2633":"台灣高鐵","2634":"漢翔","2636":"台驊控股","2637":"慧洋-KY","26417":"正德七","26418":"正德八","2642":"宅配通","2645":"長榮航太","2646":"星宇航空","26461":"星宇航空一","26462":"星宇航空二","2701":"萬企","2702":"華園","2704":"國賓","2705":"六福","2706":"第一店","2707":"晶華","2712":"遠雄來","2722":"夏都","2723":"美食-KY","2727":"王品","27271":"王品一","2731":"雄獅","27323":"六角三","27324":"六角四","2739":"寒舍","27431":"山富一","27451":"五福一","2748":"雲品","2753":"八方雲集","27531":"八方雲集一","27532":"八方雲集二","27551":"揚秦一","2756":"聯發國際","27561":"聯發國際一","27562":"聯發國際二","2762":"世界健身-KY","2801":"彰銀","2812":"台中銀","2816":"旺旺保","2820":"華票","2832":"台產","2834":"臺企銀","2836":"高雄銀","2838":"聯邦銀","2845":"遠東銀","2849":"安泰銀","2850":"新產","2851":"中再保","2852":"第一保","2855":"統一證","2880":"華南金","2881":"富邦金","2882":"國泰金","2883":"凱基金","2884":"玉山金","2885":"元大金","2886":"兆豐金","2887":"台新新光金","2889":"國票金","2890":"永豐金","2891":"中信金","2892":"第一金","2897":"王道銀行","2901":"欣欣","2903":"遠百","2904":"匯僑","2905":"三商","2906":"高林","2908":"特力","2910":"統領","2911":"麗嬰房","2912":"統一超","2913":"農林","2915":"潤泰全","2923":"鼎固-KY","2929":"淘帝-KY","2939":"永邑-KY","2945":"三商家購","3002":"歐格","3003":"健和興","3004":"豐達科","3005":"神基","3006":"晶豪科","30062":"晶豪科二","3008":"大立光","3010":"華立","3011":"今皓","30112":"今皓二","3013":"晟銘電","30134":"晟銘電四","3014":"聯陽","3015":"全漢","3016":"嘉晶","30165":"嘉晶五","30166":"嘉晶六","3017":"奇鋐","3018":"隆銘綠能","3019":"亞光","3021":"鴻名","3022":"威強電","3023":"信邦","3024":"憶聲","3025":"星通","3026":"禾伸堂","3027":"盛達","3028":"增你強","30285":"增你強五","30286":"增你強六","3029":"零壹","3030":"德律","3031":"佰鴻","3032":"偉訓","30321":"偉訓一","30322":"偉訓二","3033":"威健","30336":"威健六","30337":"威健七","3034":"聯詠","3035":"智原","3036":"文曄","3037":"欣興","30371":"欣興一","3038":"全台","3040":"遠見","30401":"遠見一","3041":"揚智","3042":"晶技","3043":"科風","3044":"健鼎","3045":"台灣大","30454":"台灣大四","30455":"台灣大五","3046":"建","3047":"訊舟","3048":"益登","3049":"精金","3050":"鈺德","3051":"力特","3052":"夆典","3054":"立萬利","3055":"蔚華科","3056":"富華新","3057":"喬鼎","3058":"立德","3059":"華晶科","3060":"銘異","3062":"建漢","30811":"聯亞一","30812":"聯亞二","3090":"日電貿","3092":"鴻碩","3094":"聯傑","30954":"及成四","3105":"穩懋","31222":"笙泉二","3130":"一零四","3135":"凌航","31352":"凌航二","3138":"耀登","31382":"耀登二","31413":"晶宏三","31414":"晶宏四","31415":"晶宏五","3149":"正達","31494":"正達四","3150":"鈺寶-創","3164":"景岳","3167":"大量","3168":"眾福科","31882":"鑫龍騰二","3189":"景碩","32071":"耀勝一","3209":"全科","32191":"倚強科一","3229":"晟鈦","3231":"緯創","3257":"虹冠電","32571":"虹冠電一","32609":"威剛九","3266":"昇陽","32723":"東碩三","32843":"太普高三","32943":"英濟三","3296":"勝德","33035":"岱稜五","3305":"昇貿","3308":"聯德","3311":"閎暉","3312":"弘憶股","33121":"弘憶股一","33133":"斐成三","3321":"同泰","33225":"建舜電五","33245":"雙鴻五","33246":"雙鴻六","33247":"雙鴻七","3338":"泰碩","3346":"麗清","33466":"麗清六","3356":"奇偶","33571":"臺慶科一","33621":"先進光一","3376":"新日興","33763":"新日興三","3380":"明泰","33902":"旭軟二","3406":"玉晶光","3413":"京鼎","3416":"融程電","34163":"融程電三","3419":"譁裕","3432":"台端","3435":"台表","3437":"榮創","3443":"創意","3447":"展達","3450":"聯鈞","34793":"安勤三","3481":"群創","34834":"力致四","34843":"崧騰三","34913":"昇達科三","3494":"誠研","3498":"陽程","3501":"維熹","3504":"揚明光","35122":"皇龍二","3515":"華擎","35161":"亞帝歐一","3518":"柏騰","35181":"柏騰一","35221":"御嵿一","35265":"凡甲五","35266":"凡甲六","35267":"凡甲七","3528":"安馳","3530":"晶相光","3532":"台勝科","3533":"嘉澤","3535":"晶彩科","3543":"州巧","35431":"州巧一","3545":"敦泰","35482":"兆利二","35483":"兆利三","3550":"聯穎","35513":"世禾三","3557":"嘉威","3563":"牧德","35642":"其陽二","3576":"聯合再生","3583":"辛耘","35833":"辛耘三","35834":"辛耘四","35872":"閎康二","3588":"通嘉","3591":"艾笛森","35914":"艾笛森四","3592":"瑞鼎","3593":"力銘","3596":"智易","3605":"宏致","36053":"宏致三","36054":"宏致四","3607":"谷崧","3617":"碩天","36173":"碩天三","3622":"洋華","3645":"達邁","3652":"精聯","3653":"健策","3661":"世芯-KY","3665":"貿聯-KY","3669":"圓展","3679":"新至陞","36805":"家登五","36806":"家登六","36841":"榮昌一","3686":"達能","36872":"歐買尬二","36873":"歐買尬三","36913":"碩禾三","3694":"海華","3701":"大眾控","3702":"大聯大","3703":"欣陸","3704":"合勤控","3705":"永信","3706":"神達","37075":"漢磊五","3708":"上緯投控","3711":"日月光投控","3712":"永崴投控","3714":"富采","3715":"定穎投控","37151":"定穎投控一","37152":"定穎投控二","3716":"中化控股","3717":"聯嘉投控","37171":"聯嘉投控一","4104":"佳醫","4106":"雃博","4108":"懷特","41135":"聯上五","41136":"聯上六","4119":"旭富","41236":"晟德六","41237":"晟德七","41238":"晟德八","41239":"晟德九","41295":"聯合五","4133":"亞諾法","4137":"麗豐-KY","41372":"麗豐二KY","4142":"國光生","4148":"全宇生技-KY","4155":"訊映","4164":"承業醫","41645":"承業醫五","41684":"醣聯四","4169":"泰宗","4178":"永笙-KY","4190":"佐登-KY","41903":"佐登三KY","41904":"佐登四KY","4195":"基米-創","41981":"欣大健康一","4306":"炎洲","4414":"如興","44163":"三圓三","4426":"利勤","4438":"廣越","44383":"廣越三","4439":"冠星-KY","44391":"冠星一KY","4440":"宜新實業","4441":"振大環球","44421":"竣邦一KY","45031":"金雨一","45102":"高鋒二","4526":"東台","4532":"瑞智","4536":"拓凱","4540":"全球傳動","45415":"晟田五","45416":"晟田六","4545":"銘鈺","45491":"桓達一","4551":"智伸科","4552":"力達-KY","4555":"氣立","45554":"氣立四","4557":"永新-KY","45581":"寶緯一","4560":"強信-KY","4562":"穎漢","4564":"元翎","4566":"時碩工業","45663":"時碩工業三","4569":"六方科-KY","45691":"六方科一KY","4571":"鈞興-KY","4572":"駐龍","45721":"駐龍一","4576":"大銀微系統","4581":"光隆精密-KY","45811":"光隆精密一KY","4582":"聚恆-創","4583":"台灣精銳","4585":"達明","4588":"玖鼎電力","4590":"富田-創","47148":"永捷八","4720":"德淵","4722":"國精化","47223":"國精化三","47224":"國精化四","4736":"泰博","4737":"華廣","4739":"康普","47393":"康普三","47394":"康普四","4746":"台耀","47491":"新應材一","4755":"三福化","47602":"勤凱二","4763":"材料-KY","4764":"雙鍵","47642":"雙鍵二","4766":"南寶","4770":"上品","4771":"望隼","47721":"台特化一","4807":"日成-KY","4904":"遠傳","4906":"正文","4912":"聯德控股-KY","4915":"致伸","4916":"事欣科","49165":"事欣科五","4919":"新唐","49231":"力士一","4927":"泰鼎-KY","4930":"燦星網","49311":"新盛力一","4934":"太極","4935":"茂林-KY","4938":"和碩","4942":"嘉彰","4943":"康控-KY","4949":"有成精密","4952":"凌通","4956":"光鋐","4958":"臻鼎-KY","4960":"誠美材","4961":"天鈺","4967":"十銓","49675":"十銓五","4968":"立積","49731":"廣穎電通一","4976":"佳凌","4977":"眾達-KY","4979":"華星光","49793":"華星光三","49794":"華星光四","4989":"榮科","4994":"傳奇","4999":"鑫禾","5007":"三星","5198":"晶心","52011":"凱衛一","5203":"訊連","52121":"凌網一","5215":"科嘉-KY","5222":"全訊","5225":"東科-KY","5234":"達興材料","5236":"凌陽創新","5243":"乙盛-KY","5244":"弘凱","52441":"弘凱一","52452":"智晶二","5258":"虹堡","52635":"智崴五","5269":"祥碩","5274":"信驊","5283":"禾聯碩","52844":"jpp四KY","52845":"jpp五KY","5285":"界霖","5288":"豐祥-KY","52892":"宜鼎二","52912":"邑昇二","5292":"華懋","5306":"桂盟","53064":"桂盟四","53096":"系統電六","53097":"系統電七","5314":"世紀","5316":"晶錡","53211":"美而快一","5388":"中磊","53887":"中磊七","5434":"崇越","54391":"高技一","54501":"南良一","54573":"宣德三","5464":"霖宏","54642":"霖宏二","5469":"瀚宇博","5471":"松翰","5483":"中美晶","5484":"慧友","5515":"建國","5519":"隆大","5521":"工信","5522":"遠雄","5525":"順天","5531":"鄉林","5533":"皇鼎","5534":"長虹","55344":"長虹四","55362":"聖暉二","55363":"聖暉三","5538":"東明-KY","5546":"永固-KY","5607":"遠雄港","5608":"四維航","56087":"四維航七","5706":"鳳凰","5871":"中租-KY","5876":"上海商銀","5880":"合庫金","5906":"台南-KY","5907":"大洋-KY","6005":"群益證","60152":"宏遠證二","6024":"群益期","61011":"寬魚國際一","61012":"寬魚國際二","61041":"創惟一","6108":"競國","61112":"光聚晶電二","6112":"邁達特","6115":"鎰勝","6116":"彩晶","6117":"迎廣","61171":"迎廣一","61172":"迎廣二","6120":"達運","61255":"廣運五","61263":"信音三","6128":"上福","6133":"金橋","61343":"萬旭三","6136":"富爾特","6139":"亞翔","6141":"柏承","6142":"友勁","6147":"頎邦","61506":"撼訊六","6152":"百一","6153":"嘉聯益","6155":"鈞寶","61565":"松上五","61635":"華電網五","6164":"華興","6165":"浪凡","6166":"凌華","6168":"宏齊","61743":"安痐T","6176":"瑞儀","6177":"達麗","61777":"達麗七","61794":"亞通四","6182":"合晶","61828":"合晶八","6183":"關貿","6184":"大豐電","61843":"大豐電三","61876":"萬潤六","6189":"豐藝","61894":"豐藝四","61907":"萬泰科七","6191":"精成科","6192":"巨路","6196":"帆宣","6197":"佳必琪","61973":"佳必琪三","61993":"天品三","61994":"天品四","6201":"亞弘電","6202":"盛群","6205":"詮欣","6206":"飛捷","62075":"雷科五","62076":"雷科六","6209":"今國光","62093":"今國光三","6213":"聯茂","6214":"精誠","6215":"和椿","6216":"居易","62194":"富旺四","62236":"旺矽六","6224":"聚鼎","6225":"天瀚","6226":"光鼎","6230":"尼得科超眾","6235":"華孚","6239":"力成","6243":"迅杰","62433":"迅杰三","6245":"台耀","6257":"矽格","6269":"台郡","62695":"台郡五","62696":"台郡六","6271":"同欣電","6272":"驊陞","6277":"宏正","6278":"台表科","6281":"全國電","6282":"康舒","62822":"康舒二","6283":"淳安","62843":"佳邦三","6285":"啟","62854":"啟皏","62855":"啟痐","6405":"悅城","6409":"旭隼","6412":"群電","6414":"樺漢","6415":"矽力-KY","6416":"瑞祺電通","64251":"易發一","6426":"統新","6431":"光麗-KY","64324":"今展科四","6438":"迅得","64383":"迅得三","6442":"光聖","6443":"元晶","6446":"藥華藥","6449":"鈺邦","6451":"訊芯-KY","6464":"台數科","6467":"泰合","64693":"大樹三","6472":"保瑞","64724":"保瑞四","64725":"保瑞五","6477":"安集","64774":"安集四","64775":"安集五","6488":"環球晶","6491":"晶碩","6504":"南六","6505":"台塑化","65096":"聚和六","65101":"精測一","6515":"穎崴","65152":"穎崴二","6525":"捷敏-KY","6526":"達發","6531":"愛普","6533":"晶心科","65331":"晶心科一","6534":"正瀚-創","65381":"倉和一","6541":"泰福-KY","65461":"正基一","65462":"正基二","65463":"正基三","65472":"高端疫苗二","6550":"北極星藥業-KY","6552":"易華電","65521":"易華電一","6558":"興能高","65702":"維田二","6573":"虹揚-KY","65761":"逸達一","6579":"研揚","6581":"鋼聯","6582":"申豐","65843":"南俊國際三","6585":"鼎基","65851":"鼎基一","65852":"鼎基二","6589":"台康生技","6591":"動力-KY","65914":"動力四KY","6592":"和潤企業","66034":"富強鑫四","6605":"帝寶","6606":"建德工業","6614":"資拓宏宇","66163":"特昇三KY","66241":"萬年清一","6625":"必應","66292":"泰金二KY","6641":"基士德-KY","6645":"金萬林-創","66451":"金萬林一創","6655":"科定","6657":"華安","6658":"聯策","66642":"群翊二","6666":"羅麗芬-KY","6668":"中揚光","6669":"緯穎","6670":"復盛應用","66702":"復盛應用二","6671":"三能-KY","6672":"騰輝電子-KY","6674":"鋐寶科技","66801":"鑫創電子一","66831":"雍智一","6689":"伊雲谷","6691":"洋基工程","66931":"廣閎科一","6695":"芯鼎","6698":"旭暉應材","6706":"惠特","67062":"惠特二","6715":"嘉基","6719":"力智","6722":"輝創","6729":"全達","6742":"澤米","6743":"安普新","6753":"龍德造船","67531":"龍德造船一","6754":"匯僑設計","6756":"威鋒電子","6757":"台灣虎航","6768":"志強-KY","67681":"志強-KY","6770":"力積電","6771":"平和環保-創","67711":"平和環保一創","6776":"展眥篕","6782":"視陽","6789":"采鈺","6790":"永豐實","6792":"詠業","6794":"向榮生技","6796":"晉弘","67962":"晉弘二","6799":"來頡","68032":"崑鼎二","6805":"富世達","68061":"森崴能源一","6807":"峰源-KY","68211":"聯寶一","6830":"汎銓","68301":"汎銓一","6831":"邁科","6834":"天二科技","6835":"圓裕","68351":"圓裕一","6838":"台新藥","68401":"東研信超一","68431":"進典一","68461":"綠茵一","68462":"綠茵二","6854":"錼創科技-KY創","68541":"錼創科技一KY創","6861":"睿生光電","6862":"三集瑞-KY","68621":"三集瑞一KY","6863":"永道-KY","68631":"永道一KY","6869":"雲豹能源","68692":"雲豹能源二","68701":"騰雲一","68702":"騰雲二","6873":"泓德能源","68732":"泓德能源二","68741":"倍力一","6885":"全福生技","6887":"寶綠特-KY","6890":"來億-KY","68901":"來億一KY","68902":"來億二KY","68941":"衛司特一","6901":"鑽石投資","69031":"巨漢一","69032":"巨漢二","69041":"伯鑫一","6906":"現觀科","6908":"宏砦C戲-創","6909":"創控","69131":"鴻呈一","6914":"阜爾運通","6916":"華凌","6918":"愛派司","6919":"康霈","6921":"嘉雨思-創","6923":"中台","6924":"榮惠-KY創","6928":"攸泰科技","6931":"青松健康","6934":"心誠鎂","6936":"永鴻生技","6937":"天虹","6944":"兆聯實業","6947":"台鎔科技","6949":"沛爾生醫-創","6951":"青新-創","6952":"大武山","6955":"邦睿生技-創","6957":"裕慶-KY","69571":"裕慶一KY","6958":"日盛台駿","6962":"奕力-KY","6965":"中傑-KY","6969":"成信實業-創","69821":"大井泵浦一","69822":"大井泵浦二","6988":"威力暘-創","6994":"富威電力","74022":"邑錡二","75561":"意德士一永","75562":"意德士二","7610":"聯友金屬-創","76101":"聯友金屬一創","7631":"聚賢研發-創","76311":"聚賢研發一創","7689":"大鵬科CLMX","7705":"三商餐飲","7710":"東擎科技","7711":"永擎","77131":"威力德生醫一","7721":"微程式","7730":"暉盛-創","7732":"金興精密","7736":"虎山","77381":"東聯互動一","7740":"熙特爾-創","77431":"金利食安一","7749":"意騰-KY","7750":"新代","7760":"享溫馨","7765":"中華資安","7768":"頌勝科技","7769":"鴻勁","7780":"大研生醫","7786":"東方風能","7788":"松川精密","7791":"皇家可口","7795":"長廣","7799":"禾榮科","7803":"雲象科技-創","7812":"稜研科技-創","7818":"溢泰實業","7821":"神數","7822":"倍利科","7823":"奧義賽博-KY創","7827":"漢康-KY創","7835":"永悅健康-創","7855":"和運租車","8011":"台通","8016":"矽創","8021":"尖點","80212":"尖點二","80213":"尖點三","80273":"鈦昇三","8028":"昇陽半導體","80282":"昇陽半導體二","8033":"雷虎","8039":"台虹","80426":"金山電六","8045":"達運光電","8046":"南電","80506":"廣積六","80541":"安國一","8070":"長華","8072":"陞泰","80746":"鉅橡六","8081":"致新","80872":"麗升能源二","80914":"翔名四","80924":"建暐四","80962":"擎亞二","80963":"擎亞三","8101":"華冠","8103":"瀚荃","8104":"錸寶","81042":"錸寶二","8105":"凌巨","8110":"華東","81114":"立皏","8112":"至上","8114":"振樺電","8131":"福懋科","81473":"正淩三","8150":"南茂","81551":"博智一","81552":"博智二","81553":"博智三","8162":"微矽電子-創","8163":"達方","81714":"天宇四","81715":"天宇五","8201":"無敵","8210":"勤誠","82102":"勤誠二","82103":"勤誠三","8213":"志超","8215":"明基材","8222":"寶一","82221":"寶一一","8249":"菱光","8261":"富鼎","8271":"宇瞻","82711":"宇瞻一","8299":"群聯","82993":"群聯三","8341":"日友","8358":"金居","8367":"建新國際","8374":"羅昇","83742":"羅昇二","8404":"百和興業-KY","84041":"百和興業一KY","8411":"福貞-KY","84113":"福貞三KY","8422":"可寧衛","84221":"可寧衛一","84222":"可寧衛二","84223":"可寧衛三","8429":"金麗-KY","84312":"匯鑽科二","84332":"弘帆二","84333":"弘帆三","8438":"昶昕","84381":"昶昕一","8442":"威宏-KY","84423":"威宏三KY","84424":"威宏四KY","8443":"阿瘦","8454":"富邦媒","8462":"柏文","84624":"柏文四","8463":"潤泰材","8464":"億豐","8466":"美吉吉-KY","8467":"波力-KY","84672":"波力二KY","84673":"波力三KY","8473":"山林水","8476":"台境","84762":"台境二","8478":"東哥遊艇","84781":"東哥遊艇一","8481":"政伸","8482":"商億-KY","8487":"愛爾達-創","8488":"吉源-KY","84881":"吉源一KY","84891":"三貝德一","8499":"鼎炫-KY","8908":"欣雄","8926":"台汽電","89277":"北基七","89278":"北基八","89365":"國統五","89366":"國統六","8940":"新天地","8996":"高力","89965":"高力五","89966":"高力六","9103":"美德醫療-DR","9105":"泰金寶-DR","9110":"越南控-DR","9136":"巨騰-DR","9802":"鈺齊-KY","98026":"鈺齊六KY","9902":"台火","9904":"寶成","9905":"大華","9906":"欣巴巴","99063":"欣巴巴三","9907":"統一實","9908":"大台北","9910":"豐泰","9911":"櫻花","9912":"偉聯","9914":"美利達","9917":"中保科","9918":"欣天然","9919":"康那香","9921":"巨大","9924":"福興","9925":"新保","9926":"新海","9927":"泰銘","9928":"中視","9929":"秋雨","9930":"中聯資源","9931":"欣高","9933":"中鼎","99332":"中鼎二","9934":"成霖","9935":"慶豐富","99353":"慶豐富三","9937":"全國","9938":"百和","9939":"宏全","99392":"宏全二","9940":"信義","9941":"裕融","99412":"裕融二","9942":"茂順","9943":"好樂迪","9944":"新麗","9945":"潤泰新","9946":"三發地產","9955":"佳龍","9958":"世紀鋼","99587":"世紀鋼七","99588":"世紀鋼八永"};
+const WNAMES = {"0050":"?之?啁50","0051":"?之銝剖?100","0052":"撖蝘?","0053":"?之蝘?撣?,"0055":"?之MSCI??","0056":"?之擃??,"0057":"撖?拙","0061":"?之撖嗆賑瘛?,"00636":"?陸銝剖?A50","00639":"撖瘛?00","00643":"蝢斤?瘛梯釆銝剖?","00645":"撖?交","00646":"?之S&P500","00652":"撖?啣漲","00657":"?陸?亦?225","00660":"?之甇散50","00661":"?之?亦?225","00662":"撖NASDAQ","00668":"?陸蝢???","00678":"蝢斤???????","00690":"????30","00692":"撖?砍瘝餌?","00700":"撖?方蝤?,"00701":"?陸?∪蝎暸30","00702":"?陸璅雿郭擃","00703":"?唳MSCI銝剖?","00709":"撖甇散","00712":"敺抵撖?銝???,"00713":"?之?啁擃雿郭","00714":"蝢斤???蝢??啁","00717":"撖蝢??孵??,"00728":"蝚砌??極璆?0","00730":"撖?箇?芾釭擃","00731":"敺抵撖?擃雿郭","00733":"撖?箇銝剖?","00735":"?陸?粹?蝘?","00736":"?陸?啗?撣","00737":"?陸AI璈鈭?,"00739":"?之MSCI A??,"00752":"銝凋縑銝剖?50","00757":"蝯曹?FANG+","00762":"?之?函?AI","00770":"?陸??蝘?","00771":"?之US擃?孵??,"00783":"撖銝剛釆500","00830":"?陸鞎餃???擃?,"00850":"?之?箇ESG瘞貊?","00851":"?唳?函?AI","00861":"?之?函??芯???","00875":"?陸蝬脰楝鞈?","00876":"?之?函?5G","00878":"?陸瘞貊?擃??,"00881":"?陸?啁蝘?樴","00882":"銝凋縑銝剖?擃??,"00885":"撖頞?","00891":"銝凋縑???擃?,"00892":"撖?啁??擃?,"00893":"?陸?箄?餃?頠?,"00894":"銝凋縑撠?擃30","00895":"撖?芯?頠?,"00896":"銝凋縑蝬???","00897":"撖?箏????","00898":"?陸?箏???拙","00899":"FT瞏楊?賣?","00900":"撖?寥擃??0","00901":"瘞貉??箄頠???","00902":"銝凋縑?餅????,"00903":"撖??摰?,"00904":"?唳?箇??擃?0","00905":"FT?箇SMART","00907":"瘞貉??芣摮","00908":"撖?交REITs+","00909":"?陸?訾??臭???","00910":"蝚砌??云蝛箄???,"00911":"??瘣脤???擃?,"00912":"銝凋縑?箇?箸50","00913":"???啁?嗅?鋆賡?,"00915":"?勗?芷擃??0","00916":"?陸?函???50","00917":"銝凋縑?寥??","00918":"憭扯?芸擃‵??0","00919":"蝢斤??啁蝎暸擃","00920":"撖ESG蝬?餃?","00921":"??樴蝑???,"00922":"?陸?啁??50","00923":"蝢斤??蚩SG雿４50","00924":"敺抵S&P500?","00926":"?勗?函??55","00927":"蝢斤???擃??,"00929":"敺抵?啁蝘??芣","00930":"瘞貉?ESG雿４擃","00932":"??瘞貊?擃蝑?","00934":"銝凋縑?擃??,"00935":"???箇?啁??50","00936":"?唳瘞貊?擃銝剖?","00938":"?勗?芷30","00939":"蝯曹??啁擃?","00940":"?之?啁?孵潮???,"00941":"銝凋縑銝虜??擃?,"00943":"???餃?擃蝑?","00944":"??頞典?擃","00946":"蝢斤?蝘?擃?","00947":"?唳?箇IC閮剛?","00949":"敺抵?交樴","00951":"?唳?交??擃?,"00952":"?勗?啁AI50","00954":"銝凋縑?交??擃?,"00956":"銝凋縑?亦?擃??,"00960":"???函??芷?樴","00961":"FT?箇瘞貊?擃","00962":"?唳AI?芣?","00963":"銝凋縑?函?擃??,"00964":"銝凋縑鈭云擃??,"00965":"?之?芸云?脰?蝘?","00971":"??蝢??樴","00972":"???交?擃","1101":"?唳野","11011":"?唳野銝瘞?,"1102":"鈭野","1103":"?野","1104":"?唳野","1108":"撟貊?","1109":"靽∪之","1110":"?望野","1201":"?喳","1203":"?喟?","1210":"憭扳?","1213":"憭折ㄡ","1215":"??","1216":"蝯曹?","1217":"????,"1218":"瘜啣控","1219":"蝳ˊ","1220":"?唳旨","1225":"蝳?瘝?,"1227":"雿單","1229":"?航","1231":"?航憌?,"1232":"憭抒絞??,"1233":"憭拐?","1234":"暺","1235":"?陸","1236":"摰?","1256":"擙格暑??-KY","12561":"擙格暑??銝KY","1301":"?啣?","1303":"??","1304":"?啗?","1305":"?臬?","1307":"銝","1308":"鈭?","1309":"?圈???,"1310":"?啗","1312":"?","1313":"?舀?","1314":"銝剔??,"1315":"?","1316":"銝?","13166":"銝???,"1319":"?梢","1321":"憭扳?","1323":"瘞貉?","1324":"?啁?","1325":"?之","1326":"?啣?","1337":"??-KY","1338":"撱?-KY","13382":"撱?鈭Y","1339":"?剛?","1340":"??-KY","1341":"撖?-KY","1342":"?怨疵","1402":"???,"1409":"?啁?","1410":"??","1413":"摰散","1414":"?勗?","1416":"撱??","1417":"??","1418":"?梯","1419":"?啁插","1423":"?抵","1432":"憭折陌??,"1434":"蝳?","1435":"銝剔?","1436":"?臬???,"14363":"?臬??臭?","14364":"?臬??臬?","1437":"?斤???,"1438":"銝?","14381":"銝?銝","1439":"??","1440":"?插","1441":"憭扳","1442":"??","1443":"蝡??拇?","1444":"??","1445":"憭批?","1446":"摰?","1447":"?筋","1449":"雿喳?","1451":"撟渲?","1452":"摰?","1453":"憭批?","1454":"?啣?","1455":"??","1456":"?∟","1457":"摰?,"1459":"?舐","1460":"摰?","1463":"撘瑞???,"1464":"敺?","1465":"?","1466":"??","14664":"????,"1467":"?楝","1468":"?嗅?","1470":"憭抒絞?啣","1471":"擐","1472":"銝?撖行平","14722":"銝?撖行平鈭?,"14723":"銝?撖行平銝?,"1473":"?啣?","1474":"撘?","14743":"撘?銝?,"1475":"璆剜","1476":"?暑","1477":"?","1503":"憯恍","1504":"?勗?","1506":"甇??","1512":"?","1513":"銝剛???,"1514":"鈭?","15142":"鈭?鈭?,"1515":"?控","1516":"撌?","1517":"?拙?","1519":"?臬?","1521":"憭批?","1522":"?斤雁镼?,"1524":"?輸?","1525":"瘙","1526":"?仿有","1527":"?賢","1528":"?拙噸","1529":"璅?蝬","1530":"鈭斐","1531":"擃???,"1532":"?斤?","1533":"頠???,"1535":"銝剖?","1536":"?之","15364":"?之??,"1537":"撱??","1538":"甇?陸","1539":"撌典滬","1540":"?祉?","1541":"?拇陸","1558":"隡貉?","1560":"銝剔?","15602":"銝剔?鈭?,"1563":"撌扳","1568":"??","1582":"靽⊿","1583":"蝔陸","1587":"??","1589":"瘞詨?-KY","15894":"瘞詨??Y","1590":"鈭噸摰?KY","15952":"撌窄鈭?,"1597":"?游?","1598":"撗勗?","15984":"撗勗???,"1603":"?舫","1604":"?脣窄","1605":"?舀","1608":"?舀旨","1609":"憭找?","16095":"憭找?鈭?,"1611":"銝剝","1612":"摰陸","1614":"銝???,"1615":"憭批控","1616":"?陸","1617":"璁格?","1618":"??","1623":"憭扳??,"16231":"憭扳?颱?","1626":"?曄???KY","1702":"??","1707":"?∟???,"1708":"?梢匱","1709":"??","1710":"?梯","1711":"瘞詨?","1712":"?噙","1713":"??","1714":"??","1717":"?瑁?","17172":"?瑁?鈭?,"1718":"銝剔?","1720":"??","1721":"?蝘?","1722":"?啗","1723":"銝剔４","1725":"??","1726":"瘞貉?","1727":"銝剛??,"17272":"銝剛??","1730":"?曹?摮?,"1731":"蝢??,"1732":"瘥窄","1733":"鈭?","1734":"??","1735":"?亙???,"1736":"?砍控","1737":"?粹厭","1752":"??","1760":"撖園翩撖","1762":"銝剖???,"1773":"??","1776":"撅?","17813":"??銝?,"1783":"?熒??,"1786":"蝘?","17863":"蝘?銝?,"1789":"蟡?","1795":"蝢?","1802":"?啁","1805":"撖嗅?","1806":"??","1808":"瞏日?","1809":"銝剝?","1810":"??","1815":"撖","1817":"?望?銵?,"1903":"憯怎?","1904":"甇??","1905":"?舐?","1906":"撖園?","1907":"瘞貉?擗?,"1909":"璁格?","19094":"璁格???,"2002":"銝剝","2006":"?勗??潮","2007":"??","2008":"擃???,"2009":"蝚砌???,"2010":"?交?","2012":"?仿","2013":"銝剝瑽?,"2014":"銝剝暑","2015":"鞊?","2017":"摰??,"2020":"蝢?","2022":"?漕","2023":"??","2024":"敹","2025":"??","2027":"憭扳???,"2028":"憡","2029":"??","2030":"敶唳?","2031":"?啣???,"2032":"?圈","2033":"雿喳之","2034":"?撥","20344":"?撥??,"2038":"瘚瑕?","2049":"銝?","2059":"撌?","2062":"璈凶","2069":"?","2072":"銝??賣?","2101":"?葛","2102":"瘜啗?","2103":"?唳屆","2104":"??銝剜屆","21043":"??銝剜屆銝?,"2105":"甇?","2106":"撱箏之","2107":"??","2108":"??","2109":"?航?","2114":"?急偶??,"2115":"?剜?-KY","2201":"鋆?","22013":"鋆?銝?,"2204":"銝剛","2206":"銝撌交平","2207":"?陸頠?,"2208":"?啗","2211":"?瑟旨??,"22211":"憭抒銝","2227":"鋆頠?,"2228":"??","22283":"??銝?,"2231":"?箏?","2233":"摰?","22331":"摰?銝","2236":"?暸?-KY","22363":"?暸?銝Y","2237":"?臬噸?-??,"2239":"?勗-KY","2241":"?曉???,"2243":"摰-KY","2247":"瘙噸瘞豢平","22471":"瘙噸瘞豢平銝","22472":"瘙噸瘞豢平鈭?,"2248":"?臬?-KY","2254":"撌券蝎曉?-??,"2258":"暾餉????,"2301":"?窄蝘?,"2302":"暻迤","2303":"?舫","23031":"?舫銝","23032":"?舫鈭?,"2305":"?典?","2308":"?圈???,"2312":"?窄","2313":"?舫?,"2314":"?唳?","2316":"璆???,"23161":"璆??颱?","2317":"暾餅絲","2321":"?梯?","2323":"銝剔","2324":"隞窄","2327":"?楊","2328":"撱??","2329":"?舀陸","23291":"?舀陸銝","2330":"?啁???,"2331":"蝎曇","2332":"??","2337":"?箏?","2338":"?蔗","2340":"?唬?","2342":"?","2344":"?舫??,"2345":"?粹","2347":"?臬撥","2348":"瘚瑟?","2349":"?詨噸","2351":"?噸","23511":"?噸銝","2352":"雿喃???,"2353":"摰?,"2354":"暾餅?","2355":"?祇筋","2356":"?望平??,"2357":"?舐◣","2359":"?蝢?","2360":"?渲?","2362":"?予","2363":"?賜絞","2364":"?恍?","2365":"??","2367":"?輯","2368":"????,"2369":"?梁?","2371":"憭批?","2373":"?銵?,"2374":"雿唾","23742":"雿唾鈭?,"2375":"?梁?","2376":"???,"2377":"敺格?","2379":"?","2380":"?孵?","2382":"撱??","2383":"?啣???,"2385":"蝢文?","2387":"蝎曉?","2388":"憡?","2390":"鈭劓","2392":"甇?斐","2393":"??","2395":"?","2397":"??,"2399":"?陸","2401":"?","2402":"瘥?","24023":"瘥?銝?,"2404":"瞍Ｗ?","2405":"頛縑","2406":"?◣","2408":"??蝘?,"2409":"??","2412":"銝剛??,"2413":"?啁?","2414":"蝎暹?","2415":"?拇","2417":"??","2419":"隞脩","2420":"?啣楊","2421":"撱箸?","2423":"?箇楝","2424":"?渲","2425":"?踹?","2426":"曌?","2427":"銝???,"24271":"銝??颱?","2428":"?","2429":"?蝘?,"2430":"?血","2431":"?舀?","2432":"?予????,"2433":"鈭???,"2434":"蝯望?","2436":"?帑??,"2438":"蝧","2439":"蝢?","24394":"蝢???,"24395":"蝢?鈭?,"2440":"憭芰征璇?,"2441":"頞?","2442":"?啁?朣?,"24423":"?啁?朣?","24424":"?啁?朣?","2444":"??","2449":"鈭砍??餃?","2450":"蟡","2451":"?菔?","2453":"?黎","2454":"?舐蝘?,"2455":"?冽","24552":"?冽鈭?,"24553":"?冽銝?,"2457":"憌?","2458":"蝢拚?","2459":"?血?","2460":"撱粹?,"2461":"?黎??,"2462":"?臬???,"2464":"??","24642":"??鈭?,"24643":"??銝?,"2465":"暻","2466":"?正??,"2467":"敹?","24672":"敹?鈭?,"24673":"敹?銝?,"2468":"?舐?","2471":"鞈?,"2472":"蝡???,"2474":"?舀?","2476":"?孕","24762":"?孕鈭?,"2477":"蝢???,"2478":"憭扳?","2480":"?阡蝘?,"2481":"撘瑁?","2482":"???","2483":"?曉捆","2484":"撣","2485":"?筍","2486":"銝閰?,"24867":"銝閰桐?","2488":"瞍Ｗ像","2489":"??","2491":"?孕??,"2492":"?舀蝘?,"2493":"??","2495":"?桀?","2496":"??","2497":"?∪??,"2498":"摰???,"2501":"?遣","2504":"?","2505":"??","2506":"憭芾身","2509":"?典撱?,"2511":"憭芸?","2514":"樴","2515":"銝剖極","2516":"?啣遣","2520":"?噸","2524":"鈭砍?","2527":"摰?","2528":"?","25283":"?銝?,"25284":"???,"2530":"?臬遣","25303":"?臬遣銝?,"25304":"?臬遣??,"2534":"摰?","2535":"?派撌?,"2536":"摰","2537":"?臭???,"2538":"?箸陸","2539":"瑹餉撱?,"2540":"?控??,"2542":"????,"2543":"??","2545":"??","2546":"?孵","2547":"?亙???,"2548":"?臬","25483":"?臬銝?,"25484":"?臬??,"2597":"瞏文?","2601":"?","2603":"?瑟旨","2605":"?啗?","2606":"鋆?","2607":"璁桅?","2608":"??憭扳旨","2609":"?賣?","2610":"?航","2611":"敹縑","2612":"銝剛","2613":"銝剜?","2614":"?望ㄝ","2615":"?祆絲","2616":"撅梢?","2617":"?啗","2618":"?瑟旨??,"2630":"鈭","2633":"?啁擃","2634":"瞍Ｙ?","2636":"?圈??扯","2637":"?扳?-KY","26417":"甇?噸銝?,"26418":"甇?噸??,"2642":"摰???,"2645":"?瑟旨?芸云","2646":"???芰征","26461":"???芰征銝","26462":"???芰征鈭?,"2701":"?砌?","2702":"?臬?","2704":"??","2705":"?剔?","2706":"蝚砌?摨?,"2707":"?嗉","2712":"??靘?,"2722":"憭","2723":"蝢?-KY","2727":"??","27271":"??銝","2731":"??","27323":"?剛?銝?,"27324":"?剛???,"2739":"撖?","27431":"撅勗?銝","27451":"鈭?銝","2748":"?脣?","2753":"?急?脤?","27531":"?急?脤?銝","27532":"?急?脤?鈭?,"27551":"?圻銝","2756":"?舐??","27561":"?舐??銝","27562":"?舐??鈭?,"2762":"銝??亥澈-KY","2801":"敶圈?","2812":"?唬葉?","2816":"?箸靽?,"2820":"?舐巨","2832":"?啁","2834":"?箔??","2836":"擃??","2838":"?舫?","2845":"??","2849":"摰陸?","2850":"?啁","2851":"銝剖?靽?,"2852":"蝚砌?靽?,"2855":"蝯曹?霅?,"2880":"?臬???,"2881":"撖??,"2882":"?陸??,"2883":"?勗??,"2884":"?控??,"2885":"?之??,"2886":"????,"2887":"?唳?啣???,"2889":"?巨??,"2890":"瘞貉???,"2891":"銝凋縑??,"2892":"蝚砌???,"2897":"???銵?,"2901":"甈?派","2903":"?","2904":"?臬?","2905":"銝?","2906":"擃?","2908":"?孵?","2910":"蝯梢?","2911":"暻為??,"2912":"蝯曹?頞?,"2913":"颲脫?","2915":"瞏斗陸??,"2923":"曌-KY","2929":"瘛?-KY","2939":"瘞賊?-KY","2945":"銝?摰嗉頃","3002":"甇","3003":"?亙???,"3004":"鞊?蝘?,"3005":"蟡","3006":"?嗉悸蝘?,"30062":"?嗉悸蝘?","3008":"憭抒???,"3010":"?舐?","3011":"隞?","30112":"隞?鈭?,"3013":"????,"30134":"???餃?","3014":"?舫","3015":"?冽慰","3016":"?","30165":"?鈭?,"30166":"???,"3017":"憟?","3018":"??蝬","3019":"鈭?","3021":"暾餃?","3022":"憡撥??,"3023":"靽⊿","3024":"?嗉","3025":"??,"3026":"蝳曆撓??,"3027":"??","3028":"憓?撘?,"30285":"憓?撘瑚?","30286":"憓?撘瑕","3029":"?嗅ㄨ","3030":"敺瑕?","3031":"雿圈暑","3032":"??","30321":"??銝","30322":"??鈭?,"3033":"憡","30336":"憡??,"30337":"憡銝?,"3034":"?航?","3035":"?箏?","3036":"??","3037":"甈??","30371":"甈??銝","3038":"?典","3040":"??","30401":"??銝","3041":"?","3042":"?嗆?","3043":"蝘◢","3044":"?仿?","3045":"?啁憭?,"30454":"?啁憭批?","30455":"?啁憭找?","3046":"撱?,"3047":"閮?","3048":"?","3049":"蝎暸?","3050":"?箏噸","3051":"?","3052":"憭","3054":"蝡??,"3055":"?蝘?,"3056":"撖??,"3057":"?祇?","3058":"蝡噸","3059":"?舀蝘?,"3060":"?","3062":"撱箸慰","30811":"?臭?銝","30812":"?臭?鈭?,"3090":"?仿鞎?,"3092":"暾餌◣","3094":"?臬?","30954":"????,"3105":"蝛拇?","31222":"蝚?鈭?,"3130":"銝?嗅?","3135":"?","31352":"?鈭?,"3138":"???,"31382":"??颱?","31413":"?嗅?銝?,"31414":"?嗅???,"31415":"?嗅?鈭?,"3149":"甇??","31494":"甇????,"3150":"?箏窄-??,"3164":"?臬眾","3167":"憭折?","3168":"?曄?蝘?,"31882":"?恍?擉唬?","3189":"?舐◣","32071":"???","3209":"?函?","32191":"?撥蝘?","3229":"?","3231":"蝺臬","3257":"?孵???,"32571":"?孵??颱?","32609":"憡?銋?,"3266":"?","32723":"?梁◣銝?,"32843":"憭芣擃?","32943":"?望?銝?,"3296":"?噸","33035":"撗梁?鈭?,"3305":"?窒","3308":"?臬噸","3311":"??","3312":"撘??,"33121":"撘?∩?","33133":"??銝?,"3321":"?陸","33225":"撱箄??颱?","33245":"?暑鈭?,"33246":"?暑??,"33247":"?暑銝?,"3338":"瘜啁◣","3346":"暻?","33466":"暻???,"3356":"憟","33571":"?箸蝘?","33621":"?脣?銝","3376":"?唳??,"33763":"?唳??","3380":"?陸","33902":"?剛?鈭?,"3406":"???,"3413":"鈭祇?","3416":"????,"34163":"???颱?","3419":"霅?","3432":"?啁垢","3435":"?啗”","3437":"璁桀","3443":"?菜?","3447":"撅?","3450":"?舫?","34793":"摰銝?,"3481":"蝢文","34834":"???,"34843":"撏折辰銝?,"34913":"??蝘?","3494":"隤?","3498":"?賜?","3501":"蝬剔","3504":"????,"35122":"??鈭?,"3515":"?舀?","35161":"鈭?甇?","3518":"?辰","35181":"?辰銝","35221":"敺∪翕銝","35265":"?∠鈭?,"35266":"?∠??,"35267":"?∠銝?,"3528":"摰有","3530":"?嗥??,"3532":"?啣?蝘?,"3533":"?黎","3535":"?嗅蔗蝘?,"3543":"撌概","35431":"撌概銝","3545":"?行陸","35482":"?鈭?,"35483":"?銝?,"3550":"?舐?","35513":"銝汙銝?,"3557":"??","3563":"?批噸","35642":"?園鈭?,"3576":"?臬???","3583":"颲?,"35833":"颲?","35834":"颲?","35872":"?熒鈭?,"3588":"??","3591":"?曄?璉?,"35914":"?曄?璉桀?","3592":"??","3593":"??","3596":"?箸?","3605":"摰","36053":"摰銝?,"36054":"摰??,"3607":"靚瑕揮","3617":"蝣拙予","36173":"蝣拙予銝?,"3622":"瘣","3645":"??","3652":"蝎曇","3653":"?亦?","3661":"銝-KY","3665":"鞎輯-KY","3669":"??","3679":"?啗??,"36805":"摰嗥鈭?,"36806":"摰嗥??,"36841":"璁格?銝","3686":"?","36872":"甇眺撠砌?","36873":"甇眺撠砌?","36913":"蝣拍汙銝?,"3694":"瘚瑁","3701":"憭抒??,"3702":"憭扯憭?,"3703":"甈?","3704":"???,"3705":"瘞訾縑","3706":"蟡?","37075":"瞍Ｙ?鈭?,"3708":"銝楝?","3711":"?交?????,"3712":"瘞詨斐?","3714":"撖?","3715":"摰??","37151":"摰??銝","37152":"摰??鈭?,"3716":"銝剖??扯","3717":"?臬??","37171":"?臬??銝","4104":"雿喲","4106":"??","4108":"?瑞","41135":"?臭?鈭?,"41136":"?臭???,"4119":"?剖?","41236":"?噸??,"41237":"?噸銝?,"41238":"?噸??,"41239":"?噸銋?,"41295":"?臬?鈭?,"4133":"鈭姥瘜?,"4137":"暻?-KY","41372":"暻?鈭Y","4142":"????,"4148":"?典???-KY","4155":"閮?","4164":"?踵平??,"41645":"?踵平?思?","41684":"????,"4169":"瘜啣?","4178":"瘞貊?-KY","4190":"雿-KY","41903":"雿銝Y","41904":"雿?Y","4195":"?箇掖-??,"41981":"甈?之?亙熒銝","4306":"?散","4414":"憒?","44163":"銝?銝?,"4426":"?拙","4438":"撱??","44383":"撱??銝?,"4439":"??-KY","44391":"??銝KY","4440":"摰撖行平","4441":"?臬之?啁?","44421":"蝡?銝KY","45031":"?銝","45102":"擃?鈭?,"4526":"?勗","4532":"?","4536":"?","4540":"?函??喳?","45415":"?鈭?,"45416":"???,"4545":"?","45491":"獢?銝","4551":"?箔撓蝘?,"4552":"??-KY","4555":"瘞??","45554":"瘞????,"4557":"瘞豢-KY","45581":"撖嗥楝銝","4560":"撘瑚縑-KY","4562":"蝛慰","4564":"??","4566":"?◣撌交平","45663":"?◣撌交平銝?,"4569":"?剜蝘?KY","45691":"?剜蝘?KY","4571":"??-KY","4572":"擏?","45721":"擏?銝","4576":"憭折?敺桃頂蝯?,"4581":"??蝎曉?-KY","45811":"??蝎曉?銝KY","4582":"??-??,"4583":"?啁蝎暸","4585":"??","4588":"???餃?","4590":"撖-??,"47148":"瘞豢??,"4720":"敺瑟殿","4722":"?移??,"47223":"?移??","47224":"?移??","4736":"瘜啣?","4737":"?臬誨","4739":"摨瑟","47393":"摨瑟銝?,"47394":"摨瑟??,"4746":"?啗","47491":"?唳???","4755":"銝???,"47602":"?文鈭?,"4763":"??-KY","4764":"?","47642":"?鈭?,"4766":"?窄","4770":"銝?","4771":"?","47721":"?啁??","4807":"?交?-KY","4904":"?","4906":"甇??","4912":"?臬噸?扯-KY","4915":"?港撓","4916":"鈭派蝘?,"49165":"鈭派蝘?","4919":"?啣?","49231":"?ㄚ銝","4927":"瘜圈?-KY","4930":"?行?蝬?,"49311":"?啁???","4934":"憭芣扔","4935":"??-KY","4938":"?◣","4942":"?蔑","4943":"摨瑟-KY","4949":"??蝎曉?","4952":"??,"4956":"??","4958":"?駁?-KY","4960":"隤???,"4961":"憭拚","4967":"??","49675":"??鈭?,"4968":"蝡?","49731":"撱???駁?","4976":"雿喳?","4977":"?暸?-KY","4979":"?舀???,"49793":"?舀???","49794":"?舀???","4989":"璁桃?","4994":"?喳?","4999":"?怎汙","5007":"銝?","5198":"?嗅?","52011":"?梯?銝","5203":"閮?,"52121":"?雯銝","5215":"蝘?-KY","5222":"?刻?","5225":"?梁?-KY","5234":"????","5236":"??菜","5243":"銋?-KY","5244":"撘","52441":"撘銝","52452":"?箸鈭?,"5258":"?孵","52635":"?箏斐鈭?,"5269":"蟡亦◣","5274":"靽⊿?","5283":"蝳曇蝣?,"52844":"jpp?Y","52845":"jpp鈭Y","5285":"??","5288":"鞊孕-KY","52892":"摰?鈭?,"52912":"??鈭?,"5292":"?舀?","5306":"獢?","53064":"獢???,"53096":"蝟餌絞?餃","53097":"蝟餌絞?颱?","5314":"銝?","5316":"?園","53211":"蝢翰銝","5388":"銝剔?","53887":"銝剔?銝?,"5434":"撏?","54391":"擃?銝","54501":"?銝","54573":"摰?噸銝?,"5464":"??","54642":"??鈭?,"5469":"????,"5471":"?曄膩","5483":"銝剔???,"5484":"?批?","5515":"撱箏?","5519":"?之","5521":"撌乩縑","5522":"??","5525":"?予","5531":"??","5533":"??","5534":"?瑁","55344":"?瑁??,"55362":"??鈭?,"55363":"??銝?,"5538":"?望?-KY","5546":"瘞詨-KY","5607":"??皜?,"5608":"?雁??,"56087":"?雁?芯?","5706":"曈喳","5871":"銝剔?-KY","5876":"銝絲??","5880":"?澈??,"5906":"?啣?-KY","5907":"憭扳?-KY","6005":"蝢斤?霅?,"60152":"摰?霅?","6024":"蝢斤???,"61011":"撖祇???銝","61012":"撖祇???鈭?,"61041":"?菜?銝","6108":"蝡嗅?","61112":"???園鈭?,"6112":"????,"6115":"?啣?","6116":"敶拇","6117":"餈誨","61171":"餈誨銝","61172":"餈誨鈭?,"6120":"??","61255":"撱??鈭?,"61263":"靽⊿銝?,"6128":"銝?","6133":"??","61343":"?祆銝?,"6136":"撖??,"6139":"鈭?","6141":"?","6142":"??","6147":"?","61506":"?潸???,"6152":"?曆?","6153":"???,"6155":"?窄","61565":"?曆?鈭?,"61635":"?舫蝬脖?","6164":"?航?","6165":"瘚芸","6166":"?","6168":"摰?","61743":"摰?T","6176":"??","6177":"??","61777":"??銝?,"61794":"鈭?","6182":"?","61828":"???,"6183":"?窒","6184":"憭扯???,"61843":"憭扯??颱?","61876":"?祆膜??,"6189":"鞊?","61894":"鞊???,"61907":"?祆陸蝘?","6191":"蝎暹?蝘?,"6192":"撌刻楝","6196":"撣恐","6197":"雿喳???,"61973":"雿喳??芯?","61993":"憭拙?銝?,"61994":"憭拙???,"6201":"鈭???,"6202":"?黎","6205":"閰格派","6206":"憌","62075":"?瑞?鈭?,"62076":"?瑞???,"6209":"隞???,"62093":"隞???","6213":"?航?","6214":"蝎曇?","6215":"?凶","6216":"撅?","62194":"撖??,"62236":"?箇??,"6224":"??","6225":"憭拍?,"6226":"??","6230":"撠澆?蝘???,"6235":"?臬?","6239":"??","6243":"餈","62433":"餈銝?,"6245":"?啗","6257":"?賣","6269":"?圈","62695":"?圈鈭?,"62696":"?圈??,"6271":"?派??,"6272":"撽?","6277":"摰迤","6278":"?啗”蝘?,"6281":"?典???,"6282":"摨瑁?","62822":"摨瑁?鈭?,"6283":"瘛喳?","62843":"雿喲銝?,"6285":"??,"62854":"??","62855":"??","6405":"??","6409":"?剝","6412":"蝢日","6414":"璅箸慰","6415":"?賢?-KY","6416":"?朮?駁?,"64251":"?銝","6426":"蝯望","6431":"??-KY","64324":"隞?蝘?","6438":"餈?","64383":"餈?銝?,"6442":"??","6443":"?","6446":"?亥??,"6449":"?粹","6451":"閮-KY","6464":"?唳蝘?,"6467":"瘜啣?","64693":"憭扳邦銝?,"6472":"靽?","64724":"靽???,"64725":"靽?鈭?,"6477":"摰?","64774":"摰???,"64775":"摰?鈭?,"6488":"?啁???,"6491":"?嗥◣","6504":"?","6505":"?啣???,"65096":"????,"65101":"蝎暹葫銝","6515":"蝛斐","65152":"蝛斐鈭?,"6525":"?瑟?-KY","6526":"?","6531":"?","6533":"?嗅?蝘?,"65331":"?嗅?蝘?","6534":"甇????,"65381":"??銝","6541":"瘜啁?-KY","65461":"甇?銝","65462":"甇?鈭?,"65463":"甇?銝?,"65472":"擃垢?怨?鈭?,"6550":"?扔?璆?KY","6552":"???,"65521":"??颱?","6558":"?擃?,"65702":"蝬剔鈭?,"6573":"?寞?-KY","65761":"?賊?銝","6579":"??","6581":"?潸","6582":"?唾?","65843":"????銝?,"6585":"曌","65851":"曌銝","65852":"曌鈭?,"6589":"?啣熒??","6591":"??-KY","65914":"???Y","6592":"?膜隡平","66034":"撖撥?怠?","6605":"撣窄","6606":"撱箏噸撌交平","6614":"鞈?摰?","66163":"?寞?銝Y","66241":"?砍僑皜?","6625":"敹?","66292":"瘜圈?鈭Y","6641":"?箏ㄚ敺?KY","6645":"?????,"66451":"?????,"6655":"蝘?","6657":"?臬?","6658":"?舐?","66642":"蝢斤?鈭?,"6666":"蝢???KY","6668":"銝剜???,"6669":"蝺舐?","6670":"敺拍??","66702":"敺拍??鈭?,"6671":"銝-KY","6672":"擉啗??餃?-KY","6674":"?窄蝘?","66801":"?怠?餃?銝","66831":"?銝","6689":"隡靚?,"6691":"瘣撌亦?","66931":"撱??蝘?","6695":"?舫?","6698":"?剜???","6706":"?","67062":"?鈭?,"6715":"?","6719":"?","6722":"頛","6729":"?券?","6742":"瞉斤掖","6743":"摰??,"6753":"樴噸?","67531":"樴噸?銝","6754":"?臬?閮剛?","6756":"憡??餃?","6757":"?啁?","6768":"敹撥-KY","67681":"敹撥-KY","6770":"????,"6771":"撟喳??唬?-??,"67711":"撟喳??唬?銝??,"6776":"撅蝭?,"6782":"閬","6789":"?","6790":"瘞貉?撖?,"6792":"閰平","6794":"?旨??","6796":"??","67962":"??鈭?,"6799":"靘","68032":"撏?鈭?,"6805":"撖???,"68061":"璉桀斐?賣?銝","6807":"撜唳?-KY","68211":"?臬窄銝","6830":"瘙?","68301":"瘙?銝","6831":"??","6834":"憭拐?蝘?","6835":"??","68351":"??銝","6838":"?唳??,"68401":"?梁?靽∟?銝","68431":"?脣銝","68461":"蝬銝","68462":"蝬鈭?,"6854":"?澆蝘?-KY??,"68541":"?澆蝘?銝KY??,"6861":"?輻??","6862":"銝???KY","68621":"銝???KY","6863":"瘞賊?-KY","68631":"瘞賊?銝KY","6869":"?脰措?賣?","68692":"?脰措?賣?鈭?,"68701":"擉圈銝","68702":"擉圈鈭?,"6873":"瘜噸?賣?","68732":"瘜噸?賣?鈭?,"68741":"??銝","6885":"?函???","6887":"撖嗥???KY","6890":"靘?-KY","68901":"靘?銝KY","68902":"靘?鈭Y","68941":"銵?嫣?","6901":"?賜??","69031":"撌冽慰銝","69032":"撌冽慰鈭?,"69041":"隡舫銝","6906":"?曇?蝘?,"6908":"摰C????,"6909":"?菜","69131":"暾餃?銝","6914":"???,"6916":"?臬?","6918":"?晷??,"6919":"摨琿?","6921":"?????,"6923":"銝剖","6924":"璁格?-KY??,"6928":"?豢陸蝘?","6931":"??亙熒","6934":"敹???,"6936":"瘞賊暑??","6937":"憭抵","6944":"?撖行平","6947":"?圈?蝘?","6949":"瘝?-??,"6951":"?-??,"6952":"憭扳郎撅?,"6955":"?衣??-??,"6957":"鋆-KY","69571":"鋆銝KY","6958":"?亦??圈尿","6962":"憟?-KY","6965":"銝剖?-KY","6969":"?縑撖行平-??,"69821":"憭找?瘜菜策銝","69822":"憭找?瘜菜策鈭?,"6988":"憡?????,"6994":"撖??餃?","74022":"?鈭?,"75561":"?噸憯思?瘞?,"75562":"?噸憯思?","7610":"?臬??惇-??,"76101":"?臬??惇銝??,"7631":"?郭?-??,"76311":"?郭?銝??,"7689":"憭折筋蝘LMX","7705":"銝?擗ㄡ","7710":"?望?蝘?","7711":"瘞豢?","77131":"憡?敺瑞??思?","7721":"敺桃?撘?,"7730":"??-??,"7732":"??蝎曉?","7736":"?控","77381":"?梯鈭?銝","7740":"?????,"77431":"?憌?銝","7749":"?辰-KY","7750":"?唬誨","7760":"鈭急澈擐?,"7765":"銝剛鞈?","7768":"??蝘?","7769":"暾餃?","7780":"憭抒??","7786":"?望憸刻","7788":"?曉?蝎曉?","7791":"?振?臬","7795":"?瑕誨","7799":"蝳暹旨蝘?,"7803":"?脰情蝘?-??,"7812":"蝔?蝘?-??,"7818":"皞Ｘ陸撖行平","7821":"蟡","7822":"?蝘?,"7823":"憟抒儔鞈賢?-KY??,"7827":"瞍Ｗ熒-KY??,"7835":"瘞豢??亙熒-??,"7855":"??蝘?","8011":"?圈?,"8016":"?賢","8021":"撠?","80212":"撠?鈭?,"80213":"撠?銝?,"80273":"?行?銝?,"8028":"???擃?,"80282":"???擃?","8033":"?瑁?","8039":"?啗","80426":"?控?餃","8045":"???","8046":"?","80506":"撱????,"80541":"摰?銝","8070":"?瑁","8072":"?陸","80746":"?屆??,"8081":"?湔","80872":"暻??賣?鈭?,"80914":"蝧???,"80924":"撱箸???,"80962":"??鈭?,"80963":"??銝?,"8101":"?臬?","8103":"??","8104":"?詨窄","81042":"?詨窄鈭?,"8105":"?楊","8110":"?舀","81114":"蝡?","8112":"?喃?","8114":"?舀那??,"8131":"蝳?蝘?,"81473":"甇?楨銝?,"8150":"??","81551":"?銝","81552":"?鈭?,"81553":"?銝?,"8162":"敺桃?餃?-??,"8163":"?","81714":"憭拙???,"81715":"憭拙?鈭?,"8201":"?⊥","8210":"?方?","82102":"?方?鈭?,"82103":"?方?銝?,"8213":"敹?","8215":"???,"8222":"撖嗡?","82221":"撖嗡?銝","8249":"?勗?","8261":"撖?","8271":"摰","82711":"摰銝","8299":"蝢方","82993":"蝢方銝?,"8341":"?亙?","8358":"??","8367":"撱箸??","8374":"蝢?","83742":"蝢?鈭?,"8404":"?曉??平-KY","84041":"?曉??平銝KY","8411":"蝳?-KY","84113":"蝳?銝Y","8422":"?臬祐銵?,"84221":"?臬祐銵?","84222":"?臬祐銵?","84223":"?臬祐銵?","8429":"??-KY","84312":"?舫蝘?","84332":"撘?鈭?,"84333":"撘?銝?,"8438":"?嗆?","84381":"?嗆?銝","8442":"憡?-KY","84423":"憡?銝Y","84424":"憡??Y","8443":"?輻","8454":"撖慦?,"8462":"??","84624":"????,"8463":"瞏斗陸??,"8464":"??","8466":"蝢???KY","8467":"瘜Ｗ?-KY","84672":"瘜Ｗ?鈭Y","84673":"瘜Ｗ?銝Y","8473":"撅望?瘞?,"8476":"?啣?","84762":"?啣?鈭?,"8478":"?勗??","84781":"?勗??銝","8481":"?蹂撓","8482":"??-KY","8487":"?????,"8488":"??-KY","84881":"??銝KY","84891":"銝?敺瑚?","8499":"曌-KY","8908":"甈??","8926":"?唳掃??,"89277":"?銝?,"89278":"???,"89365":"?絞鈭?,"89366":"?絞??,"8940":"?啣予??,"8996":"擃?","89965":"擃?鈭?,"89966":"擃???,"9103":"蝢噸?怎?-DR","9105":"瘜圈?撖?DR","9110":"頞???DR","9136":"撌券辰-DR","9802":"?粹?-KY","98026":"?粹??胛Y","9902":"?啁","9904":"撖嗆?","9905":"憭扯","9906":"甈?毀撌?,"99063":"甈?毀撌港?","9907":"蝯曹?撖?,"9908":"憭批??,"9910":"鞊陸","9911":"瑹餉","9912":"?","9914":"蝢??,"9917":"銝凋?蝘?,"9918":"甈?予??,"9919":"摨琿擐?,"9921":"撌典之","9924":"蝳?","9925":"?唬?","9926":"?唳絲","9927":"瘜圈?","9928":"銝剛?","9929":"蝘","9930":"銝剛鞈?","9931":"甈??","9933":"銝剝?","99332":"銝剝?鈭?,"9934":"??","9935":"?嗉?撖?,"99353":"?嗉?撖?","9937":"?典?","9938":"?曉?","9939":"摰","99392":"摰鈭?,"9940":"靽∠儔","9941":"鋆?","99412":"鋆?鈭?,"9942":"??","9943":"憟賣?餈?,"9944":"?圈?","9945":"瞏斗陸??,"9946":"銝?啁","9955":"雿喲?","9958":"銝???,"99587":"銝??潔?","99588":"銝??澆瘞?};
 
-// ── 跳回綜合分析:帶 restore=1 + 代號,index.html 會從 sessionStorage 還原上次結果、不重跑 ──
+// ?? 頝喳?蝬???:撣?restore=1 + 隞??,index.html ?? sessionStorage ??銝活蝯????? ??
 if(localStorage.tonyHideGuide){var _gc=document.getElementById("guideCard");if(_gc)_gc.style.display="none";}
 function goBackToAnalysis(){
   const t = document.getElementById("ticker").value.trim().toUpperCase();
@@ -228,10 +238,10 @@ function goBackToAnalysis(){
   if (/^\d{4}$/.test(t)) href = "index.html?ticker=" + encodeURIComponent(t) + "&restore=1";
   location.href = href;
 }
-// 引導卡「回綜合分析」:帶代號 + restore=1(還原上次結果、不重跑)
+// 撘??～?蝬?????撣嗡誨??+ restore=1(??銝活蝯?????)
 function jumpToIndex(){ goBackToAnalysis(); }
 
-// ── 主題 ──
+// ?? 銝駁? ??
 function toggleTheme(){
   const r=document.documentElement;
   r.setAttribute("data-theme", r.getAttribute("data-theme")==="light"?"dark":"light");
@@ -244,7 +254,7 @@ function initTheme(){
 }
 initTheme();
 
-// ── 簡易/專業 模式(與綜合分析頁共用 tony_mode,行為一致)──
+// ?? 蝪⊥?/撠平 璅∪?(???????梁 tony_mode,銵銝????
 const MODE_KEY = "tony_mode";
 function getMode(){ return localStorage.getItem(MODE_KEY) || "simple"; }
 function isPro(){ return getMode() === "pro"; }
@@ -252,26 +262,25 @@ function toggleMode(){
   localStorage.setItem(MODE_KEY, isPro() ? "simple" : "pro");
   applyMode();
 }
-// 賣出頁:專家模式才顯示的細節(簡易=只看結論+損益+K線;專家=加決策矩陣/短中期分數框/完整理由/對照表)
+// 鞈???撠振璅∪??＊蝷箇?蝝啁?(蝪⊥?=?芰?蝯?+??+K蝺?撠振=?捱蝑???凋葉???豢?/摰?/撠銵?
 const PRO_ONLY = ["shortBox", "midBox", "reasonList", "matrixCard", "peerVerdict"];
 function applyMode(){
   const pro = isPro();
   const btn = document.getElementById("modeToggle");
   if (btn) {
-    btn.textContent = pro ? "📊 專業（點回簡易）" : "📊 專業模式";
+    btn.textContent = pro ? "?? 撠平嚗??陛??" : "?? 撠平璅∪?";
     const results = document.getElementById("results");
     if (results && results.style.display === "block") btn.style.display = "block";
   }
-  // 僅在「結果已展開」時才套用細節顯隱,避免載入即顯示空框
-  const results = document.getElementById("results");
+  // ????歇撅??????函敦蝭憿舫,?踹?頛?喲＊蝷箇征獢?  const results = document.getElementById("results");
   if (results && results.style.display === "block") {
     PRO_ONLY.forEach(function(id){ const el = document.getElementById(id); if (el) el.style.display = pro ? "block" : "none"; });
   }
 }
-// 載入即套用模式(結論卡各 block 預設 none,評估後 runSell 會依 isPro() 重設)
+// 頛?喳??冽芋撘?蝯??∪? block ?身 none,閰摯敺?runSell ?? isPro() ?身)
 applyMode();
 
-// ── 行情的 toYahoo / fetchRows（同 index.html）────────────────────────────
+// ?? 銵???toYahoo / fetchRows嚗? index.html嚗????????????????????????????
 function toYahoo(t){
   if (t.toUpperCase() === "^TWII" || t.toUpperCase() === "^TWII.TW") return "^TWII";
   const c = t.toUpperCase().replace(/\.TW$/,'').replace(/\.TWO$/,'');
@@ -287,19 +296,18 @@ function jinaParse(text){
   if (m) { try { return JSON.parse(m[0]); } catch (e) {} }
   return null;
 }
-// 快取：同一 ticker+period 只抓一次（避免重按「開始評估」重複網路）
+// 敹怠?嚗?銝 ticker+period ?芣?銝甈∴??踹?????憪?隡啜?銴雯頝荔?
 const _rowCache = {};
 function withTimeout(promise, ms, label){
   return new Promise((res, rej) => {
-    const t = setTimeout(() => rej(new Error((label || "fetch") + " 逾時(" + ms + "ms)")), ms);
+    const t = setTimeout(() => rej(new Error((label || "fetch") + " ?暹?(" + ms + "ms)")), ms);
     promise.then(v => { clearTimeout(t); res(v); }, e => { clearTimeout(t); rej(e); });
   });
 }
-// 並行快取：同時向 relay / Jina 發，誰先回誰贏（大幅降低最慢端點拖垮整體）
+// 銝西?敹怠?嚗??? relay / Jina ?潘?隤啣??狐韐?憭批?????Ｙ垢暺??格擃?
 async function raceFetch(code, period){
   const qs = "?range=" + period + "&interval=1d";
-  // 跟第一頁同構:同代號兩字尾(.TW/.TWO)全端點並行 settled、誰先回有 chart 誰贏。
-  // 加權指 ^TWII 不展開 .TW/.TWO（會查無資料），只用 ["^TWII"]
+  // 頝洵銝??瑽??誨?摮偏(.TW/.TWO)?函垢暺蒂銵?settled?狐????chart 隤啗???  // ????^TWII 銝???.TW/.TWO嚗??亦鞈?嚗??芰 ["^TWII"]
   const c = code.toUpperCase().replace(/\.TW$/,'').replace(/\.TWO$/,'');
   const isTaiex = (c === "^TWII");
   const variants = isTaiex ? ["^TWII"] : Array.from(new Set([c + ".TW", c + ".TWO"]));
@@ -313,12 +321,12 @@ async function raceFetch(code, period){
       }).then(j => {
         if (j && j.chart) return j;
         if (j && j.ok === false) throw new Error("relay " + j.error);
-        throw new Error("relay 無 chart");
+        throw new Error("relay ??chart");
       });
   const jinaOne = v =>
     withTimeout(fetch(JINA + "https://query1.finance.yahoo.com/v8/finance/chart/" + v + qs, { headers: { "Accept": "text/plain" } }), 12000, "jina")
       .then(r => { if (!r.ok) throw new Error("jina HTTP " + r.status); return r.text(); })
-      .then(t => { const j = jinaParse(t); if (!j) throw new Error("jina 無解析"); return j; });
+      .then(t => { const j = jinaParse(t); if (!j) throw new Error("jina ?∟圾??); return j; });
   const allOrigins = v =>
     withTimeout(fetch("https://api.allorigins.win/raw?url=" + encodeURIComponent("https://query1.finance.yahoo.com/v8/finance/chart/" + v + qs), { headers: { "Accept": "application/json" } }), 12000, "allorigins")
       .then(r => { if (!r.ok) throw new Error("allorigins HTTP " + r.status); return r.json(); });
@@ -329,31 +337,29 @@ async function raceFetch(code, period){
     withTimeout(fetch("https://query1.finance.yahoo.com/v8/finance/chart/" + v + qs, { headers: { "Accept": "application/json" } }), 6000, "yahoo")
       .then(r => { if (!r.ok) throw new Error("yahoo HTTP " + r.status); return r.json(); });
 
-  // 並行端點全並行 settled、無害 reject 全吃掉(不污染 console);誰先回有 chart 誰贏
-  // 構造時直接產生 promise(不是「回 promise 的函數」),settled 一次性 catch-all,
-  // 避免二次調用無害端點產生 Uncaught (in promise) reject。跟第一頁 fetchRows 同構。
-  const pmap = [];
+  // 銝西?蝡舫??其蒂銵?settled?摰?reject ?典???銝情??console);隤啣??? chart 隤啗?
+  // 瑽??湔?Ｙ? promise(銝?? promise ??詻?,settled 銝甈⊥?catch-all,
+  // ?踹?鈭活隤輻?∪拿蝡舫??Ｙ? Uncaught (in promise) reject??蝚砌???fetchRows ????  const pmap = [];
   variants.forEach((v, vi) => pmap.push(relayOne(v, vi === 0)));
   variants.forEach(v => pmap.push(jinaOne(v)));
   variants.forEach(v => pmap.push(allOrigins(v)));
   variants.forEach(v => pmap.push(codeTabs(v)));
   if (yahooDirect) variants.forEach(v => pmap.push(yahooDirect(v)));
-  // 誰先回 chart 誰贏（Promise.any 早離），避免 Promise.all 等最慢端點拖慢整體
-  // 端點 promise 原封不動送入 Promise.any：任一成功就早離、不用等最慢端點；全 reject 才降級 relayRetry
+  // 隤啣???chart 隤啗?嚗romise.any ?拚嚗??踹? Promise.all 蝑??Ｙ垢暺??Ｘ擃?  // 蝡舫? promise ??銝?? Promise.any嚗遙銝??撠望?Ｕ??函???Ｙ垢暺???reject ??蝝?relayRetry
   let winner = null;
   try {
     winner = await Promise.any(pmap);
   } catch (e) {
-    winner = null; // 全端點 reject → 走下方 relayRetry 兜底
+    winner = null; // ?函垢暺?reject ??韏唬???relayRetry ??
   }
   if (winner && winner.chart) return winner;
   if (winner) return winner;
-  // 全端點無 chart → 對第一變體 relay 再試一次(冷啟動/抖動容錯),再失敗才真 throw
+  // ?函垢暺 chart ??撠洵銝霈? relay ?岫銝甈??瑕?????摰寥),?仃????throw
   try {
     const rr = await withTimeout(fetch(QUOTE_RELAY + "?ticker=" + encodeURIComponent(variants[0]) + "&range=" + encodeURIComponent(period) + "&interval=1d"), 10000, "relayRetry");
     if (rr.ok) { const j = await rr.json(); if (j && j.chart) return j; }
   } catch (e) {}
-  throw new Error("取不到 " + code + " 行情（所有端點皆無 chart）");
+  throw new Error("????" + code + " 銵?嚗??垢暺???chart嚗?);
 }
 
 async function fetchRows(code, period){
@@ -366,8 +372,8 @@ async function fetchRows(code, period){
 }
 function buildRows(j, code){
   const res = j.chart && j.chart.result && j.chart.result[0];
-  if(!res) throw new Error("查不到 " + code + " 行情");
-  // Yahoo chart API 現在用名號 key(res.indicators.quote[0])；舊版是數字 index(res.indicators[0])，兩者都支援
+  if(!res) throw new Error("?乩???" + code + " 銵?");
+  // Yahoo chart API ?曉?典???key(res.indicators.quote[0])嚗???詨? index(res.indicators[0])嚗??舀
   const ind = (res.indicators && res.indicators.quote && res.indicators.quote[0]) ? res.indicators.quote[0] : (res.indicators && res.indicators[0]) || {};
   const closes = ind.close || [];
   const opens = ind.open || [];
@@ -383,8 +389,8 @@ function buildRows(j, code){
       volume: (vols[k] || 0),
     });
   }
-  if (!rows.length) throw new Error("無 K 線資料");
-  // 把 Yahoo meta（前收、即時價）附到 rows 上，供行情橫條「開盤/現價/前收＋日期」用
+  if (!rows.length) throw new Error("??K 蝺???);
+  // ??Yahoo meta嚗??嗚?嚗???rows 銝?靘??帖璇????曉/?嚗?
   const m = res.meta || {};
   rows.meta = {
     chartPreviousClose: m.chartPreviousClose != null ? m.chartPreviousClose : null,
@@ -393,8 +399,8 @@ function buildRows(j, code){
   };
   return rows;
 }
-// 表外代號名稱自我補齊：WNAMES 只有 5 筆、賣頁獨立開也抓全名
-// 抓到新名稱就暫存到 localStorage（tonyStockNames），下次直接讀、不再花網路
+// 銵典?隞???迂?芣?鋆?嚗NAMES ?芣? 5 蝑都?蝡?銋??典?
+// ??啣?蝔勗停?怠???localStorage嚗onyStockNames嚗?銝活?湔霈???蝬脰楝
 async function fetchStockName(t){
   if (WNAMES[t]) return WNAMES[t];
   try {
@@ -431,11 +437,10 @@ async function fetchStockName(t){
   return found || "";
 }
 function demoRows(code){
-  // 依代號給合理基準價(避免 0050/0056 這種 ETF 跟 2330 差不多價、失真);固定 seed、不抖動,演示穩定
+  // 靘誨?策???箸????踹? 0050/0056 ?車 ETF 頝?2330 撌桐?憭?仃??;?箏? seed????,瞍內蝛拙?
   const base = { "2330": 2370, "2303": 65, "0050": 165, "0056": 22, "3037": 110 }[code] || 100;
   const days = 126;
-  // 固定 seed 的偽隨機(不用 Math.random),每次評估都同一段演示 K 線
-  let seed = 0x9e3779b9;
+  // ?箏? seed ??冽?(銝 Math.random),瘥活閰摯?賢?銝畾菜?蝷?K 蝺?  let seed = 0x9e3779b9;
   for (let i = 0; i < code.length; i++) seed = (seed * 31 + code.charCodeAt(i)) | 0;
   const rnd = () => { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff; };
   const rows = [];
@@ -445,16 +450,14 @@ function demoRows(code){
     const d = new Date(end.getTime() - (days - 1 - k) * 86400000);
     const drift = Math.sin(k / 8) * base * 0.004 + (rnd() - 0.48) * base * 0.008;
     const open = p, close = p + drift;
-    rows.push({ date: d.toISOString().slice(0, 10), open: +(open != null ? open.toFixed(2) : "—"), high: +(Math.max(open, close) * 1.002).toFixed(2), low: +(Math.min(open, close) * 0.998).toFixed(2), close: +(close != null ? close.toFixed(2) : "—"), volume: Math.round(base * 200000) });
+    rows.push({ date: d.toISOString().slice(0, 10), open: +(open != null ? open.toFixed(2) : "??), high: +(Math.max(open, close) * 1.002).toFixed(2), low: +(Math.min(open, close) * 0.998).toFixed(2), close: +(close != null ? close.toFixed(2) : "??), volume: Math.round(base * 200000) });
     p = close;
   }
   return rows;
 }
 
-// ── 部位決策核心：sellDecision ──────────────────────────────────────────
-// 輸入：現價 close、均價 cost、持股數 shares、ATR、期別 horizon（short / mid40 / mid60）
-//       短線分數、中期分數、中期類別、中期 bear_alert、中期 40/60 日勝率
-// 回傳：{ verdict, tag, advice, sellPct, pnl, sl, tp1, tp2, reasons[] }
+// ?? ?其?瘙箇??詨?嚗ellDecision ??????????????????????????????????????????
+// 頛詨嚗??close????cost???⊥ shares?TR????horizon嚗hort / mid40 / mid60嚗?//       ?剔???葉???詻葉???乓葉??bear_alert?葉??40/60 ?亙???// ?嚗 verdict, tag, advice, sellPct, pnl, sl, tp1, tp2, reasons[] }
 function sellDecision(A, IND, cost, shares, horizon){
   const i = IND.rows.length - 1;
   const close = A.close != null ? A.close : (IND.rows[i] ? IND.rows[i].close : null);
@@ -470,15 +473,14 @@ function sellDecision(A, IND, cost, shares, horizon){
     floatPct: cost > 0 ? (close - cost) / cost * 100 : 0,
   };
 
-  // 訊號面（複用現有引擎）
-  const shortScore = A.final ? A.final.combined_score : 0;
+  // 閮??ｇ?銴?暹?撘?嚗?  const shortScore = A.final ? A.final.combined_score : 0;
   const midSig = A.mid || StockCore.detectMidSignals(IND, i);
   const midScore = midSig ? midSig.mid_score : 0;
   const midClass = midSig ? midSig.mid_class : "neutral";
   const bearAlert = midSig ? midSig.mid_bear_alert : null;
   const h40 = A.hist_mid40, h60 = A.hist_mid60;
 
-  // 距離止損 / 止盈
+  // 頝甇Ｘ? / 甇Ｙ?
   const distSL = slTp.sl != null ? (close - slTp.sl) / close * 100 : null;
   const distTP1 = slTp.tp1 != null ? (slTp.tp1 - close) / close * 100 : null;
   const breachedSL = slTp.sl != null && close <= slTp.sl;
@@ -486,121 +488,116 @@ function sellDecision(A, IND, cost, shares, horizon){
   const hitTP2 = slTp.tp2 != null && close >= slTp.tp2;
   const belowSma60 = midSig && midSig.above_sma60 === false;
 
-  // 決策矩陣：依 期別 決定 6 情境
-  const horizonLabel = horizon === "mid40" ? "中期(40日)" : horizon === "mid60" ? "中期(60日)" : "短線(5日)";
+  // 瘙箇??拚嚗? ? 瘙箏? 6 ??
+  const horizonLabel = horizon === "mid40" ? "銝剜?(40??" : horizon === "mid60" ? "銝剜?(60??" : "?剔?(5??";
   let verdict, tag, sellPct, advice;
   const reasons = [];
 
-  // 情境判斷（依優先順序）
-  if (breachedSL) {
-    // 1. 跌破止損 → 強制減碼 / 全賣
+  // ???斗嚗??芸???嚗?  if (breachedSL) {
+    // 1. 頝甇Ｘ? ??撘瑕皜Ⅳ / ?刻都
     sellPct = (horizon === "short") ? 100 : 50;
-    verdict = "sell"; tag = "減碼 " + sellPct + "%";
-    advice = "現價已跌破" + horizonLabel + "止損（" + (slTp.sl != null ? slTp.sl.toFixed(0) : "—") + "），依紀律減碼 " + sellPct + "%。";
-    reasons.push("跌破止損 " + (slTp.sl != null ? slTp.sl.toFixed(0) : "—") + "（距離 " + (distSL != null ? (distSL != null ? distSL.toFixed(1) : "—") : "?") + "%）");
-    if (bearAlert) reasons.push("⚠️ 中期趨勢警報：" + bearAlert.text);
+    verdict = "sell"; tag = "皜Ⅳ " + sellPct + "%";
+    advice = "?曉撌脰??? + horizonLabel + "甇Ｘ?嚗? + (slTp.sl != null ? slTp.sl.toFixed(0) : "??) + "嚗?靘?敺?蝣?" + sellPct + "%??;
+    reasons.push("頝甇Ｘ? " + (slTp.sl != null ? slTp.sl.toFixed(0) : "??) + "嚗???" + (distSL != null ? (distSL != null ? distSL.toFixed(1) : "??) : "?") + "%嚗?);
+    if (bearAlert) reasons.push("?? 銝剜?頞典霅血嚗? + bearAlert.text);
   } else if (hitTP2) {
-    sellPct = 60; verdict = "sell"; tag = "減碼 60%";
-    advice = "已達第二檔止盈（" + (slTp.tp2 != null ? slTp.tp2.toFixed(0) : "—") + "），建議減碼 60%、剩餘 " + (100 - sellPct) + "% 用 trailing stop 讓利潤奔跑。";
-    reasons.push("達第二檔止盈 " + (slTp.tp2 != null ? slTp.tp2.toFixed(0) : "—"));
+    sellPct = 60; verdict = "sell"; tag = "皜Ⅳ 60%";
+    advice = "撌脤?蝚砌?瑼迫??" + (slTp.tp2 != null ? slTp.tp2.toFixed(0) : "??) + "嚗?撱箄降皜Ⅳ 60%?擗?" + (100 - sellPct) + "% ??trailing stop 霈瞏文?頝?;
+    reasons.push("?洵鈭?甇Ｙ? " + (slTp.tp2 != null ? slTp.tp2.toFixed(0) : "??));
   } else if (hitTP1) {
-    sellPct = 33; verdict = "reduce"; tag = "減碼 33%";
-    advice = "已達第一檔止盈（" + (slTp.tp1 != null ? slTp.tp1.toFixed(0) : "—") + "），建議減碼 1/3 鎖利，剩餘觀望第二檔止盈 " + (slTp.tp2 != null ? slTp.tp2.toFixed(0) : "—") + "。";
-    reasons.push("達第一檔止盈 " + (slTp.tp1 != null ? slTp.tp1.toFixed(0) : "—"));
-    if (bearAlert) { sellPct = 50; tag = "減碼 50%"; advice = "已達止盈但中期⚠️警報，建議加碼減碼至 50% 防回檔。"; reasons.push("⚠️ 中期警報：" + bearAlert.text); }
+    sellPct = 33; verdict = "reduce"; tag = "皜Ⅳ 33%";
+    advice = "撌脤?蝚砌?瑼迫??" + (slTp.tp1 != null ? slTp.tp1.toFixed(0) : "??) + "嚗?撱箄降皜Ⅳ 1/3 ?嚗擗??洵鈭?甇Ｙ? " + (slTp.tp2 != null ? slTp.tp2.toFixed(0) : "??) + "??;
+    reasons.push("?洵銝瑼迫??" + (slTp.tp1 != null ? slTp.tp1.toFixed(0) : "??));
+    if (bearAlert) { sellPct = 50; tag = "皜Ⅳ 50%"; advice = "撌脤?甇Ｙ?雿葉??儭郎?梧?撱箄降?Ⅳ皜Ⅳ??50% ?脣?瑼?; reasons.push("?? 銝剜?霅血嚗? + bearAlert.text); }
   } else if (bearAlert && bearAlert.level === "strong" && horizon !== "short") {
-    // 未破止損、未達止盈,但中期⚠️強警報(只在中期 40/60 日情境觸發;短線 5 日不用中期警報當主結論)
-    sellPct = 30; verdict = "reduce"; tag = "減碼 30%";
-    advice = "未破止損也未達止盈，但中期⚠️趨勢偏弱（" + bearAlert.text + "），建議先減碼 30% 觀望。";
-    reasons.push("⚠️ 中期趨勢警報：" + bearAlert.text);
-    if (belowSma60) reasons.push("現價低於 60 日均線（趨勢轉弱）");
+    // ?芰甇Ｘ???迫??雿葉??儭撥霅血(?芸銝剜? 40/60 ?交?憓孛???剔? 5 ?乩??其葉?郎?梁銝餌?隢?
+    sellPct = 30; verdict = "reduce"; tag = "皜Ⅳ 30%";
+    advice = "?芰甇Ｘ?銋?迫??雿葉??儭隅?Ｗ?撘梧?" + bearAlert.text + "嚗?撱箄降??蝣?30% 閫??;
+    reasons.push("?? 銝剜?頞典霅血嚗? + bearAlert.text);
+    if (belowSma60) reasons.push("?曉雿 60 ?亙?蝺?頞典頧摹嚗?);
   } else if (bearAlert && bearAlert.level === "strong" && horizon === "short") {
-    // 短線 5 日:中期警報作「輔助」,主結論仍看短線分數;短線偏多則持股、短線偏空則減碼
+    // ?剔? 5 ??銝剜?霅血雿??押?銝餌?隢??蝺????剔??????～蝺?蝛箏?皜Ⅳ
     if (shortScore >= 0.15) {
-      sellPct = 0; verdict = "hold"; tag = "持股";
-      advice = "短線偏多（分數 " + (shortScore != null ? shortScore.toFixed(2) : "—") + "），但⚠️中期趨勢偏弱（" + bearAlert.text + "）；短線波段可持股，破短線止損 " + (slTp.sl != null ? slTp.sl.toFixed(0) : "—") + " 即減碼。";
-      reasons.push("短線偏多 " + (shortScore != null ? shortScore.toFixed(2) : "—"));
-      reasons.push("⚠️ 中期警報（輔助）：" + bearAlert.text);
+      sellPct = 0; verdict = "hold"; tag = "?";
+      advice = "?剔???嚗???" + (shortScore != null ? shortScore.toFixed(2) : "??) + "嚗?雿?儭葉?隅?Ｗ?撘梧?" + bearAlert.text + "嚗??剔?瘜Ｘ挾?舀??∴??渡蝺迫??" + (slTp.sl != null ? slTp.sl.toFixed(0) : "??) + " ?單?蝣潦?;
+      reasons.push("?剔??? " + (shortScore != null ? shortScore.toFixed(2) : "??));
+      reasons.push("?? 銝剜?霅血嚗??抬?嚗? + bearAlert.text);
     } else {
-      sellPct = 20; verdict = "reduce"; tag = "減碼 20%";
-      advice = "短線偏空（分數 " + (shortScore != null ? shortScore.toFixed(2) : "—") + "）+ 中期⚠️偏弱（" + bearAlert.text + "），建議減碼 20% 控風險。";
-      reasons.push("短線偏空 " + (shortScore != null ? shortScore.toFixed(2) : "—"));
-      reasons.push("⚠️ 中期警報：" + bearAlert.text);
+      sellPct = 20; verdict = "reduce"; tag = "皜Ⅳ 20%";
+      advice = "?剔??征嚗???" + (shortScore != null ? shortScore.toFixed(2) : "??) + "嚗? 銝剜????摹嚗? + bearAlert.text + "嚗?撱箄降皜Ⅳ 20% ?折◢?芥?;
+      reasons.push("?剔??征 " + (shortScore != null ? shortScore.toFixed(2) : "??));
+      reasons.push("?? 銝剜?霅血嚗? + bearAlert.text);
     }
   } else if (close < cost && shortScore < -0.15 && (midClass === "weak" || midClass === "bear_rebound")) {
-    // 浮動賠 + 訊號空頭 + 中期弱
-    sellPct = 30; verdict = "reduce"; tag = "減碼 30%";
-    advice = "浮動賠 " + (pnl.floatPct!=null?Math.abs(pnl.floatPct).toFixed(1):"—") + "% 且短線空頭 + 中期 " + midClass + "，建議減碼 30% 控損，不建議加碼攤平。";
-    reasons.push("浮動賠 " + (pnl.floatPct!=null?Math.abs(pnl.floatPct).toFixed(1):"—") + "%");
-    reasons.push("短線分數 " + (shortScore != null ? shortScore.toFixed(2) : "—") + "（偏空）");
-    if (midClass === "weak") reasons.push("中期類別：弱多（" + (h40 ? ("40日勝率 " + (h40.up_rate != null ? h40.up_rate + "%" : "資料不足")) : "") + "）");
+    // 瘚桀?鞈?+ 閮?蝛粹 + 銝剜?撘?    sellPct = 30; verdict = "reduce"; tag = "皜Ⅳ 30%";
+    advice = "瘚桀?鞈?" + (pnl.floatPct!=null?Math.abs(pnl.floatPct).toFixed(1):"??) + "% 銝蝺征??+ 銝剜? " + midClass + "嚗遣霅唳?蝣?30% ?扳?嚗?撱箄降?Ⅳ?文像??;
+    reasons.push("瘚桀?鞈?" + (pnl.floatPct!=null?Math.abs(pnl.floatPct).toFixed(1):"??) + "%");
+    reasons.push("?剔?? " + (shortScore != null ? shortScore.toFixed(2) : "??) + "嚗?蝛綽?");
+    if (midClass === "weak") reasons.push("銝剜?憿嚗摹憭?" + (h40 ? ("40?亙???" + (h40.up_rate != null ? h40.up_rate + "%" : "鞈?銝雲")) : "") + "嚗?);
   } else if (pnl.floatPct <= -8) {
-    // D. 深賠（>−8%）單獨觸發：先減碼 20% 控風險
-    sellPct = 20; verdict = "reduce"; tag = "減碼 20%";
-    advice = "浮動賠 " + (pnl.floatPct!=null?Math.abs(pnl.floatPct).toFixed(1):"—") + "%（深賠），建議先減碼 20% 控風險；短線翻多再視情況加回。";
-    reasons.push("浮動賠 " + (pnl.floatPct!=null?Math.abs(pnl.floatPct).toFixed(1):"—") + "%（超過 −8% 深賠線）");
-    if (shortScore < 0) reasons.push("短線分數 " + (shortScore != null ? shortScore.toFixed(2) : "—") + "（偏空）");
+    // D. 瘛梯?嚗???%嚗?刻孛?潘???蝣?20% ?折◢??    sellPct = 20; verdict = "reduce"; tag = "皜Ⅳ 20%";
+    advice = "瘚桀?鞈?" + (pnl.floatPct!=null?Math.abs(pnl.floatPct).toFixed(1):"??) + "%嚗楛鞈?嚗遣霅啣?皜Ⅳ 20% ?折◢?迎??剔?蝧餃?????????;
+    reasons.push("瘚桀?鞈?" + (pnl.floatPct!=null?Math.abs(pnl.floatPct).toFixed(1):"??) + "%嚗?????% 瘛梯?蝺?");
+    if (shortScore < 0) reasons.push("?剔?? " + (shortScore != null ? shortScore.toFixed(2) : "??) + "嚗?蝛綽?");
   } else if (close > cost && midScore > 0.2 && !belowSma60) {
-    // 浮動賺 + 中期多頭:依 horizon 出不同文字(短線看 5 日、中期看趨勢)
-    sellPct = 0; verdict = "hold"; tag = "持股";
+    // 瘚桀?鞈?+ 銝剜?憭:靘?horizon ?箔???摮??剔???5 ?乓葉??頞典)
+    sellPct = 0; verdict = "hold"; tag = "?";
     const trailSl = (close!=null) ? Math.max(cost, +(close * 0.98).toFixed(2)) : null;
     if (horizon === "short") {
-      advice = "浮動賺 " + (pnl.floatPct != null ? pnl.floatPct.toFixed(1) : "—") + "%、短線偏多（分數 " + (shortScore != null ? shortScore.toFixed(2) : "—") + "），建議持股；短線止損 " + (slTp.sl != null ? slTp.sl.toFixed(0) : "—") + "（1.5×ATR），破線減碼、不抗跌。";
-      reasons.push("浮動賺 " + (pnl.floatPct != null ? pnl.floatPct.toFixed(1) : "—") + "%");
-      reasons.push("短線偏多 " + (shortScore != null ? shortScore.toFixed(2) : "—"));
+      advice = "瘚桀?鞈?" + (pnl.floatPct != null ? pnl.floatPct.toFixed(1) : "??) + "%?蝺?憭?? " + (shortScore != null ? shortScore.toFixed(2) : "??) + "嚗?撱箄降?嚗蝺迫??" + (slTp.sl != null ? slTp.sl.toFixed(0) : "??) + "嚗?.5?ATR嚗??渡?皜Ⅳ??????;
+      reasons.push("瘚桀?鞈?" + (pnl.floatPct != null ? pnl.floatPct.toFixed(1) : "??) + "%");
+      reasons.push("?剔??? " + (shortScore != null ? shortScore.toFixed(2) : "??));
     } else {
-      advice = "浮動賺 " + (pnl.floatPct != null ? pnl.floatPct.toFixed(1) : "—") + "% 且中期偏多（分數 " + (midScore != null ? midScore.toFixed(2) : "—") + "），建議持股；把中期止損上移到 " + (trailSl != null ? trailSl.toFixed(0) : "—") + "（max 均價 / 現價−2%），破線先減碼。";
-      reasons.push("浮動賺 " + (pnl.floatPct != null ? pnl.floatPct.toFixed(1) : "—") + "%");
-      reasons.push("中期偏多 " + (midScore != null ? midScore.toFixed(2) : "—"));
-      if (h40 && h40.up_rate != null) reasons.push("40 日偏多勝率 " + h40.up_rate + "%");
+      advice = "瘚桀?鞈?" + (pnl.floatPct != null ? pnl.floatPct.toFixed(1) : "??) + "% 銝葉??憭?? " + (midScore != null ? midScore.toFixed(2) : "??) + "嚗?撱箄降?嚗?銝剜?甇Ｘ?銝宏??" + (trailSl != null ? trailSl.toFixed(0) : "??) + "嚗ax ? / ?曉??%嚗??渡???蝣潦?;
+      reasons.push("瘚桀?鞈?" + (pnl.floatPct != null ? pnl.floatPct.toFixed(1) : "??) + "%");
+      reasons.push("銝剜??? " + (midScore != null ? midScore.toFixed(2) : "??));
+      if (h40 && h40.up_rate != null) reasons.push("40 ?亙?憭???" + h40.up_rate + "%");
     }
   } else {
-    // 中性
-    sellPct = 0; verdict = "watch"; tag = "觀望";
-    advice = "現價在均價附近（浮動 " + (pnl.floatPct >= 0 ? "+" : "") + (pnl.floatPct != null ? pnl.floatPct.toFixed(1) : "—") + "%）、訊號中性，建議觀望；未破止損 " + (slTp.sl != null ? slTp.sl.toFixed(0) : "—") + " 前不強制動作。";
-    reasons.push("浮動損益 " + (pnl.floatPct >= 0 ? "+" : "") + (pnl.floatPct != null ? pnl.floatPct.toFixed(1) : "—") + "%");
-    reasons.push("距止損 " + (distSL != null ? (distSL != null ? distSL.toFixed(1) : "—") : "?") + "%、距第一檔止盈 " + (distTP1 != null ? (distTP1 != null ? distTP1.toFixed(1) : "—") : "?") + "%");
+    // 銝剜?    sellPct = 0; verdict = "watch"; tag = "閫??;
+    advice = "?曉?典??寥?餈?瘚桀? " + (pnl.floatPct >= 0 ? "+" : "") + (pnl.floatPct != null ? pnl.floatPct.toFixed(1) : "??) + "%嚗??葉?改?撱箄降閫???芰甇Ｘ? " + (slTp.sl != null ? slTp.sl.toFixed(0) : "??) + " ??撘瑕????;
+    reasons.push("瘚桀??? " + (pnl.floatPct >= 0 ? "+" : "") + (pnl.floatPct != null ? pnl.floatPct.toFixed(1) : "??) + "%");
+    reasons.push("頝迫??" + (distSL != null ? (distSL != null ? distSL.toFixed(1) : "??) : "?") + "%??蝚砌?瑼迫??" + (distTP1 != null ? (distTP1 != null ? distTP1.toFixed(1) : "??) : "?") + "%");
   }
 
-  // ── 加碼建議(add-on)：只在「浮動賺 + 中期偏多 + 未破中期 40 日止損 + 未觸任何減碼情境」才給可加碼 ──
-  // 4 條件：1) close>cost  2) midScore>0.2  3) !belowSma60  4) 未 hitTP/hitSL/bearAlert/深賠(即 verdict 不是 sell/reduce)
+  // ?? ?Ⅳ撱箄降(add-on)嚗?具筑?竟 + 銝剜??? + ?芰銝剜? 40 ?交迫??+ ?芾孛隞颱?皜Ⅳ????蝯血?Ⅳ ??
+  // 4 璇辣嚗?) close>cost  2) midScore>0.2  3) !belowSma60  4) ??hitTP/hitSL/bearAlert/瘛梯?(??verdict 銝 sell/reduce)
   let addPct = 0;
   const canAdd = (close > cost && midScore > 0.2 && !belowSma60 &&
                   verdict !== "sell" && verdict !== "reduce");
   if (canAdd) {
-    // 強多(≥0.4)可加 30%；偏多(0.2~0.4)可加 15~20%
+    // 撘瑕?(??.4)?臬? 30%嚗?憭?0.2~0.4)?臬? 15~20%
     addPct = (midScore >= 0.4) ? 30 : 15;
   }
-  const addBreakeven = (canAdd && close!=null) ? Math.max(cost, +(close * 0.95).toFixed(2)) : null; // 加碼後新保本線 = max(原均價, 現價−5%)
-  const addSL = (canAdd && close!=null && atr!=null) ? +(close - 4 * atr).toFixed(2) : null; // 加碼後新止損(中期 40 日,4×ATR)
+  const addBreakeven = (canAdd && close!=null) ? Math.max(cost, +(close * 0.95).toFixed(2)) : null; // ?Ⅳ敺靽蝺?= max(???? ?曉??%)
+  const addSL = (canAdd && close!=null && atr!=null) ? +(close - 4 * atr).toFixed(2) : null; // ?Ⅳ敺甇Ｘ?(銝剜? 40 ??4?ATR)
   const addReason = canAdd
     ? (addPct === 30
-        ? "中期偏多(分數 " + (midScore != null ? midScore.toFixed(2) : "—") + ")、現價高於 60 日均線、浮動賺 " + (pnl.floatPct != null ? pnl.floatPct.toFixed(1) : "—") + "%，趨勢與部位都站在這邊，可加碼 " + addPct + "% 加在 " + (addBreakeven != null ? addBreakeven.toFixed(0) : "—") + " 下方"
-        : "中期偏多(分數 " + (midScore != null ? midScore.toFixed(2) : "—") + ")、現價高於 60 日均線、浮動賺 " + (pnl.floatPct != null ? pnl.floatPct.toFixed(1) : "—") + "%，可小量加碼 " + addPct + "%，加碼後保本線 " + (addBreakeven != null ? addBreakeven.toFixed(0) : "—") + "、止損 " + (addSL != null ? addSL.toFixed(0) : "—") + "。")
+        ? "銝剜???(? " + (midScore != null ? midScore.toFixed(2) : "??) + ")??寥???60 ?亙?蝺筑?竟 " + (pnl.floatPct != null ? pnl.floatPct.toFixed(1) : "??) + "%嚗隅?Ｚ??其??賜??券?嚗?Ⅳ " + addPct + "% ? " + (addBreakeven != null ? addBreakeven.toFixed(0) : "??) + " 銝"
+        : "銝剜???(? " + (midScore != null ? midScore.toFixed(2) : "??) + ")??寥???60 ?亙?蝺筑?竟 " + (pnl.floatPct != null ? pnl.floatPct.toFixed(1) : "??) + "%嚗撠??Ⅳ " + addPct + "%嚗?蝣澆?靽蝺?" + (addBreakeven != null ? addBreakeven.toFixed(0) : "??) + "?迫??" + (addSL != null ? addSL.toFixed(0) : "??) + "??)
     : (close < cost && pnl.floatPct < 0
-        ? "浮動賠 " + (pnl.floatPct!=null?Math.abs(pnl.floatPct).toFixed(1):"—") + "%，不建議攤平；等短線翻多 + 中期偏多再考慮加碼"
-        : (midScore <= 0.2 ? "中期未偏多(分數 " + (midScore != null ? midScore.toFixed(2) : "—") + ")，加碼勝率不足，先不加碼"
-        : (belowSma60 ? "現價低於 60 日均線(下降趨勢)，不宜加碼"
-        : "已觸發減碼情境，不宜加碼")));
+        ? "瘚桀?鞈?" + (pnl.floatPct!=null?Math.abs(pnl.floatPct).toFixed(1):"??) + "%嚗?撱箄降?文像嚗??剔?蝧餃? + 銝剜?????Ⅳ"
+        : (midScore <= 0.2 ? "銝剜??芸?憭?? " + (midScore != null ? midScore.toFixed(2) : "??) + ")嚗?蝣澆???頞喉????Ⅳ"
+        : (belowSma60 ? "?曉雿 60 ?亙?蝺?銝?頞典)嚗?摰?蝣?
+        : "撌脰孛?潭?蝣潭?憓?銝??Ⅳ")));
 
   return { verdict, tag, advice, sellPct, reasons, slTp, pnl, horizonLabel, close, atr, shortScore, midScore, midClass, bearAlert, belowSma60, breachedSL, hitTP1, hitTP2, distSL, distTP1, midSig,
     addOn: { ok: canAdd, pct: addPct, reason: addReason, breakeven: addBreakeven, sl: addSL, midScore: midScore } };
 }
 
-// ── 損益面板 + 決策矩陣 + 渲染 ──
-function fmt2(x){ return x == null ? "—" : Number(x).toLocaleString(undefined, { maximumFractionDigits: 2 }); }
-function fmtPct(x){ return x == null ? "—" : (x >= 0 ? "+" : "") + (x != null ? x.toFixed(1) : "—") + "%"; }
+// ?? ???Ｘ + 瘙箇??拚 + 皜脫? ??
+function fmt2(x){ return x == null ? "?? : Number(x).toLocaleString(undefined, { maximumFractionDigits: 2 }); }
+function fmtPct(x){ return x == null ? "?? : (x >= 0 ? "+" : "") + (x != null ? x.toFixed(1) : "??) + "%"; }
 
-// 行情橫條（前收/開盤/盤後＋資料日期＋未開盤提示）：與首頁同語意
-function renderTicker(rows, IND, i) {
+// 銵?璈急?嚗????/?文?嚗?????芷??斗?蝷綽?嚗?擐?????function renderTicker(rows, IND, i) {
   const card = document.getElementById('todayTickerCard');
   if (!card) return;
-  // intradayFromRows 提供 open_display/post_display/prev_close/chg_pct/data_date/is_open
+  // intradayFromRows ?? open_display/post_display/prev_close/chg_pct/data_date/is_open
   let it = null;
   try { it = StockCore.intradayFromRows(rows, IND, i); } catch (e) { it = null; }
   if (!it) {
-    // 拿不到 intraday 也至少把「日K 前一筆收盤」當前收放上去（最準確的上一交易日收盤）
-    // meta.chartPreviousClose 只作兜底：Yahoo 回傳的是 chart 期間首根 K 的前收，長期間會跟當日對不上
+    // ?蹂???intraday 銋撠??K ??蝑?扎??曆??鳴??皞Ⅱ??銝鈭斗??交?歹?
+    // meta.chartPreviousClose ?芯???嚗ahoo ?? chart ??擐 K ???塚??瑟???頝?亙?銝?
     const m = rows.meta || {};
     const last = rows[i] ? rows[i].close : null;
     const prevClose = (i > 0 && rows[i - 1] && rows[i - 1].close != null) ? rows[i - 1].close : (m.chartPreviousClose != null ? m.chartPreviousClose : null);
@@ -608,22 +605,18 @@ function renderTicker(rows, IND, i) {
       const today = new Date();
       const tDate = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
       const isOpen = (rows[i] && rows[i].date) ? (rows[i].date === tDate) : true;
-      // 開盤格＝當日開盤價（無論開盤中或未開盤都顯示當日開盤）；收盤格＝last；前收＝日K 前一筆收盤
-      it = { open_display: rows[i] ? rows[i].open : null,
+      // ??潘??嗆??對??∟??銝剜??芷??日憿舐內?嗆?嚗??嗥?潘?last嚗??塚??仕 ??蝑??      it = { open_display: rows[i] ? rows[i].open : null,
              post_display: last, last, prev_close: prevClose, chg_pct: null, data_date: rows[i] ? rows[i].date : null, is_open: isOpen };
     } else return;
   }
   card.style.display = 'block';
-  const num = (x) => (x != null && isFinite(x)) ? Number(x).toLocaleString() : '—';
+  const num = (x) => (x != null && isFinite(x)) ? Number(x).toLocaleString() : '??;
   const prevC = (it.prev_close != null && isFinite(it.prev_close)) ? it.prev_close : null;
   const openC = (it.open_display != null && isFinite(it.open_display)) ? it.open_display : null;
-  // 現價：盤中＝即時價（it.now_price）、未開盤＝「—」
-  const nowC = (it.now_price != null && isFinite(it.now_price)) ? it.now_price : null;
+  // ?曉嚗銝哨??單??對?it.now_price嚗?嚗?  const nowC = (it.now_price != null && isFinite(it.now_price)) ? it.now_price : null;
   const postC = (it.post_display != null && isFinite(it.post_display)) ? it.post_display : null;
-  let chgColor = 'var(--muted)', chgTxt = '—', chgAmtTxt = '', dirTxt = '', dirBg = 'var(--card2)';
-  // 漲跌價差：盤中＝現價−前收；未開盤（盤前/盤後/假日）＝收盤−前收
-  const chgNumerator = (it.is_open !== false) ? nowC : postC;  // 盤中→現價、未開盤→收盤
-  if (chgNumerator != null && prevC != null) {
+  let chgColor = 'var(--muted)', chgTxt = '??, chgAmtTxt = '', dirTxt = '', dirBg = 'var(--card2)';
+  // 瞍脰??孵榆嚗銝哨??曉???塚??芷??歹??文?/?文?/?嚗??嗥????  const chgNumerator = (it.is_open !== false) ? nowC : postC;  // ?支葉??嫘????  if (chgNumerator != null && prevC != null) {
     const diff = chgNumerator - prevC;
     chgAmtTxt = (diff > 0 ? '+' : diff < 0 ? '' : '') + diff.toFixed(2);
     chgColor = diff > 0 ? 'var(--bull)' : diff < 0 ? 'var(--bear)' : 'var(--muted)';
@@ -632,9 +625,9 @@ function renderTicker(rows, IND, i) {
     const c = it.chg_pct;
     if (chgColor === 'var(--muted)') chgColor = c > 0 ? 'var(--bull)' : c < 0 ? 'var(--bear)' : 'var(--muted)';
     chgTxt = (c > 0 ? '+' : '') + c.toFixed(2) + '%';
-    if (c > 0) { dirTxt = '▲ 上漲'; dirBg = 'rgba(239,68,68,.15)'; }
-    else if (c < 0) { dirTxt = '▼ 下跌'; dirBg = 'rgba(34,197,94,.15)'; }
-    else { dirTxt = '◆ 盤整'; }
+    if (c > 0) { dirTxt = '??銝撞'; dirBg = 'rgba(239,68,68,.15)'; }
+    else if (c < 0) { dirTxt = '??銝?'; dirBg = 'rgba(34,197,94,.15)'; }
+    else { dirTxt = '???斗'; }
   }
   const set = (id, txt, color) => { const el = document.getElementById(id); if (el) { el.textContent = txt; if (color != null) el.style.color = color; } };
   set('tkPrevClose', num(prevC));
@@ -642,7 +635,7 @@ function renderTicker(rows, IND, i) {
   set('tkNow', num(nowC), chgColor);
   set('tkPost', num(postC), chgColor);
   set('tkChg', chgTxt, chgColor);
-  set('tkChgAmt', chgAmtTxt ? '（' + chgAmtTxt + ' 元）' : '', chgColor);
+  set('tkChgAmt', chgAmtTxt ? '嚗? + chgAmtTxt + ' ??' : '', chgColor);
   const dirEl = document.getElementById('tkDir');
   if (dirEl) {
     if (dirTxt) { dirEl.textContent = dirTxt; dirEl.style.display = 'inline-block'; dirEl.style.background = dirBg; dirEl.style.color = chgColor; }
@@ -650,108 +643,107 @@ function renderTicker(rows, IND, i) {
   }
   const openToday = (it.is_open !== false);
   const dateEl = document.getElementById('tkDate');
-  if (dateEl) { if (it.data_date) { dateEl.textContent = '資料日期 ' + it.data_date; dateEl.style.display = ''; } else dateEl.style.display = 'none'; }
+  if (dateEl) { if (it.data_date) { dateEl.textContent = '鞈??交? ' + it.data_date; dateEl.style.display = ''; } else dateEl.style.display = 'none'; }
   const statusTag = document.getElementById('tkStatusTag');
   if (statusTag) {
-    if (!openToday) { statusTag.textContent = '未開盤・前日收盤'; statusTag.style.display = 'inline-block'; statusTag.style.background = 'rgba(148,163,184,.18)'; statusTag.style.color = 'var(--muted)'; }
-    else { statusTag.textContent = '開盤中'; statusTag.style.display = 'inline-block'; statusTag.style.background = 'rgba(34,197,94,.15)'; statusTag.style.color = 'var(--bull)'; }
+    if (!openToday) { statusTag.textContent = '?芷??扎??嗥'; statusTag.style.display = 'inline-block'; statusTag.style.background = 'rgba(148,163,184,.18)'; statusTag.style.color = 'var(--muted)'; }
+    else { statusTag.textContent = '?銝?; statusTag.style.display = 'inline-block'; statusTag.style.background = 'rgba(34,197,94,.15)'; statusTag.style.color = 'var(--bull)'; }
   }
   const noteEl = document.getElementById('tkNote');
   if (noteEl) noteEl.textContent = !openToday
-    ? '⚠️ 今日未開盤（盤前／盤後／假日），以下為前日收盤資料。前收、開盤、收盤均為前一日資訊，僅供參考。'
-    : '⚠️ 僅供參考，不構成投資建議。前收、開盤、收盤以券商或 Yahoo 金融即時價為準。';
+    ? '?? 隞?芷??歹??文?嚗敺??嚗?隞乩??箏??交?方????嗚??扎?文??箏?銝?亥?閮?????
+    : '?? ????銝???鞈遣霅啜??嗚??扎?支誑?詨???Yahoo ???單??寧皞?;
 }
 
 function renderPnl(p){
   const g = document.getElementById("pnlGrid");
   const cls = p.float >= 0 ? "pos" : "neg";
   g.innerHTML =
-    '<div class="stat-mini"><div class="sm-lbl">持股數</div><div class="sm-val neu">' + p.shares + ' 股</div></div>' +
-    '<div class="stat-mini"><div class="sm-lbl">均價</div><div class="sm-val neu">' + fmt2(p.cost) + '</div></div>' +
-    '<div class="stat-mini"><div class="sm-lbl">現價</div><div class="sm-val ' + cls + '">' + fmt2(p.close) + '</div></div>' +
-    '<div class="stat-mini"><div class="sm-lbl">部位金額</div><div class="sm-val">' + fmt2(p.positionValue) + '</div></div>' +
-    '<div class="stat-mini"><div class="sm-lbl">市值</div><div class="sm-val ' + cls + '">' + fmt2(p.marketValue) + '</div></div>' +
-    '<div class="stat-mini"><div class="sm-lbl">浮動損益</div><div class="sm-val ' + cls + '">' + (p.float >= 0 ? "+" : "") + fmt2(p.float) + "（" + fmtPct(p.floatPct) + '）</div></div>';
+    '<div class="stat-mini"><div class="sm-lbl">???/div><div class="sm-val neu">' + p.shares + ' ??/div></div>' +
+    '<div class="stat-mini"><div class="sm-lbl">?</div><div class="sm-val neu">' + fmt2(p.cost) + '</div></div>' +
+    '<div class="stat-mini"><div class="sm-lbl">?曉</div><div class="sm-val ' + cls + '">' + fmt2(p.close) + '</div></div>' +
+    '<div class="stat-mini"><div class="sm-lbl">?其???</div><div class="sm-val">' + fmt2(p.positionValue) + '</div></div>' +
+    '<div class="stat-mini"><div class="sm-lbl">撣?/div><div class="sm-val ' + cls + '">' + fmt2(p.marketValue) + '</div></div>' +
+    '<div class="stat-mini"><div class="sm-lbl">瘚桀???</div><div class="sm-val ' + cls + '">' + (p.float >= 0 ? "+" : "") + fmt2(p.float) + "嚗? + fmtPct(p.floatPct) + '嚗?/div></div>';
 }
 
 function renderMatrix(d, tableId, view){
   const wrap = document.getElementById(tableId || "matrixTableShort");
   view = view || "short";
   const isMid = view === "mid";
-  // 依視角給不同的止損/止盈 ATR 倍數說明
-  const slLabel = isMid ? "中期 40 日止損" : "短線止損(1.5×ATR)";
-  const tp1Label = isMid ? "中期第一檔止盈" : "短線第一檔止盈";
-  const tp2Label = isMid ? "中期第二檔止盈" : "短線第二檔止盈";
-  // 依視角決定「你目前落在」該視角情境
+  // 靘?閫策銝??迫??甇Ｙ? ATR ?隤芣?
+  const slLabel = isMid ? "銝剜? 40 ?交迫?? : "?剔?甇Ｘ?(1.5?ATR)";
+  const tp1Label = isMid ? "銝剜?蝚砌?瑼迫?? : "?剔?蝚砌?瑼迫??;
+  const tp2Label = isMid ? "銝剜?蝚砌?瑼迫?? : "?剔?蝚砌?瑼迫??;
+  // 靘?閫捱摰??桀??賢?府閬???
   const rows = isMid ? [
-    { key: "sl",   cond: "跌破中期 40 日止損",       hit: d.breachedSL, action: "減碼 50%、trailing stop" },
-    { key: "tp2",  cond: "達中期第二檔止盈",         hit: d.hitTP2,     action: "減碼 60%、剩 40% 持股" },
-    { key: "tp1",  cond: "達中期第一檔止盈",         hit: d.hitTP1,     action: "減碼 30% 鎖利" },
-    { key: "alert",cond: "中期⚠️強警報(收盤低於 60 日均線)", hit: !!(d.bearAlert && d.bearAlert.level === "strong"), action: "減碼 30% 觀望" },
-    { key: "deep", cond: "深賠(浮動賠 >−8%)",        hit: (d.pnl.floatPct <= -8), action: "減碼 20% 控風險" },
-    { key: "weak", cond: "浮動賠 + 中期弱(weak/bear_rebound)", hit: (d.pnl.floatPct < 0 && (d.midClass === "weak" || d.midClass === "bear_rebound")), action: "減碼 30% 控損" },
-    { key: "win",  cond: "浮動賺 + 中期偏多",         hit: (d.pnl.floatPct > 0 && d.midScore > 0.2 && !d.belowSma60), action: "持股、上移中期止損到 " + Math.max(d.pnl.cost, (d.close != null ? +(d.close * 0.98).toFixed(0) : "—")) + "(max 均價 / 現價−2%)" },
-    { key: "add",  cond: "可加碼(中期強多+浮動賺)",   hit: !!(d.addOn && d.addOn.ok && d.addOn.pct === 30), action: "可加碼 30%、加碼後保本 " + (d.addOn && d.addOn.breakeven != null ? (d.addOn.breakeven!=null?d.addOn.breakeven.toFixed(0):"—") : "—") },
-    { key: "addS", cond: "小量加碼(中期偏多)",        hit: !!(d.addOn && d.addOn.ok && d.addOn.pct === 15), action: "可小量加碼 15%、加碼後保本 " + (d.addOn && d.addOn.breakeven != null ? d.addOn.breakeven.toFixed(0) : "—") },
+    { key: "sl",   cond: "頝銝剜? 40 ?交迫??,       hit: d.breachedSL, action: "皜Ⅳ 50%?railing stop" },
+    { key: "tp2",  cond: "?葉?洵鈭?甇Ｙ?",         hit: d.hitTP2,     action: "皜Ⅳ 60%? 40% ?" },
+    { key: "tp1",  cond: "?葉?洵銝瑼迫??,         hit: d.hitTP1,     action: "皜Ⅳ 30% ?" },
+    { key: "alert",cond: "銝剜???撘瑁郎???嗥雿 60 ?亙?蝺?", hit: !!(d.bearAlert && d.bearAlert.level === "strong"), action: "皜Ⅳ 30% 閫?? },
+    { key: "deep", cond: "瘛梯?(瘚桀?鞈?>??%)",        hit: (d.pnl.floatPct <= -8), action: "皜Ⅳ 20% ?折◢?? },
+    { key: "weak", cond: "瘚桀?鞈?+ 銝剜?撘?weak/bear_rebound)", hit: (d.pnl.floatPct < 0 && (d.midClass === "weak" || d.midClass === "bear_rebound")), action: "皜Ⅳ 30% ?扳?" },
+    { key: "win",  cond: "瘚桀?鞈?+ 銝剜???",         hit: (d.pnl.floatPct > 0 && d.midScore > 0.2 && !d.belowSma60), action: "???蝘颱葉?迫? " + Math.max(d.pnl.cost, (d.close != null ? +(d.close * 0.98).toFixed(0) : "??)) + "(max ? / ?曉??%)" },
+    { key: "add",  cond: "?臬?蝣?銝剜?撘瑕?+瘚桀?鞈?",   hit: !!(d.addOn && d.addOn.ok && d.addOn.pct === 30), action: "?臬?蝣?30%??蝣澆?靽 " + (d.addOn && d.addOn.breakeven != null ? (d.addOn.breakeven!=null?d.addOn.breakeven.toFixed(0):"??) : "??) },
+    { key: "addS", cond: "撠??Ⅳ(銝剜???)",        hit: !!(d.addOn && d.addOn.ok && d.addOn.pct === 15), action: "?臬???蝣?15%??蝣澆?靽 " + (d.addOn && d.addOn.breakeven != null ? d.addOn.breakeven.toFixed(0) : "??) },
   ] : [
-    { key: "sl",   cond: "跌破短線止損(1.5×ATR)",    hit: d.breachedSL, action: "減碼 30%、不抗跌" },
-    { key: "tp2",  cond: "達短線第二檔止盈",          hit: d.hitTP2,     action: "減碼 60%、剩 40% trailing" },
-    { key: "tp1",  cond: "達短線第一檔止盈",          hit: d.hitTP1,     action: "減碼 1/3 鎖利" },
-    { key: "short",cond: "短線偏空(分數 ≤−0.15)",    hit: (d.shortScore <= -0.15), action: "減碼 20%、等短線翻多再說" },
-    { key: "deep", cond: "深賠(浮動賠 >−8%)",        hit: (d.pnl.floatPct <= -8), action: "減碼 20% 控風險" },
-    { key: "win",  cond: "浮動賺 + 短線偏多",          hit: (d.pnl.floatPct > 0 && d.shortScore >= 0.15), action: "持股、破短線止損 " + (d.slTp && d.slTp.sl != null ? d.slTp.sl.toFixed(0) : "—") + " 即減" },
-    { key: "add",  cond: "可加碼(短線強多+浮動賺+趨勢)", hit: !!(d.addOn && d.addOn.ok && d.addOn.pct === 30), action: "可加碼 30%、加碼後保本 " + (d.addOn && d.addOn.breakeven != null ? d.addOn.breakeven.toFixed(0) : "—") },
-    { key: "addS", cond: "小量加碼(短線偏多)",         hit: !!(d.addOn && d.addOn.ok && d.addOn.pct === 15), action: "可小量加碼 15%、加碼後保本 " + (d.addOn && d.addOn.breakeven != null ? d.addOn.breakeven.toFixed(0) : "—") },
+    { key: "sl",   cond: "頝?剔?甇Ｘ?(1.5?ATR)",    hit: d.breachedSL, action: "皜Ⅳ 30%????" },
+    { key: "tp2",  cond: "?蝺洵鈭?甇Ｙ?",          hit: d.hitTP2,     action: "皜Ⅳ 60%? 40% trailing" },
+    { key: "tp1",  cond: "?蝺洵銝瑼迫??,          hit: d.hitTP1,     action: "皜Ⅳ 1/3 ?" },
+    { key: "short",cond: "?剔??征(? ?手?0.15)",    hit: (d.shortScore <= -0.15), action: "皜Ⅳ 20%???剔?蝧餃??牧" },
+    { key: "deep", cond: "瘛梯?(瘚桀?鞈?>??%)",        hit: (d.pnl.floatPct <= -8), action: "皜Ⅳ 20% ?折◢?? },
+    { key: "win",  cond: "瘚桀?鞈?+ ?剔???",          hit: (d.pnl.floatPct > 0 && d.shortScore >= 0.15), action: "???剔?甇Ｘ? " + (d.slTp && d.slTp.sl != null ? d.slTp.sl.toFixed(0) : "??) + " ?單?" },
+    { key: "add",  cond: "?臬?蝣??剔?撘瑕?+瘚桀?鞈?頞典)", hit: !!(d.addOn && d.addOn.ok && d.addOn.pct === 30), action: "?臬?蝣?30%??蝣澆?靽 " + (d.addOn && d.addOn.breakeven != null ? d.addOn.breakeven.toFixed(0) : "??) },
+    { key: "addS", cond: "撠??Ⅳ(?剔???)",         hit: !!(d.addOn && d.addOn.ok && d.addOn.pct === 15), action: "?臬???蝣?15%??蝣澆?靽 " + (d.addOn && d.addOn.breakeven != null ? d.addOn.breakeven.toFixed(0) : "??) },
   ];
   const hit = rows.find(r => r.hit) || null;
-  // 上方大字：命中格(依視角出不同「你目前落在」)
-  const viewTitle = isMid ? "中期視角(2–3 月持有)" : "短線視角(5 日)";
+  // 銝憭批?嚗銝剜(靘?閫銝????桀??賢??
+  const viewTitle = isMid ? "銝剜?閬?(2?? ????" : "?剔?閬?(5 ??";
   let topHtml;
   if (hit) {
     const cColor = (hit.key === "win" || hit.key === "add" || hit.key === "addS" ? "var(--bull)" : (hit.key === "alert" || hit.key === "short") ? "var(--yellow)" : "var(--bear)");
     topHtml = '<div style="padding:10px 12px;background:rgba(56,189,248,.10);border:1px solid var(--accent);border-radius:10px;margin-bottom:10px">' +
-      '<div style="font-size:11px;color:var(--muted);margin-bottom:4px">📍 ' + viewTitle + ':你目前落在</div>' +
+      '<div style="font-size:13px;color:var(--muted);margin-bottom:4px">?? ' + viewTitle + ':雿???/div>' +
       '<div style="font-size:16px;font-weight:800;color:' + cColor + '">' + hit.cond + '</div>' +
-      '<div style="font-size:13px;margin-top:4px;color:var(--text)">→ ' + hit.action + '</div>' +
+      '<div style="font-size:15px;margin-top:4px;color:var(--text)">??' + hit.action + '</div>' +
       '</div>';
   } else {
     topHtml = '<div style="padding:10px 12px;background:var(--card2);border:1px solid var(--border);border-radius:10px;margin-bottom:10px">' +
-      '<div style="font-size:11px;color:var(--muted);margin-bottom:4px">📍 ' + viewTitle + ':你目前落在</div>' +
-      '<div style="font-size:16px;font-weight:800;color:var(--accent)">未觸發減碼條件(中性觀望)</div>' +
-      '<div style="font-size:13px;margin-top:4px;color:var(--text)">' + (isMid ? "未破中期止損、未達中期止盈、未中期弱 — 依中期趨勢觀望" : "未破短線止損、未達短線止盈、未短線空頭 — 依短線紀律觀望") + '</div>' +
+      '<div style="font-size:13px;color:var(--muted);margin-bottom:4px">?? ' + viewTitle + ':雿???/div>' +
+      '<div style="font-size:16px;font-weight:800;color:var(--accent)">?芾孛?潭?蝣潭?隞?銝剜扯???</div>' +
+      '<div style="font-size:15px;margin-top:4px;color:var(--text)">' + (isMid ? "?芰銝剜?甇Ｘ???葉?迫?銝剜?撘???靘葉?隅?Ｚ??? : "?芰?剔?甇Ｘ???蝺迫??剔?蝛粹 ??靘蝺?敺???) + '</div>' +
       '</div>';
   }
-  // 下方全部對照表(預設折疊)
-  let tbl = "<table class=\"matrix\" id=\"" + tableId + "Full\"><thead><tr><th>" + viewTitle + "情境</th><th>觸發條件</th><th>建議動作</th></tr></thead><tbody>";
+  // 銝?券撠銵??身??)
+  let tbl = "<table class=\"matrix\" id=\"" + tableId + "Full\"><thead><tr><th>" + viewTitle + "??</th><th>閫貊璇辣</th><th>撱箄降??</th></tr></thead><tbody>";
   rows.forEach(r => {
-    tbl += '<tr class="' + (r.hit ? "hit" : "") + '"><td>' + (r.hit ? '📍 ' : '') + r.cond + '</td><td>' + r.action + '</td></tr>';
+    tbl += '<tr class="' + (r.hit ? "hit" : "") + '"><td>' + (r.hit ? '?? ' : '') + r.cond + '</td><td>' + r.action + '</td></tr>';
   });
   tbl += "</tbody></table>";
-  // 手機版：預設折合、只顯示命中格；專業模式展開時才顯示全部
+  // ?????身???憿舐內?賭葉?潘?撠平璅∪?撅???憿舐內?券
 const isMobile = window.innerWidth <= 700;
 wrap.innerHTML = topHtml +
     '<details style="margin-top:4px' + (!isMobile ? ';display:none' : '') + '">' +
-    '<summary style="cursor:pointer;font-size:12px;color:var(--muted);list-style:none;padding:4px 0">' +
-      (isMobile ? '▸ 展開全部情境對照(' + rows.length + ' 格，專業模式)' : '▸ 展開' + viewTitle + '全部情境對照(' + rows.length + ' 格)') +
+    '<summary style="cursor:pointer;font-size:14px;color:var(--muted);list-style:none;padding:4px 0">' +
+      (isMobile ? '??撅??券??撠(' + rows.length + ' ?潘?撠平璅∪?)' : '??撅?' + viewTitle + '?券??撠(' + rows.length + ' ??') +
     '</summary>' +
     '<div style="overflow-x:auto;margin-top:6px">' + tbl + '</div>' +
     '</details>';
 }
 
-// 加碼建議獨立一行(綠底可加碼 / 黃底不宜加碼),放結論卡「短線+中期」下第三行
-function addOnHtml(d){
+// ?Ⅳ撱箄降?函?銝銵?蝬??臬?蝣?/ 暺?銝??Ⅳ),?曄?隢?蝺?銝剜???蝚砌?銵?function addOnHtml(d){
   const a = d.addOn;
   if (!a) return "";
   if (a.ok) {
     return '<div style="margin-top:8px;padding:8px 10px;background:rgba(34,197,94,.12);border:1px solid var(--bull);border-radius:8px">' +
-      '<div style="font-size:13px;font-weight:700;color:var(--bull)">✅ 可加碼 ' + a.pct + '%</div>' +
-      '<div style="font-size:12px;line-height:1.55;color:var(--text);margin-top:4px">' + a.reason + '</div>' +
-      (a.breakeven != null ? '<div style="font-size:11px;color:var(--muted);margin-top:4px">加碼後保本線 ' + (a.breakeven != null ? a.breakeven.toFixed(0) : "—") + (a.sl != null ? '、止損 ' + (a.sl != null ? a.sl.toFixed(0) : "—") : '') + '</div>' : '') +
+      '<div style="font-size:15px;font-weight:700;color:var(--bull)">???臬?蝣?' + a.pct + '%</div>' +
+      '<div style="font-size:14px;line-height:1.55;color:var(--text);margin-top:4px">' + a.reason + '</div>' +
+      (a.breakeven != null ? '<div style="font-size:13px;color:var(--muted);margin-top:4px">?Ⅳ敺??祉? ' + (a.breakeven != null ? a.breakeven.toFixed(0) : "??) + (a.sl != null ? '?迫??' + (a.sl != null ? a.sl.toFixed(0) : "??) : '') + '</div>' : '') +
       '</div>';
   }
   return '<div style="margin-top:8px;padding:8px 10px;background:rgba(245,158,11,.10);border:1px solid var(--yellow);border-radius:8px">' +
-    '<div style="font-size:13px;font-weight:700;color:var(--yellow)">🔒 目前不宜加碼</div>' +
-    '<div style="font-size:12px;line-height:1.55;color:var(--muted);margin-top:4px">' + a.reason + '</div>' +
+    '<div style="font-size:15px;font-weight:700;color:var(--yellow)">?? ?桀?銝??Ⅳ</div>' +
+    '<div style="font-size:14px;line-height:1.55;color:var(--muted);margin-top:4px">' + a.reason + '</div>' +
     '</div>';
 }
 
@@ -759,20 +751,17 @@ function renderShortBox(d){
   const el = document.getElementById("shortDetail");
   const cls = d.shortScore >= 0.15 ? "var(--bull)" : d.shortScore <= -0.15 ? "var(--bear)" : "var(--muted)";
   el.innerHTML =
-    '<div>短線綜合分數：<b style="color:' + cls + '">' + (d.shortScore != null ? d.shortScore.toFixed(2) : "—") + '</b>（' + (d.shortScore >= 0.15 ? "偏多" : d.shortScore <= -0.15 ? "偏空" : "中性") + '）</div>' +
-    '<div style="margin-top:4px">短線止損 <b style="color:var(--bear)">' + fmt2(d.slTp.sl) + '</b>、止盈 <b style="color:var(--bull)">' + fmt2(d.slTp.tp1) + '/' + fmt2(d.slTp.tp2) + '</b></div>' +
-    '<div style="margin-top:4px;font-size:11px;color:var(--muted)">白話：短線看 5 日震盪，破 1.5×ATR 止損就減碼，不抗漲不抗跌。</div>';
+    '<div>?剔?蝬??嚗?b style="color:' + cls + '">' + (d.shortScore != null ? d.shortScore.toFixed(2) : "??) + '</b>嚗? + (d.shortScore >= 0.15 ? "??" : d.shortScore <= -0.15 ? "?征" : "銝剜?) + '嚗?/div>' +
+    '<div style="margin-top:4px">?剔?甇Ｘ? <b style="color:var(--bear)">' + fmt2(d.slTp.sl) + '</b>?迫??<b style="color:var(--bull)">' + fmt2(d.slTp.tp1) + '/' + fmt2(d.slTp.tp2) + '</b></div>' +
+    '<div style="margin-top:4px;font-size:13px;color:var(--muted)">?質店嚗蝺? 5 ?仿??迎???1.5?ATR 甇Ｘ?撠望?蝣潘?銝?瞍脖?????/div>';
 }
 
-// 同類股清單（依個股代號挑 3–5 檔同類股，算 40 日勝率中位數當對照組）
-// 同類股清單（依個股代號挑 8 檔同類股，算 5/20/40/60 日勝率中位數當對照組）
-const PEER_MAP = {
-  "2330": ["2303","3037","2317","2326","3008","2343","2449","3532"],   // 半導體
-  "2303": ["2330","3037","2317","3008","2343","2449","3532","3008"],
+// ???⊥??殷?靘隞????3?? 瑼?憿嚗? 40 ?亙??葉雿?嗅??抒?嚗?// ???⊥??殷?靘隞????8 瑼?憿嚗? 5/20/40/60 ?亙??葉雿?嗅??抒?嚗?const PEER_MAP = {
+  "2330": ["2303","3037","2317","2326","3008","2343","2449","3532"],   // ??擃?  "2303": ["2330","3037","2317","3008","2343","2449","3532","3008"],
   "3037": ["2330","2303","3008","2455","3481","3708","3653","2326"],
   "0050": ["0056","0058","00620","00941","00942","0052","00950","00952"],
   "0056": ["0050","0058","00620","00941","00942","0052","00950","00952"],
-  // 依四大均線週期指標股（5 日短線、20 日月線、40 日雙月線、60 日季線）
+  // 靘?憭批?蝺望????∴?5 ?亦蝺?0 ?交?蝺?0 ?仿?????0 ?亙迤蝺?
   "3661": ["3443","1519","1503","2454","3037","3189","3017","3324"],
   "3443": ["3661","1519","1503","2454","3037","3189","3017","3324"],
   "1519": ["3661","3443","1503","2454","3037","3189","3017","3324"],
@@ -787,9 +776,8 @@ const PEER_MAP = {
   "2881": ["2882","2330","2383","2382","3231","3037","2454","3017"],
   "2882": ["2881","2330","2383","2382","3231","3037","2454","3017"],
 };
-// 中位數
-function _median(arr){ if(!arr.length) return null; const s=arr.slice().sort((a,b)=>a-b); const m=Math.floor(s.length/2); return s.length%2? s[m] : (s[m-1]+s[m])/2; }
-// 類股/大盤對照卡：四大週期回測特徵對照表（5 日攻擊線／20 日月線／40 日雙月線／60 日季線）
+// 銝凋???function _median(arr){ if(!arr.length) return null; const s=arr.slice().sort((a,b)=>a-b); const m=Math.floor(s.length/2); return s.length%2? s[m] : (s[m-1]+s[m])/2; }
+// 憿/憭抒撠?∴??之?望??葫?孵噩撠銵剁?5 ?交??嚗?0 ?交?蝺?40 ?仿???嚗?0 ?亙迤蝺?
 async function renderPeerCard(t, IND, rows){
   const card = document.getElementById("peerCard");
   if(!card) return;
@@ -797,7 +785,7 @@ async function renderPeerCard(t, IND, rows){
   const s20 = (StockCore.histMid(rows, IND, 180, 20)||{}).up_rate ?? null;
   const s40 = (StockCore.histMid(rows, IND, 180, 40)||{}).up_rate ?? null;
   const s60 = (StockCore.histMid(rows, IND, 180, 60)||{}).up_rate ?? null;
-  // ── 四大週期回測特徵判定（照對照表：每期該看什麼技術面特徵）──
+  // ?? ?之?望??葫?孵噩?文?嚗撠銵剁?瘥?閰脩?隞暻潭?銵?孵噩嚗??
   const i = rows.length - 1;
   const cur = rows[i];
   const closes = rows.map(r=>r.close);
@@ -814,17 +802,16 @@ async function renderPeerCard(t, IND, rows){
   const lowerShadow = Math.min(cur.open,cur.close) - (cur.low!=null?cur.low:cur.close);
   const prevHigh = i>0 ? (rows[i-1].high!=null?rows[i-1].high:rows[i-1].close) : null;
   const greenK = cur.close > cur.open;
-  // 5 日（攻擊線）：量比 > 1.5 且（長下影 或 收紅K 過前高）
+  // 5 ?伐??餅?蝺?嚗?瘥?> 1.5 銝??瑚?敶????嗥?K ??擃?
   const attack5 = volRatio!=null && volRatio>1.5 && (lowerShadow > body*0.8 || (greenK && prevHigh!=null && cur.close>prevHigh));
-  // 20 日（月線）：量縮 < 0.7 且收於 20 日線 ±2%
+  // 20 ?伐???嚗??葬 < 0.7 銝??20 ?亦? 簣2%
   const nearSMA20 = sma20!=null && Math.abs(cur.close-sma20)/sma20*100 < 2;
   const month20 = volRatio!=null && volRatio<0.7 && nearSMA20;
-  // 40 日（雙月線）：跌破月線（收<SMA20）但 40 日線止穩（收>SMA40）＝假跌破洗盤
-  const wash40 = sma20!=null && sma40!=null && cur.close<sma20 && cur.close>sma40;
-  // 60 日（季線）：近 5 日高低幅 < 3% 且 SMA60 上揚
+  // 40 ?伐???蝺?嚗??湔?蝺???SMA20嚗? 40 ?亦?甇Ｙ帘嚗>SMA40嚗????湔???  const wash40 = sma20!=null && sma40!=null && cur.close<sma20 && cur.close>sma40;
+  // 60 ?伐?摮??嚗?餈?5 ?仿?雿? < 3% 銝?SMA60 銝?
   const sma60Rising = sma60!=null && sma60prev!=null && sma60>sma60prev;
   const season60 = range5Pct!=null && range5Pct<3 && sma60Rising;
-  // ── 同類股／大盤對照（勝率中位數）──
+  // ?? ???∴?憭抒撠嚗??葉雿嚗??
   const peers = (PEER_MAP[t]||[]).slice(0,8);
   let p5=null, p20=null, p40=null, p60=null, t5=null, t20=null, t40=null, t60=null;
   const medJobs = [];
@@ -850,87 +837,87 @@ async function renderPeerCard(t, IND, rows){
     }catch(e){}
   })());
   await Promise.all(medJobs);
-  // ── 綜合判定（依 4 期特徵優先順序）──
-  const featOk = (ok, mark) => ok ? '<span style="color:var(--bull)">'+(mark||'✓ 成立')+'</span>' : '<span style="color:var(--muted)">✗ 未成立</span>';
-  const pct = x => x!=null ? x.toFixed(0)+'%' : '—';
+  // ?? 蝬??文?嚗? 4 ?敺萄??摨???
+  const featOk = (ok, mark) => ok ? '<span style="color:var(--bull)">'+(mark||'????')+'</span>' : '<span style="color:var(--muted)">???芣?蝡?/span>';
+  const pct = x => x!=null ? x.toFixed(0)+'%' : '??;
   let verdict, verdictColor, verdictText;
-  if(wash40){ verdict='洗盤訊號'; verdictColor='var(--yellow)'; verdictText='40 日雙月線：已跌破月線但收在 40 日線上（假跌破），中線布局、過濾假跌破的窗口。'; }
-  else if(attack5){ verdict='攻擊動能'; verdictColor='var(--bull)'; verdictText='5 日攻擊線：量比 '+(volRatio!=null?volRatio.toFixed(1):'—')+'＋K棒反彈，極短線順勢、隔日沖。'; }
-  else if(month20){ verdict='月線量縮'; verdictColor='var(--bull)'; verdictText='20 日月線：量縮止穩（量比 '+(volRatio!=null?volRatio.toFixed(1):'—')+'、收於月線 ±2%），投信作帳 1~3 個月波段。'; }
-  else if(season60){ verdict='季線支撐'; verdictColor='var(--bull)'; verdictText='60 日季線：近 5 日高低幅 '+pct(range5Pct)+'、SMA60 上揚，中長線 3 個月以上投資加碼防線。'; }
-  else { verdict='觀望'; verdictColor='var(--muted)'; verdictText='四大週期特徵皆未明確成立，建議觀望、等下一波訊號再介入。'; }
+  if(wash40){ verdict='瘣閮?'; verdictColor='var(--yellow)'; verdictText='40 ?仿???嚗歇頝??雿??40 ?亦?銝????湛?嚗葉蝺?撅??瞈曉?頝?????; }
+  else if(attack5){ verdict='?餅??'; verdictColor='var(--bull)'; verdictText='5 ?交??嚗?瘥?'+(volRatio!=null?volRatio.toFixed(1):'??)+'嚗璉?敶?璆萇蝺??Ｕ??交???; }
+  else if(month20){ verdict='???葬'; verdictColor='var(--bull)'; verdictText='20 ?交?蝺??葬甇Ｙ帘嚗?瘥?'+(volRatio!=null?volRatio.toFixed(1):'??)+'??潭?蝺?簣2%嚗??縑雿董 1~3 ??瘜Ｘ挾??; }
+  else if(season60){ verdict='摮???舀?'; verdictColor='var(--bull)'; verdictText='60 ?亙迤蝺?餈?5 ?仿?雿? '+pct(range5Pct)+'?MA60 銝?嚗葉?瑞? 3 ??隞乩????Ⅳ?脩???; }
+  else { verdict='閫??; verdictColor='var(--muted)'; verdictText='?之?望??孵噩??Ⅱ??嚗遣霅啗???銝?瘜Ｚ???隞??; }
   const oneLiner =
-    '<div style="font-weight:700;color:var(--text);font-size:13px;margin-bottom:6px">📊 四大週期回測特徵對照表</div>' +
-    '<table style="width:100%;border-collapse:collapse;font-size:12px">' +
+    '<div style="font-weight:700;color:var(--text);font-size:15px;margin-bottom:6px">?? ?之?望??葫?孵噩撠銵?/div>' +
+    '<table style="width:100%;border-collapse:collapse;font-size:14px">' +
     '<tr style="border-bottom:1px solid var(--border);color:var(--muted)">' +
-      '<th style="text-align:left;padding:4px 6px 4px 0">均線週期</th>' +
-      '<th style="text-align:left;padding:4px 6px">技術面特徵（當日判定）</th>' +
-      '<th style="text-align:left;padding:4px 6px">狀態</th>' +
-      '<th style="text-align:right;padding:4px">勝率</th>' +
+      '<th style="text-align:left;padding:4px 6px 4px 0">???望?</th>' +
+      '<th style="text-align:left;padding:4px 6px">?銵?孵噩嚗?亙摰?</th>' +
+      '<th style="text-align:left;padding:4px 6px">???/th>' +
+      '<th style="text-align:right;padding:4px">??</th>' +
     '</tr>' +
-    '<tr style="border-bottom:1px solid var(--border)"><td style="padding:4px 6px 4px 0"><b>5 日線</b> 攻擊線</td><td style="padding:4px 6px;font-size:11px">量比&gt;1.5＋長下影/紅K過前高（動能）</td><td style="padding:4px 6px">'+featOk(attack5)+'</td><td style="text-align:right;padding:4px">'+pct(s5)+'</td></tr>' +
-    '<tr style="border-bottom:1px solid var(--border)"><td style="padding:4px 6px 4px 0"><b>20 日線</b> 月線</td><td style="padding:4px 6px;font-size:11px">量縮&lt;0.7＋收於月線±2%（投信）</td><td style="padding:4px 6px">'+featOk(month20)+'</td><td style="text-align:right;padding:4px">'+pct(s20)+'</td></tr>' +
-    '<tr style="border-bottom:1px solid var(--border)"><td style="padding:4px 6px 4px 0"><b>40 日線</b> 雙月線</td><td style="padding:4px 6px;font-size:11px">跌破月線但收在40日線上（洗盤）</td><td style="padding:4px 6px">'+featOk(wash40,'✓ 洗盤')+'</td><td style="text-align:right;padding:4px">'+pct(s40)+'</td></tr>' +
-    '<tr><td style="padding:4px 6px 4px 0"><b>60 日線</b> 季線</td><td style="padding:4px 6px;font-size:11px">近5日高低幅&lt;3%＋SMA60上揚（法人）</td><td style="padding:4px 6px">'+featOk(season60,'✓ 支撐')+'</td><td style="text-align:right;padding:4px">'+pct(s60)+'</td></tr>' +
+    '<tr style="border-bottom:1px solid var(--border)"><td style="padding:4px 6px 4px 0"><b>5 ?亦?</b> ?餅?蝺?/td><td style="padding:4px 6px;font-size:13px">??&gt;1.5嚗銝蔣/蝝??擃??嚗?/td><td style="padding:4px 6px">'+featOk(attack5)+'</td><td style="text-align:right;padding:4px">'+pct(s5)+'</td></tr>' +
+    '<tr style="border-bottom:1px solid var(--border)"><td style="padding:4px 6px 4px 0"><b>20 ?亦?</b> ??</td><td style="padding:4px 6px;font-size:13px">?葬&lt;0.7嚗?潭?蝺?%嚗?靽∴?</td><td style="padding:4px 6px">'+featOk(month20)+'</td><td style="text-align:right;padding:4px">'+pct(s20)+'</td></tr>' +
+    '<tr style="border-bottom:1px solid var(--border)"><td style="padding:4px 6px 4px 0"><b>40 ?亦?</b> ??蝺?/td><td style="padding:4px 6px;font-size:13px">頝??雿??0?亦?銝?瘣嚗?/td><td style="padding:4px 6px">'+featOk(wash40,'??瘣')+'</td><td style="text-align:right;padding:4px">'+pct(s40)+'</td></tr>' +
+    '<tr><td style="padding:4px 6px 4px 0"><b>60 ?亦?</b> 摮??</td><td style="padding:4px 6px;font-size:13px">餈??仿?雿?&lt;3%嚗MA60銝?嚗?鈭綽?</td><td style="padding:4px 6px">'+featOk(season60,'???舀?')+'</td><td style="text-align:right;padding:4px">'+pct(s60)+'</td></tr>' +
     '</table>' +
-    // 個股 vs 同類股 vs 大盤 差值（40 日勝率對照）
+    // ? vs ????vs 憭抒 撌桀潘?40 ?亙????改?
     (function(){
       const diff40 = (s40!=null && p40!=null) ? s40 - p40 : null;
       const diffTai = (s40!=null && t40!=null) ? s40 - t40 : null;
-      const cls = (d) => d==null ? '—' : (d >= 3 ? '偏強' : d <= -3 ? '偏弱' : '接近');
+      const cls = (d) => d==null ? '?? : (d >= 3 ? '?撥' : d <= -3 ? '?摹' : '?亥?');
       const cColor = (d) => d==null ? 'var(--muted)' : (d >= 3 ? 'var(--bull)' : d <= -3 ? 'var(--bear)' : 'var(--muted)');
-      return '<div style="margin-top:8px;padding:8px 10px;background:var(--card2);border:1px solid var(--border);border-radius:8px;font-size:12px;line-height:1.7">' +
-        '🔍 <b>個股 vs 同類股 vs 大盤（40 日勝率）</b><br>' +
-        '個股 '+pct(s40)+'、同類股中位數 '+pct(p40)+'、加權大盤 '+pct(t40)+'<br>' +
-        '個股 vs 同類股：<span style="color:'+cColor(diff40)+';font-weight:700">'+cls(diff40)+'（差 '+(diff40!=null?((diff40>0?'+':'')+diff40.toFixed(0)):'')+' pt）</span>；' +
-        '個股 vs 大盤：<span style="color:'+cColor(diffTai)+';font-weight:700">'+cls(diffTai)+'（差 '+(diffTai!=null?((diffTai>0?'+':'')+diffTai.toFixed(0)):'')+' pt）</span>。' +
+      return '<div style="margin-top:8px;padding:8px 10px;background:var(--card2);border:1px solid var(--border);border-radius:8px;font-size:14px;line-height:1.7">' +
+        '?? <b>? vs ????vs 憭抒嚗?0 ?亙???</b><br>' +
+        '? '+pct(s40)+'??憿銝凋???'+pct(p40)+'??甈之??'+pct(t40)+'<br>' +
+        '? vs ???∴?<span style="color:'+cColor(diff40)+';font-weight:700">'+cls(diff40)+'嚗榆 '+(diff40!=null?((diff40>0?'+':'')+diff40.toFixed(0)):'')+' pt嚗?/span>嚗? +
+        '? vs 憭抒嚗?span style="color:'+cColor(diffTai)+';font-weight:700">'+cls(diffTai)+'嚗榆 '+(diffTai!=null?((diffTai>0?'+':'')+diffTai.toFixed(0)):'')+' pt嚗?/span>?? +
         '</div>';
     })() +
-    '<div style="margin-top:8px;padding:8px 10px;background:var(--card2);border:1px solid var(--border);border-radius:8px;font-size:13px;line-height:1.6">' +
-      '<b style="color:'+verdictColor+'">綜合判定：'+verdict+'</b>　<span style="color:var(--text);font-size:12px">'+verdictText+'</span>' +
+    '<div style="margin-top:8px;padding:8px 10px;background:var(--card2);border:1px solid var(--border);border-radius:8px;font-size:15px;line-height:1.6">' +
+      '<b style="color:'+verdictColor+'">蝬??文?嚗?+verdict+'</b>?<span style="color:var(--text);font-size:14px">'+verdictText+'</span>' +
     '</div>' +
-    '<div style="margin-top:6px;font-size:11px;color:var(--muted);line-height:1.5">週期控盤資金：5日＝當沖/極短線、20日＝投信波段、40日＝內資大戶、60日＝外資/壽險/國家隊。同類股取 '+peers.length+' 檔中位數；大盤為加權指數。差 3pt 以上才判偏強/偏弱。僅供判斷，不構成投資建議。</div>';
+    '<div style="margin-top:6px;font-size:13px;color:var(--muted);line-height:1.5">?望??抒鞈?嚗??伐??嗆?/璆萇蝺?0?伐??縑瘜Ｘ挾??0?伐??扯?憭扳??0?伐?憭?/憯賡/?振??憿??'+peers.length+' 瑼葉雿嚗之?斤????榆 3pt 隞乩???撥/?摹??靘?瘀?銝???鞈遣霅啜?/div>';
   window._peerCompare = { s5,s20,s40,s60, peer5:p5, peer20:p20, peer40:p40, peer60:p60, tai5:t5, tai20:t20, tai40:t40, tai60:t60, attack5, month20, wash40, season60, verdict, verdictText, oneLiner };
   const verdictEl=document.getElementById("peerVerdict");
- if(verdictEl){ verdictEl.innerHTML = oneLiner || '對照資料不足，請稍後再試。';  }
-    applyMode();  // 顯隱交由 applyMode 依 isPro() 決定（簡易收折、專業展開）
-  document.getElementById("peerBody").innerHTML = oneLiner || '對照資料不足，請稍後再試。';
+ if(verdictEl){ verdictEl.innerHTML = oneLiner || '撠鞈?銝雲嚗?蝔??岫??;  }
+    applyMode();  // 憿舫鈭斤 applyMode 靘?isPro() 瘙箏?嚗陛???璆剖???
+  document.getElementById("peerBody").innerHTML = oneLiner || '撠鞈?銝雲嚗?蝔??岫??;
 }
 
 function renderMidBox(d, h40, h60){
   const el = document.getElementById("midDetail");
   const cls = d.midScore >= 0.2 ? "var(--bull)" : d.midScore <= -0.2 ? "var(--bear)" : "var(--muted)";
-  const m40 = h40 && h40.up_rate != null ? h40.up_rate + "%" : "資料不足";
-  const m60 = h60 && h60.up_rate != null ? h60.up_rate + "%" : "資料不足";
-  // 中期類別 英文代碼 → 中文白話
+  const m40 = h40 && h40.up_rate != null ? h40.up_rate + "%" : "鞈?銝雲";
+  const m60 = h60 && h60.up_rate != null ? h60.up_rate + "%" : "鞈?銝雲";
+  // 銝剜?憿 ?望?隞?Ⅳ ??銝剜??質店
   const midClassZh = {
-    multi: "多頭（中期偏多，漲多）",
-    dip: "回檔（長期多頭、短期回檔）",
-    weak: "弱多（趨勢偏弱）",
-    bear_rebound: "空頭反彈（下跌中的反彈）",
-    neutral: "中性"
+    multi: "憭嚗葉??憭?瞍脣?嚗?,
+    dip: "??嚗???准??瑼?",
+    weak: "撘勗?嚗隅?Ｗ?撘梧?",
+    bear_rebound: "蝛粹??嚗?頝葉??敶?",
+    neutral: "銝剜?
   }[d.midClass] || d.midClass;
   const midClassColor = (d.midClass === "multi" || d.midClass === "dip") ? "var(--bull)" :
     (d.midClass === "weak" || d.midClass === "bear_rebound") ? "var(--bear)" : "var(--muted)";
   el.innerHTML =
-    '<div>中期分數：<b style="color:' + cls + '">' + (d.midScore != null ? d.midScore.toFixed(2) : "—") + '</b>、類別：<b style="color:' + midClassColor + '">' + midClassZh + '</b></div>' +
-    '<div style="margin-top:4px">中期(40日)止損 <b style="color:var(--yellow)">' + fmt2((StockCore.slTpForHorizon(d.close,d.atr,"mid40")||{}).sl) + '</b>、(60日)止損 <b style="color:var(--yellow)">' + fmt2((StockCore.slTpForHorizon(d.close,d.atr,"mid60")||{}).sl) + '</b></div>' +
-    '<div style="margin-top:4px;font-size:11px;color:var(--muted)">偏多勝率：40日 ' + m40 + '、60日 ' + m60 + '。勝率越高，持有該方向越可信。</div>' +
+    '<div>銝剜??嚗?b style="color:' + cls + '">' + (d.midScore != null ? d.midScore.toFixed(2) : "??) + '</b>???伐?<b style="color:' + midClassColor + '">' + midClassZh + '</b></div>' +
+    '<div style="margin-top:4px">銝剜?(40??甇Ｘ? <b style="color:var(--yellow)">' + fmt2((StockCore.slTpForHorizon(d.close,d.atr,"mid40")||{}).sl) + '</b>??60??甇Ｘ? <b style="color:var(--yellow)">' + fmt2((StockCore.slTpForHorizon(d.close,d.atr,"mid60")||{}).sl) + '</b></div>' +
+    '<div style="margin-top:4px;font-size:13px;color:var(--muted)">????嚗?0??' + m40 + '??0??' + m60 + '????擃???閰脫???臭縑??/div>' +
     (d.bearAlert ? '<div style="margin-top:6px;padding:6px 8px;border-radius:6px;background:' + (d.bearAlert.level === "strong" ? "rgba(239,68,68,.12)" : "rgba(245,158,11,.12)") + ';border:1px solid ' + (d.bearAlert.level === "strong" ? "var(--bear)" : "var(--yellow)") + '">' + d.bearAlert.text + '</div>' : '');
 }
 
-// ── 主要流程 ──
+// ?? 銝餉?瘚? ??
 async function runSell(){
   const t = document.getElementById("ticker").value.trim().toUpperCase();
   const shares = parseInt(document.getElementById("shares").value, 10);
   const cost = parseFloat(document.getElementById("cost").value);
   const btn = document.getElementById("btn");
 
-  if (!/^\d{4}$/.test(t)) { document.getElementById("err").textContent = "請輸入 4 位代號（例 2330）"; document.getElementById("err").style.display = "block"; return; }
-  if (!shares || shares < 1) { document.getElementById("err").textContent = "請輸入持股數"; document.getElementById("err").style.display = "block"; return; }
-  if (!cost || cost <= 0) { document.getElementById("err").textContent = "請輸入均價"; document.getElementById("err").style.display = "block"; return; }
+  if (!/^\d{4}$/.test(t)) { document.getElementById("err").textContent = "隢撓??4 雿誨??靘?2330嚗?; document.getElementById("err").style.display = "block"; return; }
+  if (!shares || shares < 1) { document.getElementById("err").textContent = "隢撓?交??⊥"; document.getElementById("err").style.display = "block"; return; }
+  if (!cost || cost <= 0) { document.getElementById("err").textContent = "隢撓?亙???; document.getElementById("err").style.display = "block"; return; }
 
-  // 存均價到 localStorage（每檔一組）
+  // 摮??孵 localStorage嚗?瑼?蝯?
   try {
     const costs = JSON.parse(localStorage.getItem(COSTS_KEY) || "{}");
     costs[t] = { cost: cost, shares: shares };
@@ -940,33 +927,29 @@ async function runSell(){
   document.getElementById("results").style.display = "none";
   document.getElementById("loading").style.display = "block";
   document.getElementById("err").style.display = "none";
-  btn.disabled = true; btn.textContent = "評估中…"; btn.style.opacity = "0.6";
-  const loadMsg = document.getElementById("loadingMsg"); if (loadMsg) loadMsg.textContent = "① 正在抓 " + t + " 行情…（並行多端點）";
+  btn.disabled = true; btn.textContent = "閰摯銝凌?; btn.style.opacity = "0.6";
+  const loadMsg = document.getElementById("loadingMsg"); if (loadMsg) loadMsg.textContent = "??甇???" + t + " 銵??佗?銝西?憭垢暺?";
 
   let rows, demo = false;
   try {
-    // 1y(~252 根)讓 40/60 日勝率分母更大、統計更穩;relay 回傳稍慢但可接受。
-    // 並加 22s 總 timeout(給 relay 冷啟動 20s 空間);超時 → 明確重試,不干等。
-    rows = await Promise.race([
+    // 1y(~252 ??霈?40/60 ?亙???瘥憭扼絞閮蝛?relay ?蝔雿?亙???    // 銝血? 22s 蝮?timeout(蝯?relay ?瑕???20s 蝛粹?);頞? ???Ⅱ?岫,銝僕蝑?    rows = await Promise.race([
       fetchRows(toYahoo(t), "1y"),
-      new Promise((_, rej) => setTimeout(() => rej(new Error("22s 逾時")), 22000))
+      new Promise((_, rej) => setTimeout(() => rej(new Error("22s ?暹?")), 22000))
     ]);
   } catch (e) {
-    // 全端點失敗/逾時:不掉 demo、不算分數、不 .toFixed(null);明確提示重試。
-    document.getElementById("results").style.display = "none";
+    // ?函垢暺仃???暹?:銝? demo??蝞??詻? .toFixed(null);?Ⅱ?內?岫??    document.getElementById("results").style.display = "none";
     document.getElementById("loading").style.display = "none";
-    document.getElementById("err").textContent = "目前取不到 " + t + " 的行情，請點「重試一次」或稍後再試。";
+    document.getElementById("err").textContent = "?桀?????" + t + " ????隢???閰虫?甈～?蝔??岫??;
     document.getElementById("err").style.display = "block";
-    btn.disabled = false; btn.textContent = "重試一次"; btn.style.opacity = "1";
+    btn.disabled = false; btn.textContent = "?岫銝甈?; btn.style.opacity = "1";
     return;
   }
 
   try {
-    if (loadMsg) loadMsg.textContent = "② 計算訊號與部位決策中…";
+    if (loadMsg) loadMsg.textContent = "??閮?閮??雿捱蝑葉??;
     const IND = StockCore.computeIndicators(rows);
     const i = rows.length - 1;
-    // 行情橫條（開盤/現價/前收＋日期）：用 rows.meta + intradayFromRows，與首頁一致
-    renderTicker(rows, IND, i);
+    // 銵?璈急?嚗????曉/?嚗??嚗 rows.meta + intradayFromRows嚗?擐?銝??    renderTicker(rows, IND, i);
     const signals = StockCore.detectSignals(IND, i);
     const comp = StockCore.compositeSignal(signals);
     const A = {
@@ -978,56 +961,52 @@ async function runSell(){
       atr: IND.ATR14[i],
     };
 
-    // 依 3 種期別各算一次
-    const dShort = sellDecision(A, IND, cost, shares, "short");
+    // 靘?3 蝔格??亙?蝞?甈?    const dShort = sellDecision(A, IND, cost, shares, "short");
     const dMid40 = sellDecision(A, IND, cost, shares, "mid40");
     const dMid60 = sellDecision(A, IND, cost, shares, "mid60");
 
-    // 結論：短線 + 中期 兩種建議動作並列顯示
-    const primary = dShort; // 主結論(短線),後續 pnl/matrix 仍用它
-    document.getElementById("results").style.display = "block";
+    // 蝯?嚗蝺?+ 銝剜? ?拍車撱箄降??銝血?憿舐內
+    const primary = dShort; // 銝餌?隢??剔?),敺? pnl/matrix 隞摰?    document.getElementById("results").style.display = "block";
     document.getElementById("demoBanner").style.display = demo ? "block" : "none";
-    // 依專業/簡易模式,決定細節區塊顯不顯示(決策矩陣/短中期分數/理由)
+    // 靘?璆?蝪⊥?璅∪?,瘙箏?蝝啁??憛＊銝＊蝷?瘙箇??拚/?凋葉?????)
     applyMode();
     const ft = document.getElementById("finalText");
     ft.className = "final-text";
     const shortVerdictColor = dShort.verdict === "sell" ? "var(--bear)" : dShort.verdict === "reduce" ? "var(--yellow)" : dShort.verdict === "hold" ? "var(--bull)" : "var(--muted)";
     const midVerdictColor = dMid40.verdict === "sell" ? "var(--bear)" : dMid40.verdict === "reduce" ? "var(--yellow)" : dMid40.verdict === "hold" ? "var(--bull)" : "var(--muted)";
-    // 結論大字旁掛「短線/中期分數小標」— 讓用戶一眼看到結論是依據什麼分數
-    const dShortS = dShort || {}; // null 防衛:ATR null 路徑時 dShort/dMid40 可能 null
+    // 蝯?憭批????蝺?銝剜??撠???霈?嗡??潛??啁?隢靘?隞暻澆???    const dShortS = dShort || {}; // null ?脰?:ATR null 頝臬???dShort/dMid40 ?航 null
     const dMid40S = dMid40 || {};
     const shortScoreNum = (dShortS.shortScore != null) ? dShortS.shortScore : 0;
     const midScoreNum = (dMid40S.shortScore != null) ? dMid40S.shortScore : 0;
-    const shortScoreLabel = shortScoreNum >= 0.15 ? '偏多' : shortScoreNum <= -0.15 ? '偏空' : '中性';
-    const midScoreLabel = midScoreNum >= 0.2 ? '偏多' : midScoreNum <= -0.2 ? '偏空' : '中性';
+    const shortScoreLabel = shortScoreNum >= 0.15 ? '??' : shortScoreNum <= -0.15 ? '?征' : '銝剜?;
+    const midScoreLabel = midScoreNum >= 0.2 ? '??' : midScoreNum <= -0.2 ? '?征' : '銝剜?;
     ft.innerHTML =
       '<div style="display:flex;flex-wrap:wrap;gap:8px 16px;align-items:baseline">' +
-        '<div style="font-size:14px;font-weight:700;color:var(--accent)">📉 短線（5 日）：<span style="color:' + shortVerdictColor + '">' + dShortS.tag + '</span> <span style="font-size:11px;font-weight:400;color:var(--muted);margin-left:2px">（分數 ' + (shortScoreNum != null ? shortScoreNum.toFixed(2) : "—") + ' · ' + shortScoreLabel + '）</span></div>' +
-        '<div style="font-size:14px;font-weight:700;color:var(--yellow)">📈 中期（2–3 月）：<span style="color:' + midVerdictColor + '">' + dMid40S.tag + '</span> <span style="font-size:11px;font-weight:400;color:var(--muted);margin-left:2px">（分數 ' + (midScoreNum != null ? midScoreNum.toFixed(2) : "—") + ' · ' + midScoreLabel + '）</span></div>' +
+        '<div style="font-size:16px;font-weight:700;color:var(--accent)">?? ?剔?嚗? ?伐?嚗?span style="color:' + shortVerdictColor + '">' + dShortS.tag + '</span> <span style="font-size:13px;font-weight:400;color:var(--muted);margin-left:2px">嚗???' + (shortScoreNum != null ? shortScoreNum.toFixed(2) : "??) + ' 繚 ' + shortScoreLabel + '嚗?/span></div>' +
+        '<div style="font-size:16px;font-weight:700;color:var(--yellow)">?? 銝剜?嚗??? ??嚗?span style="color:' + midVerdictColor + '">' + dMid40S.tag + '</span> <span style="font-size:13px;font-weight:400;color:var(--muted);margin-left:2px">嚗???' + (midScoreNum != null ? midScoreNum.toFixed(2) : "??) + ' 繚 ' + midScoreLabel + '嚗?/span></div>' +
       '</div>' +
-      '<div style="margin-top:6px;font-size:13px;line-height:1.6;color:var(--text)">' + (dShortS.advice || '—') + '</div>' +
-      '<div style="margin-top:4px;font-size:13px;line-height:1.6;color:var(--muted)">' + (dMid40S.advice || '—') + '</div>' +
+      '<div style="margin-top:6px;font-size:15px;line-height:1.6;color:var(--text)">' + (dShortS.advice || '??) + '</div>' +
+      '<div style="margin-top:4px;font-size:15px;line-height:1.6;color:var(--muted)">' + (dMid40S.advice || '??) + '</div>' +
       addOnHtml(dShortS);
-    // verdictTag 改顯示「短線 + 中期」兩個 tag 並列
+    // verdictTag ?寥＊蝷箝蝺?+ 銝剜????tag 銝血?
     const vt = document.getElementById("verdictTag");
     vt.style.display = "";
     vt.textContent = "";
     vt.className = "verdict-tag";
     vt.innerHTML =
-      '<span style="color:' + shortVerdictColor + '">' + (dShortS.tag || '—') + '</span>' +
-      ' <span style="opacity:.4">·</span> ' +
-      '<span style="color:' + midVerdictColor + '">' + (dMid40S.tag || '—') + '</span>';
+      '<span style="color:' + shortVerdictColor + '">' + (dShortS.tag || '??) + '</span>' +
+      ' <span style="opacity:.4">繚</span> ' +
+      '<span style="color:' + midVerdictColor + '">' + (dMid40S.tag || '??) + '</span>';
 
     document.getElementById("adviceLine").innerHTML =
-      '<div style="font-size:12px;color:var(--muted)">現價 <b style="color:var(--text)">' + fmt2(A.close) + '</b>、均價 <b style="color:var(--text)">' + fmt2(cost) + '</b>、持股 <b style="color:var(--text)">' + shares + '</b> 股。</div>' +
-      '<div style="font-size:11px;color:var(--muted);margin-top:4px">上列建議分「短線(5日)」與「中期(2–3月持有)」兩種視角,短線看震盪波段、中期看趨勢,可依實際持有目的擇一執行。</div>';
+      '<div style="font-size:14px;color:var(--muted)">?曉 <b style="color:var(--text)">' + fmt2(A.close) + '</b>????<b style="color:var(--text)">' + fmt2(cost) + '</b>????<b style="color:var(--text)">' + shares + '</b> ?～?/div>' +
+      '<div style="font-size:13px;color:var(--muted);margin-top:4px">銝?撱箄降?蝺?5?????葉??2???????蝔株?閫??剔????芣郭畾萸葉??頞典,?臭?撖阡????桃????瑁???/div>';
 
     renderShortBox(Object.assign({}, dShortS, { atr: A.atr }));
     renderMidBox(Object.assign({}, dMid40S, { atr: A.atr, midScore: dMid40S.midScore, midClass: dMid40S.midClass, bearAlert: dMid40S.bearAlert, belowSma60: dMid40S.belowSma60 }), A.hist_mid40, A.hist_mid60);
-    // shortBox/midBox 顯示由 applyMode 依專業模式決定(簡易不顯示,專家顯示)
+    // shortBox/midBox 憿舐內??applyMode 靘?璆剜芋撘捱摰?蝪⊥?銝＊蝷?撠振憿舐內)
 
-    // ⚡ 今天怎麼做：一頁看完白話行動卡（部位損益＋短線＋中期＋風險）
-    (function fillSellTodayAction(){
+    // ??隞予?獐??銝??摰閰梯??嚗雿????剔?嚗葉??憸券嚗?    (function fillSellTodayAction(){
       const card = document.getElementById('todayActionCard');
       const body = document.getElementById('todayActionBody');
       if(!card || !body) return;
@@ -1035,78 +1014,77 @@ async function runSell(){
       const lastClose = A.close;
       const shortScoreNum = (dShortS.shortScore != null) ? dShortS.shortScore : 0;
       const midScoreNum = (dMid40S.shortScore != null) ? dMid40S.shortScore : 0;
-      const cShort = shortScoreNum >= 0.15 ? '偏多' : shortScoreNum <= -0.15 ? '偏空' : '中性';
-      const cMid = midScoreNum >= 0.2 ? '偏多' : midScoreNum <= -0.2 ? '偏空' : '中性';
-      const colorOf = (s) => s === '偏多' ? 'var(--bull)' : s === '偏空' ? 'var(--bear)' : 'var(--muted)';
+      const cShort = shortScoreNum >= 0.15 ? '??' : shortScoreNum <= -0.15 ? '?征' : '銝剜?;
+      const cMid = midScoreNum >= 0.2 ? '??' : midScoreNum <= -0.2 ? '?征' : '銝剜?;
+      const colorOf = (s) => s === '??' ? 'var(--bull)' : s === '?征' ? 'var(--bear)' : 'var(--muted)';
       const cScore = (A.final && A.final.combined_score != null) ? A.final.combined_score : 0;
       const af = StockCore.actionForScore(cScore, ms.code);
       let midActionText;
       if (dMid40S.advice) midActionText = dMid40S.advice;
       else if (midScoreNum != null) {
-        midActionText = midScoreNum >= 0.2 ? '中期偏多：可考慮分批佈局、讓獲利奔跑。'
-          : midScoreNum <= -0.2 ? '中期偏空：建議觀望、等右側確認再進場。'
-          : '中期方向不明，維持中性觀望。';
-      } else midActionText = '中期訊號暫缺。';
+        midActionText = midScoreNum >= 0.2 ? '銝剜???嚗??雿????脣憟???
+          : midScoreNum <= -0.2 ? '銝剜??征嚗遣霅啗????喳蝣箄??脣??
+          : '銝剜??孵?銝?嚗雁?葉?扯???;
+      } else midActionText = '銝剜?閮??怎撩??;
       const lastInd = A.atr != null ? A.atr : null;
       const sl = (lastClose != null && lastInd != null) ? lastClose - 1.5*lastInd : null;
       const tp1 = (lastClose != null && lastInd != null) ? lastClose + 1*lastInd : null;
-      // 中期 40 日：4×ATR（跟首頁 slTpForHorizon mid40 一致）
+      // 銝剜? 40 ?伐?4?ATR嚗?擐? slTpForHorizon mid40 銝?湛?
       const slMid = (lastClose != null && lastInd != null) ? lastClose - 4*lastInd : null;
       const tpMid = (lastClose != null && lastInd != null) ? lastClose + 4*lastInd : null;
       let riskLine;
       if (sl != null && tp1 != null) {
-        riskLine = '📉 短線（5 日）：止損 ' + sl.toFixed(0) + '、止盈 ' + tp1.toFixed(0) +
-          (slMid != null ? '；<br>📈 中期（40 日）：止損 ' + slMid.toFixed(0) + '、止盈 ' + tpMid.toFixed(0) + '。' : '') +
-          '　跌破對應止損即減碼、不抗漲不抗跌。';
+        riskLine = '?? ?剔?嚗? ?伐?嚗迫??' + sl.toFixed(0) + '?迫??' + tp1.toFixed(0) +
+          (slMid != null ? '嚗?br>?? 銝剜?嚗?0 ?伐?嚗迫??' + slMid.toFixed(0) + '?迫??' + tpMid.toFixed(0) + '?? : '') +
+          '?頝撠?甇Ｘ??單?蝣潦??撞銝?頝?;
       } else {
-        riskLine = '止損/止盈暫缺（資料不足），建議以「跌破 5 日線、放量長黑 K」作短線減碼紀律。';
+        riskLine = '甇Ｘ?/甇Ｙ??怎撩嚗???頞喉?嚗遣霅唬誑????5 ?亦???暺?K???剔?皜Ⅳ蝝敺?;
       }
       let nowAction, nowColor;
-      if (cScore >= 0.2) { nowAction = '整體偏多，可逢低布局。'; nowColor = 'var(--bull)'; }
-      else if (cScore <= -0.2) { nowAction = '整體偏空，建議觀望或減碼。'; nowColor = 'var(--bear)'; }
-      else { nowAction = '整體中性，方向不明確，可先觀望。'; nowColor = 'var(--muted)'; }
+      if (cScore >= 0.2) { nowAction = '?湧???嚗?Ｖ?撣???; nowColor = 'var(--bull)'; }
+      else if (cScore <= -0.2) { nowAction = '?湧??征嚗遣霅啗???皜Ⅳ??; nowColor = 'var(--bear)'; }
+      else { nowAction = '?湧?銝剜改??孵?銝?蝣綽??臬?閫??; nowColor = 'var(--muted)'; }
       let pnlLine = '';
       if (primary && primary.pnl) {
         const p = primary.pnl;
-        const fPct = p.floatPct != null ? p.floatPct.toFixed(1) : '—';
-        const fAmt = p.float != null ? p.float.toFixed(0) : '—';
-        pnlLine = '<div style="margin-bottom:6px">💰 <b>你的部位：</b>' +
-          (p.float >= 0 ? '<span style="color:var(--bull)">浮盈 ' + fAmt + ' 元（+' + fPct + '%）</span>'
-           : '<span style="color:var(--bear)">浮虧 ' + Math.abs(+fAmt) + ' 元（' + fPct + '%）</span>') +
-          '，均價 ' + p.cost + '、現價 ' + (lastClose != null ? lastClose.toFixed(0) : '—') + '。</div>';
+        const fPct = p.floatPct != null ? p.floatPct.toFixed(1) : '??;
+        const fAmt = p.float != null ? p.float.toFixed(0) : '??;
+        pnlLine = '<div style="margin-bottom:6px">? <b>雿??其?嚗?/b>' +
+          (p.float >= 0 ? '<span style="color:var(--bull)">瘚桃? ' + fAmt + ' ??+' + fPct + '%嚗?/span>'
+           : '<span style="color:var(--bear)">瘚株 ' + Math.abs(+fAmt) + ' ??' + fPct + '%嚗?/span>') +
+          '嚗???' + p.cost + '???' + (lastClose != null ? lastClose.toFixed(0) : '??) + '??/div>';
       }
       body.innerHTML =
         pnlLine +
-        '<div style="margin-bottom:6px">🎯 <b>現在做什麼：</b><span style="color:'+nowColor+'">'+nowAction+'</span></div>' +
-        '<div style="margin-bottom:6px">📉 <b>短線（5 日）：</b><span style="color:'+colorOf(cShort)+'">'+cShort+'</span>　'+(dShortS.advice || af)+'</div>' +
-        '<div style="margin-bottom:6px">📈 <b>中期（2–3 月）：</b><span style="color:'+colorOf(cMid)+'">'+cMid+'</span>　'+midActionText+'</div>' +
-        '<div>⚠️ <b>風險紀律：</b>'+riskLine+'</div>' +
-        '<div style="margin-top:6px;font-size:11px;color:var(--muted);border-top:1px solid var(--border);padding-top:6px">📅 時段：'+(ms.label||'')+(ms.hhmm!=null?(' '+Math.floor(ms.hhmm/100)+':'+String(ms.hhmm%100).padStart(2,'0')):'')+'。僅供參考、不構成投資建議。</div>';
+        '<div style="margin-bottom:6px">? <b>?曉??暻潘?</b><span style="color:'+nowColor+'">'+nowAction+'</span></div>' +
+        '<div style="margin-bottom:6px">?? <b>?剔?嚗? ?伐?嚗?/b><span style="color:'+colorOf(cShort)+'">'+cShort+'</span>?'+(dShortS.advice || af)+'</div>' +
+        '<div style="margin-bottom:6px">?? <b>銝剜?嚗??? ??嚗?/b><span style="color:'+colorOf(cMid)+'">'+cMid+'</span>?'+midActionText+'</div>' +
+        '<div>?? <b>憸券蝝敺?</b>'+riskLine+'</div>' +
+        '<div style="margin-top:6px;font-size:13px;color:var(--muted);border-top:1px solid var(--border);padding-top:6px">?? ?挾嚗?+(ms.label||'')+(ms.hhmm!=null?(' '+Math.floor(ms.hhmm/100)+':'+String(ms.hhmm%100).padStart(2,'0')):'')+'??靘???瑽???撱箄降??/div>';
       card.style.display = 'block';
     })();
 
-    // 理由清單
+    // ?皜
     const rl = document.getElementById("reasonList");
-    const midReasons = (dMid40 && dMid40.reasons && dMid40.reasons.length) ? dMid40.reasons : ["（中期視角無額外減碼理由,依短線視角為准）"];
-    rl.innerHTML = "<div style='font-weight:700;margin-bottom:4px'>📝 決策依據（白話）：</div>" +
-      "<div style='font-size:12px;font-weight:700;color:var(--accent)'>📉 短線</div><ul>" + primary.reasons.map(r => "<li>" + r + "</li>").join("") + "</ul>" +
-      "<div style='margin-top:6px;font-size:12px;font-weight:700;color:var(--yellow)'>📈 中期</div><ul>" + midReasons.map(r => "<li>" + r + "</li>").join("") + "</ul>";
+    const midReasons = (dMid40 && dMid40.reasons && dMid40.reasons.length) ? dMid40.reasons : ["嚗葉??閫憿?皜Ⅳ?,靘蝺?閫??"];
+    rl.innerHTML = "<div style='font-weight:700;margin-bottom:4px'>?? 瘙箇?靘?嚗閰梧?嚗?/div>" +
+      "<div style='font-size:14px;font-weight:700;color:var(--accent)'>?? ?剔?</div><ul>" + primary.reasons.map(r => "<li>" + r + "</li>").join("") + "</ul>" +
+      "<div style='margin-top:6px;font-size:14px;font-weight:700;color:var(--yellow)'>?? 銝剜?</div><ul>" + midReasons.map(r => "<li>" + r + "</li>").join("") + "</ul>";
 
-    // 損益
+    // ??
     renderPnl(primary.pnl);
-    // 決策矩陣
+    // 瘙箇??拚
     renderMatrix(dShortS, "matrixTableShort", "short");
     renderMatrix(dMid40S, "matrixTableMid", "mid");
-    // K 線
-    // 加碼保本線:只在「可加碼」情境才畫,= max(均價, 現價−5%)
+    // K 蝺?    // ?Ⅳ靽蝺??芸??Ⅳ??憓???= max(?, ?曉??%)
     let addBreakevenLine = null;
     if (dShort && dShort.addOn && dShort.addOn.ok) addBreakevenLine = dShort.addOn.breakeven;
-    // 保本止損線：只在「持股」(浮動賺+多頭) 情境才畫,= max(均價, 現價−2%)
+    // 靽甇Ｘ?蝺??芸???～?瘚桀?鞈?憭) ???,= max(?, ?曉??%)
     let breakevenLine = null;
     let canAdd = false;
     let addOnPct = 0;
     if (primary && A.close != null) {
-      const dM40 = dMid40; // decision 物件(非 sl 數字)
+      const dM40 = dMid40; // decision ?拐辣(??sl ?詨?)
       canAdd = !!(dM40 && dM40.shortScore > 0 && dM40.midScore > 0 && A.close > cost);
       addOnPct = (canAdd && dM40 && dM40.midScore > 0.2) ? 30 : (canAdd ? 15 : 0);
       if (primary.verdict === "hold") {
@@ -1114,7 +1092,7 @@ async function runSell(){
       }
       addBreakevenLine = canAdd ? Math.max(cost, +((A.close||0) * 0.95).toFixed(2)) : null;
     }
-    const dMid40sl = dMid40 ? (dMid40.slTp ? dMid40.slTp.sl : null) : null; // K 線中期止損參考線(40日)
+    const dMid40sl = dMid40 ? (dMid40.slTp ? dMid40.slTp.sl : null) : null; // K 蝺葉?迫????(40??
     const dMid60sl = dMid60 ? (dMid60.slTp ? dMid60.slTp.sl : null) : null;
     drawChart(rows, IND, {
       cost: cost,
@@ -1126,37 +1104,36 @@ async function runSell(){
       addOn: addBreakevenLine
     });
 
-    // 類股/大盤對照卡（非阻塞：抓 8 檔同類股 + 加權指算 5/20/40/60 日勝率對照）
+    // 憿/憭抒撠?∴??憛???8 瑼?憿 + ???? 5/20/40/60 ?亙????改?
     renderPeerCard(t, IND, rows).then(() => {
-      // 對照卡填完再補一次 applyMode,讓「填內容→收折」順序正確
-      // （簡易模式:短Box/中Box/理由/矩陣/對照表 全收;專業模式:全展開）
+      // 撠?∪‵摰?鋆?甈?applyMode,霈‵?批捆???摨迤蝣?      // 嚗陛?芋撘??耑ox/銝耑ox/?/?拚/撠銵??冽;撠平璅∪?:?典???
       applyMode();
     }).catch(()=>{ applyMode(); });
 
-    // 同步再補一次 applyMode（renderPeerCard 是 async,上面的 then/catch 是延後）
+    // ?郊??銝甈?applyMode嚗enderPeerCard ??async,銝??then/catch ?臬辣敺?
     applyMode();
 
-    // 分享
-    window._sellShare = { ticker: t, name: WNAMES[t] || "", cost: cost, shares: shares, close: A.close, verdict: primary ? primary.verdict : "—", tag: primary ? primary.tag : "—", advice: primary ? primary.advice : "—", reasons: primary ? primary.reasons : [], pnl: primary ? primary.pnl : null, sl: (primary && primary.slTp) ? primary.slTp.sl : null, tp1: (primary && primary.slTp) ? primary.slTp.tp1 : null, breakeven: (primary && primary.verdict === "hold") ? Math.max(cost, +((A.close||0) * 0.98).toFixed(2)) : null, mid40: A.hist_mid40, mid60: A.hist_mid60, midTag: dMid40 ? dMid40.tag : "—", midAdvice: dMid40 ? dMid40.advice : "—", midReasons: (dMid40 && dMid40.reasons) ? dMid40.reasons : [], addOn: (primary && primary.addOn) ? primary.addOn : null };
+    // ?澈
+    window._sellShare = { ticker: t, name: WNAMES[t] || "", cost: cost, shares: shares, close: A.close, verdict: primary ? primary.verdict : "??, tag: primary ? primary.tag : "??, advice: primary ? primary.advice : "??, reasons: primary ? primary.reasons : [], pnl: primary ? primary.pnl : null, sl: (primary && primary.slTp) ? primary.slTp.sl : null, tp1: (primary && primary.slTp) ? primary.slTp.tp1 : null, breakeven: (primary && primary.verdict === "hold") ? Math.max(cost, +((A.close||0) * 0.98).toFixed(2)) : null, mid40: A.hist_mid40, mid60: A.hist_mid60, midTag: dMid40 ? dMid40.tag : "??, midAdvice: dMid40 ? dMid40.advice : "??, midReasons: (dMid40 && dMid40.reasons) ? dMid40.reasons : [], addOn: (primary && primary.addOn) ? primary.addOn : null };
     const _sb = document.getElementById("shareBtn"); if (_sb) _sb.style.display = "";
   } catch (e) {
     const _em = document.getElementById("errMsg");
-    if (_em) { _em.textContent = "評估時遇到問題，請點「重試一次」。"; _em.style.display = "block"; }
+    if (_em) { _em.textContent = "閰摯???啣?憿?隢???閰虫?甈～?; _em.style.display = "block"; }
     const _er = document.getElementById("err");
-    if (_er) { _er.textContent = "評估時遇到問題，請點「重試一次」。"; _er.style.display = "block"; }
+    if (_er) { _er.textContent = "閰摯???啣?憿?隢???閰虫?甈～?; _er.style.display = "block"; }
     const rb=document.getElementById("retryBtn"); if(rb){ rb.style.display="inline-block"; rb.onclick=function(){ rb.style.display="none"; runSell(); }; }
     const _er2=document.getElementById("err"); if(_er2){ _er2.style.display = "block"; }
   } finally {
     document.getElementById("loading").style.display = "none";
     btn.disabled = false; btn.style.opacity = "";
-    // H. 記下本次已評估的輸入，供「重新評估」dirty 判斷
+    // H. 閮??祆活撌脰?隡啁?頛詨嚗????啗?隡啜irty ?斗
     window._sellEvaluated = { ticker: t, shares: shares, cost: cost };
     markDirty();
     btn.textContent = markDirtyLabel();
   }
 }
 
-// H. 輸入變更 → 按鈕變「重新評估」並提示有未套用變更
+// H. 頛詨霈 ????霈??啗?隡啜蒂?內?憟霈
 function markDirty(){
   const ev = window._sellEvaluated;
   if (!ev) return false;
@@ -1168,14 +1145,14 @@ function markDirty(){
   if (hint) hint.style.display = dirty ? "block" : "none";
   return dirty;
 }
-function markDirtyLabel(){ return markDirty() ? "重新評估" : "開始評估"; }
-// 與分析頁一致:輸入框按 Enter 觸發評估(操作習慣相同)
+function markDirtyLabel(){ return markDirty() ? "?閰摯" : "??閰摯"; }
+// ????銝??頛詨獢? Enter 閫貊閰摯(??蝧?詨?)
 ["ticker","shares","cost"].forEach(function(id){
   const el = document.getElementById(id);
   if (el) el.addEventListener("keydown", function(e){ if (e.key === "Enter") runSell(); });
 });
 
-// ── K 線（簡化：K 線 + 均價 + 止損 + 止盈 + 中期止損）────────────────────
+// ?? K 蝺?蝪∪?嚗 蝺?+ ? + 甇Ｘ? + 甇Ｙ? + 銝剜?甇Ｘ?嚗????????????????????
 function drawChart(rows, IND, lines){
   const cv = document.getElementById("chart");
   const dpr = window.devicePixelRatio || 1;
@@ -1196,16 +1173,15 @@ function drawChart(rows, IND, lines){
   const y = v => pad.t + (hi - v) / (hi - lo) * plotH;
   const x = i => pad.l + i * (plotW / n);
 
-  // 網格
+  // 蝬脫
   ctx.strokeStyle = "#2a3441"; ctx.fillStyle = "#94a3b8"; ctx.font = "11px sans-serif"; ctx.textAlign = "right";
   for (let g = 0; g <= 4; g++) {
     const v = lo + (hi - lo) * g / 4;
     const yy = y(v);
     ctx.beginPath(); ctx.moveTo(pad.l, yy); ctx.lineTo(W - pad.r, yy); ctx.stroke();
-    ctx.fillText((v != null ? v.toFixed(0) : "—"), pad.l - 6, yy + 3);
+    ctx.fillText((v != null ? v.toFixed(0) : "??), pad.l - 6, yy + 3);
   }
-  // K 線
-  const bw = Math.max(1, plotW / n * 0.6);
+  // K 蝺?  const bw = Math.max(1, plotW / n * 0.6);
   showRows.forEach((r, i) => {
     const up = r.close >= r.open;
     ctx.strokeStyle = ctx.fillStyle = up ? "#ef4444" : "#22c55e";
@@ -1214,7 +1190,7 @@ function drawChart(rows, IND, lines){
     const top = y(Math.max(r.open, r.close)), bot = y(Math.min(r.open, r.close));
     ctx.fillRect(cx - bw / 2, top, bw, Math.max(1, bot - top));
   });
-  // 均線
+  // ??
   const smaLine = (arr, color) => {
     ctx.strokeStyle = color; ctx.lineWidth = 1.2; ctx.beginPath(); let s = false;
     showRows.forEach((r, i) => { const v = arr[off + i]; if (v == null) return; const xx = x(i), yy = y(v); if (!s) { ctx.moveTo(xx, yy); s = true; } else ctx.lineTo(xx, yy); });
@@ -1223,58 +1199,57 @@ function drawChart(rows, IND, lines){
   smaLine(IND.SMA5, "#ef4444");
   smaLine(IND.SMA20, "#f59e0b");
   smaLine(IND.SMA60, "#38bdf8");
-  // 部位參考線
+  // ?其???
   if (lines.cost != null) {
     ctx.strokeStyle = "rgba(226,232,240,0.9)"; ctx.lineWidth = 2; ctx.setLineDash([]);
     ctx.beginPath(); ctx.moveTo(pad.l, y(lines.cost)); ctx.lineTo(W - pad.r, y(lines.cost)); ctx.stroke();
     ctx.fillStyle = "#e2e8f0"; ctx.font = "bold 11px sans-serif"; ctx.textAlign = "left";
-    ctx.fillText("均價 " + (lines.cost != null ? lines.cost.toFixed(0) : "—"), pad.l + 4, y(lines.cost) - 4);
+    ctx.fillText("? " + (lines.cost != null ? lines.cost.toFixed(0) : "??), pad.l + 4, y(lines.cost) - 4);
   }
   if (lines.sl != null) {
     ctx.strokeStyle = "rgba(34,197,94,0.9)"; ctx.setLineDash([4,4]); ctx.lineWidth = 1;
     ctx.beginPath(); ctx.moveTo(pad.l, y(lines.sl)); ctx.lineTo(W - pad.r, y(lines.sl)); ctx.stroke(); ctx.setLineDash([]);
     ctx.fillStyle = "#22c55e"; ctx.font = "10px sans-serif"; ctx.textAlign = "right";
-    ctx.fillText("短線止損 " + (lines.sl != null ? lines.sl.toFixed(0) : "—"), W - pad.r - 4, y(lines.sl) - 3);
+    ctx.fillText("?剔?甇Ｘ? " + (lines.sl != null ? lines.sl.toFixed(0) : "??), W - pad.r - 4, y(lines.sl) - 3);
   }
   if (lines.tp1 != null) {
     ctx.strokeStyle = "rgba(239,68,68,0.9)"; ctx.lineWidth = 1;
     ctx.beginPath(); ctx.moveTo(pad.l, y(lines.tp1)); ctx.lineTo(W - pad.r, y(lines.tp1)); ctx.stroke();
     ctx.fillStyle = "#ef4444"; ctx.font = "10px sans-serif"; ctx.textAlign = "right";
-    ctx.fillText("止盈 " + (lines.tp1 != null ? lines.tp1.toFixed(0) : "—"), W - pad.r - 4, y(lines.tp1) - 3);
+    ctx.fillText("甇Ｙ? " + (lines.tp1 != null ? lines.tp1.toFixed(0) : "??), W - pad.r - 4, y(lines.tp1) - 3);
   }
   if (lines.slMid != null) {
     ctx.strokeStyle = "rgba(245,158,11,0.9)"; ctx.setLineDash([2,3]); ctx.lineWidth = 1.2;
     ctx.beginPath(); ctx.moveTo(pad.l, y(lines.slMid)); ctx.lineTo(W - pad.r, y(lines.slMid)); ctx.stroke(); ctx.setLineDash([]);
     ctx.fillStyle = "#f59e0b"; ctx.font = "10px sans-serif"; ctx.textAlign = "right";
-    ctx.fillText("中期止損 " + (lines.slMid != null ? lines.slMid.toFixed(0) : "—"), W - pad.r - 4, y(lines.slMid) + 12);
+    ctx.fillText("銝剜?甇Ｘ? " + (lines.slMid != null ? lines.slMid.toFixed(0) : "??), W - pad.r - 4, y(lines.slMid) + 12);
   }
   if (lines.slMid60 != null) {
     ctx.strokeStyle = "rgba(217,119,6,.95)"; ctx.setLineDash([3,3]); ctx.lineWidth = 1.2;
     ctx.beginPath(); ctx.moveTo(pad.l, y(lines.slMid60)); ctx.lineTo(W - pad.r, y(lines.slMid60)); ctx.stroke(); ctx.setLineDash([]);
     ctx.fillStyle = "#d97706"; ctx.font = "10px sans-serif"; ctx.textAlign = "right";
-    ctx.fillText("中期止損(60日) " + (lines.slMid60 != null ? lines.slMid60.toFixed(0) : "—"), W - pad.r - 4, y(lines.slMid60) + 12);
+    ctx.fillText("銝剜?甇Ｘ?(60?? " + (lines.slMid60 != null ? lines.slMid60.toFixed(0) : "??), W - pad.r - 4, y(lines.slMid60) + 12);
   }
   if (lines.breakeven != null) {
     ctx.strokeStyle = "rgba(168,85,247,0.95)"; ctx.setLineDash([6,3]); ctx.lineWidth = 1.2;
     ctx.beginPath(); ctx.moveTo(pad.l, y(lines.breakeven)); ctx.lineTo(W - pad.r, y(lines.breakeven)); ctx.stroke(); ctx.setLineDash([]);
     ctx.fillStyle = "#a855f7"; ctx.font = "10px sans-serif"; ctx.textAlign = "right";
-    ctx.fillText("保本止損 " + (lines.breakeven != null ? lines.breakeven.toFixed(0) : "—"), W - pad.r - 4, y(lines.breakeven) - 3);
+    ctx.fillText("靽甇Ｘ? " + (lines.breakeven != null ? lines.breakeven.toFixed(0) : "??), W - pad.r - 4, y(lines.breakeven) - 3);
   }
   if (lines.addOn != null) {
     ctx.strokeStyle = "rgba(34,197,94,0.95)"; ctx.setLineDash([6,3]); ctx.lineWidth = 1.2;
     ctx.beginPath(); ctx.moveTo(pad.l, y(lines.addOn)); ctx.lineTo(W - pad.r, y(lines.addOn)); ctx.stroke(); ctx.setLineDash([]);
     ctx.fillStyle = "#22c55e"; ctx.font = "10px sans-serif"; ctx.textAlign = "right";
-    ctx.fillText("加碼保本 " + (lines.addOn != null ? lines.addOn.toFixed(0) : "—"), W - pad.r - 4, y(lines.addOn) + 12);
+    ctx.fillText("?Ⅳ靽 " + (lines.addOn != null ? lines.addOn.toFixed(0) : "??), W - pad.r - 4, y(lines.addOn) + 12);
   }
-  // 收盤
+  // ?嗥
   const last = showRows[n - 1];
   if (last) {
     const ly = y(last.close);
     ctx.fillStyle = "#38bdf8"; ctx.font = "bold 11px sans-serif"; ctx.textAlign = "left";
-    ctx.fillText("收盤 " + (last.close != null ? last.close.toFixed(0) : "—"), W - pad.r + 2, ly + 4);
+    ctx.fillText("?嗥 " + (last.close != null ? last.close.toFixed(0) : "??), W - pad.r + 2, ly + 4);
   }
-  // X 軸
-  ctx.textAlign = "center"; ctx.fillStyle = "#94a3b8"; ctx.font = "10px sans-serif";
+  // X 頠?  ctx.textAlign = "center"; ctx.fillStyle = "#94a3b8"; ctx.font = "10px sans-serif";
   const step = Math.max(1, Math.floor(n / 5));
   for (let i = 0; i < n; i += step) {
     const d = showRows[i].date; if (!d) continue;
@@ -1285,53 +1260,52 @@ window._drawChart = function(){
   if (window._lastChartArgs) drawChart(window._lastChartArgs.rows, window._lastChartArgs.ind, window._lastChartArgs.lines);
 };
 
-// 覆蓋 drawChart 記錄參數供主題切換重繪
-(function(){
+// 閬? drawChart 閮??靘蜓憿???蝜?(function(){
   const orig = drawChart;
   window._drawChart = function(){
     if (window._lastChartArgs) orig(window._lastChartArgs.rows, window._lastChartArgs.ind, window._lastChartArgs.lines);
   };
-  // 包裝
+  // ??
   window.__drawChartHook = function(rows, ind, lines){
     window._lastChartArgs = { rows, ind, lines };
     orig(rows, ind, lines);
   };
 })();
 
-// ── 分享 ──
+// ?? ?澈 ??
 function shareSell(){
   const d = window._sellShare;
   if (!d) return;
-  const m40 = d.mid40 && d.mid40.up_rate != null ? d.mid40.up_rate + "%" : "資料不足";
-  const m60 = d.mid60 && d.mid60.up_rate != null ? d.mid60.up_rate + "%" : "資料不足";
+  const m40 = d.mid40 && d.mid40.up_rate != null ? d.mid40.up_rate + "%" : "鞈?銝雲";
+  const m60 = d.mid60 && d.mid60.up_rate != null ? d.mid60.up_rate + "%" : "鞈?銝雲";
   const msg =
-    "【我的部位決策】" + d.ticker + " " + d.name + "\n" +
-    "持股 " + d.shares + " 股、均價 " + d.cost + "、現價 " + (d.close != null ? (d.close != null ? d.close.toFixed(2) : "—") : "—") + "\n" +
-    "浮動損益：" + ((d.pnl.float!=null && d.pnl.float >= 0) ? "+" : "") + (d.pnl.float!=null ? d.pnl.float.toFixed(0) : "—") + "（" + fmtPct(d.pnl.floatPct) + "）\n" +
-    "結論（短線）：" + d.tag + "；結論（中期）：" + (d.midTag || "—") + "\n" +
-    "短線建議：" + d.advice + "\n" +
-    "中期建議：" + (d.midAdvice || "依短線為准") + "\n" +
-    "短線止損 " + d.sl + "、止盈 " + d.tp1 + "；40日勝率 " + m40 + "、60日勝率 " + m60 + "\n" +
-    (d.addOn && d.addOn.ok ? "加碼：✅ 可加碼 " + d.addOn.pct + "%（加碼後保本 " + d.addOn.breakeven.toFixed(0) + "、止損 " + (d.addOn.sl!=null?d.addOn.sl.toFixed(0):"—") + "）\n"
-      : (d.addOn ? "加碼：🔒 " + d.addOn.reason + "\n" : "")) +
-    (d.breakeven != null ? "保本止損 " + (d.breakeven != null ? d.breakeven.toFixed(0) : "—") + "（持股情境止損上移線）\n" : "") +
-    "決策依據：" + d.reasons.join("、") + "\n" +
-    "（僅供學習，不構成投資建議）";
+    "???雿捱蝑? + d.ticker + " " + d.name + "\n" +
+    "? " + d.shares + " ?～???" + d.cost + "???" + (d.close != null ? (d.close != null ? d.close.toFixed(2) : "??) : "??) + "\n" +
+    "瘚桀???嚗? + ((d.pnl.float!=null && d.pnl.float >= 0) ? "+" : "") + (d.pnl.float!=null ? d.pnl.float.toFixed(0) : "??) + "嚗? + fmtPct(d.pnl.floatPct) + "嚗n" +
+    "蝯?嚗蝺?嚗? + d.tag + "嚗?隢?銝剜?嚗?" + (d.midTag || "??) + "\n" +
+    "?剔?撱箄降嚗? + d.advice + "\n" +
+    "銝剜?撱箄降嚗? + (d.midAdvice || "靘蝺??) + "\n" +
+    "?剔?甇Ｘ? " + d.sl + "?迫??" + d.tp1 + "嚗?0?亙???" + m40 + "??0?亙???" + m60 + "\n" +
+    (d.addOn && d.addOn.ok ? "?Ⅳ嚗? ?臬?蝣?" + d.addOn.pct + "%嚗?蝣澆?靽 " + d.addOn.breakeven.toFixed(0) + "?迫??" + (d.addOn.sl!=null?d.addOn.sl.toFixed(0):"??) + "嚗n"
+      : (d.addOn ? "?Ⅳ嚗??" + d.addOn.reason + "\n" : "")) +
+    (d.breakeven != null ? "靽甇Ｘ? " + (d.breakeven != null ? d.breakeven.toFixed(0) : "??) + "嚗??⊥?憓迫??蝘餌?嚗n" : "") +
+    "瘙箇?靘?嚗? + d.reasons.join("??) + "\n" +
+    "嚗?靘飛蝧?銝???鞈遣霅堆?";
   const btn = document.getElementById("shareBtn");
   const old = btn.textContent;
   navigator.clipboard && navigator.clipboard.writeText(msg).then(() => {
-    btn.textContent = "✅ 已複製";
+    btn.textContent = "??撌脰?鋆?;
     setTimeout(() => btn.textContent = old, 1500);
   }).catch(() => {
     const ta = document.createElement("textarea");
     ta.value = msg; document.body.appendChild(ta); ta.select();
     document.execCommand("copy"); document.body.removeChild(ta);
-    btn.textContent = "✅ 已複製";
+    btn.textContent = "??撌脰?鋆?;
     setTimeout(() => btn.textContent = old, 1500);
   });
 }
 
-// ── 載入頁面：自動帶出上次均價 ──
+// ?? 頛?嚗?葆?箔?甈∪?????
 (function(){
   const t0 = document.getElementById("ticker").value.trim().toUpperCase();
   if (/^\d{4}$/.test(t0)) {
@@ -1345,29 +1319,28 @@ function shareSell(){
         hasCost = true;
       }
     } catch (e) {}
-    // 15a. 此檔尚未存均價 → 顯示提示
+    // 15a. 甇斗?撠摮?????憿舐內?內
     const nh = document.getElementById("noCostHint");
     if (nh) nh.style.display = hasCost ? "none" : "block";
   }
-  // 支援 ?ticker=2330&shares=100&cost=750 從綜合卡跳轉
-  // query 的 shares/cost 優於 localStorage（跨 origin 跳轉時均價帶不過來，故用 query 帶）
+  // ?舀 ?ticker=2330&shares=100&cost=750 敺??頝唾?
+  // query ??shares/cost ?芣 localStorage嚗楊 origin 頝唾????孵葆銝?靘?? query 撣塚?
   const qs = new URLSearchParams(location.search);
   const qTicker = qs.get("ticker");
   const qShares = qs.get("shares");
   const qCost = qs.get("cost");
   if (qTicker && /^\d{4}$/.test(qTicker)) {
     document.getElementById("ticker").value = qTicker.toUpperCase();
-    // 若 query 帶了 shares/cost，直接採用並覆蓋 localStorage
+    // ??query 撣嗡? shares/cost嚗?交?其蒂閬? localStorage
     if (qShares) document.getElementById("shares").value = qShares;
     if (qCost) document.getElementById("cost").value = qCost;
-    // 自動執行評估（若均價/持股已齊）
-    const s0 = parseInt(document.getElementById("shares").value, 10);
+    // ?芸??瑁?閰摯嚗?/?撌脤?嚗?    const s0 = parseInt(document.getElementById("shares").value, 10);
     const c0 = parseFloat(document.getElementById("cost").value);
     if (s0 >= 1 && c0 > 0) runSell();
   }
 })();
 
-// 回傳綜合卡：自動帶 ticker
+// ?蝬??∴??芸?撣?ticker
 document.addEventListener("DOMContentLoaded", () => {
   const t = document.getElementById("ticker");
   t.addEventListener("change", () => {
@@ -1381,8 +1354,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     fillPosSel(); markDirty();
   });
-  // I. 填充「我持有的部位」下拉（所有已存均價的代號）
-  window.fillPosSel = function(){
+  // I. 憛怠??????雿?????歇摮??寧?隞??嚗?  window.fillPosSel = function(){
     const sel = document.getElementById("posSel");
     if (!sel) return;
     let keys = [];
@@ -1393,7 +1365,7 @@ document.addEventListener("DOMContentLoaded", () => {
     sel.innerHTML = keys.length ? keys.map(k => {
       const nm = (WNAMES[k] || "");
       return '<option value="'+k+'" '+(k === cur ? "selected" : "")+'>'+k+' '+nm+'</option>';
-    }).join("") : '<option value="">（尚未存任何部位均價）</option>';
+    }).join("") : '<option value="">嚗??芸?隞颱??其??嚗?/option>';
   };
   window.loadPosSel = function(){
     const sel = document.getElementById("posSel");
@@ -1408,13 +1380,28 @@ document.addEventListener("DOMContentLoaded", () => {
     } catch (e) {}
     markDirty();
   };
-  // H. 均價/持股數 變更 → dirty 提示
+  // H. ?/???霈 ??dirty ?內
   ["shares","cost"].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.addEventListener("input", () => { markDirty(); document.getElementById("btn").textContent = markDirtyLabel(); });
   });
   fillPosSel();
 });
+/* font scale */
+(function(){
+  const LVL=[0.9,1.0,1.15];
+  let cur=parseInt(localStorage.getItem('tonyFontScale')||'1',10);
+  if(isNaN(cur))cur=1;
+  function apply(){document.documentElement.style.setProperty('--font-scale',LVL[cur]||'1');}
+  apply();
+  window.changeFontScale=function(dir){
+    cur=Math.min(2,Math.max(0,cur+dir));
+    localStorage.setItem('tonyFontScale',cur);
+    apply();
+  };
+})();
 </script>
 </body>
 </html>
+
+
