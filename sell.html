@@ -892,8 +892,8 @@ async function renderPeerCard(t, IND, rows){
     '<div style="margin-top:6px;font-size:11px;color:var(--muted);line-height:1.5">週期控盤資金：5日＝當沖/極短線、20日＝投信波段、40日＝內資大戶、60日＝外資/壽險/國家隊。同類股取 '+peers.length+' 檔中位數；大盤為加權指數。差 3pt 以上才判偏強/偏弱。僅供判斷，不構成投資建議。</div>';
   window._peerCompare = { s5,s20,s40,s60, peer5:p5, peer20:p20, peer40:p40, peer60:p60, tai5:t5, tai20:t20, tai40:t40, tai60:t60, attack5, month20, wash40, season60, verdict, verdictText, oneLiner };
   const verdictEl=document.getElementById("peerVerdict");
-  if(verdictEl){ verdictEl.innerHTML = oneLiner || '對照資料不足，請稍後再試。'; verdictEl.style.display='block'; }
-  card.style.display='block';
+ if(verdictEl){ verdictEl.innerHTML = oneLiner || '對照資料不足，請稍後再試。';  }
+    applyMode();  // 顯隱交由 applyMode 依 isPro() 決定（簡易收折、專業展開）
   document.getElementById("peerBody").innerHTML = oneLiner || '對照資料不足，請稍後再試。';
 }
 
